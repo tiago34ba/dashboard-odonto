@@ -1,45 +1,138 @@
 /* Sidebar.css */
 .sidebar {
-    background-color: #C0C0C0; /* Fundo azul escuro */
-    color: #1C1C1C; /* Texto branco claro */
-    width: 250px; /* Largura da sidebar */
-    height: 113vh; /* Altura total da janela */
-    padding: 20px; /* Espaçamento interno */
-    font-family: Arial, sans-serif; /* Fonte limpa */
-  }
-  
-  .sidebar ul {
-    list-style-type: none; /* Remove os marcadores de lista */
-    padding: 0; /* Remove o padding padrão */
-    margin: 0; /* Remove as margens padrão */
-  }
-  
-  .sidebar li {
-    padding: 10px 15px; /* Espaçamento interno dos itens */
-    cursor: pointer; /* Troca o cursor ao passar por cima */
-    transition: background-color 0.3s; /* Adiciona animação ao hover */
-    font-size: 16px; /* Tamanho padrão dos menus */
-  }
-  
-  .sidebar li:hover {
-    background-color: #34495e; /* Azul mais escuro ao passar o mouse */
-  }
-  
-  .sidebar .submenu {
-    padding-left: 20px; /* Indenta os submenus */
-    font-size: 14px; /* Tamanho menor para submenus */
-    color: #0000CD; /* Texto cinza claro */
-  }
-  
-  .sidebar .submenu li {
-    padding: 5px 0; /* Espaçamento interno dos submenus */
-  }
-  
-  .sidebar .submenu li:hover {
-    color: #ecf0f1; /* Cor branca ao passar o mouse */
-  }
-  .menu-divider {
-    border-bottom: 3px solid #7f8c8d; /* Linha horizontal */
-    margin-top: 0;
-    margin-bottom: -20px; /* Espaçamento reduzido abaixo */
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 16px;
+  border-bottom: 1px solid #34495e;
+}
+
+.sidebar li:hover {
+  background-color: #34495e;
+}
+
+.sidebar .submenu {
+  padding-left: 20px;
+  font-size: 14px;
+  color: #95a5a6;
+}
+
+.sidebar .submenu li {
+  padding: 8px 0;
+}
+
+.sidebar .submenu li:hover {
+  color: #ecf0f1;
+}
+
+.menu-divider {
+  border-bottom: 2px solid #34495e;
+  margin: 10px 0;
+}
+
+/* Content.css */
+.content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.data-table th, .data-table td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.action-icons {
+  display: flex;
+  justify-content: center;
+}
+
+.action-icons i {
+  margin: 0 5px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* PatientTable.css (Adicionado) */
+.patient-table-container {
+  width: 100%;
+  padding: 20px;
+  background-color: #f4f4f4;
+  font-family: sans-serif;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.patient-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.patient-table th, .patient-table td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.patient-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.action-icons button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  margin: 0 5px;
+}
+
+.edit-btn { color: #3498db; }
+.delete-btn { color: #e74c3c; }
+.view-btn { color: #27ae60; }

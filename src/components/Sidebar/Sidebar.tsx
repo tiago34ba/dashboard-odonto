@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import "./Sidebar.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Interfaces para menus e submenus
 interface Submenu {
@@ -68,12 +68,12 @@ const SubmenuList: React.FC<{ submenus: Submenu[] }> = ({ submenus }) => (
 // Componente principal Sidebar
 const Sidebar: React.FC = () => {
   const menus: Menu[] = [
-    { title: "Dashboard", path: "/dashboard" },
+    { title: "Dashboard", path: "/" }, // Altere o path para "/"
     { isDivider: true, title: "" },
     {
       title: "Pessoas",
       submenus: [
-        { title: "Pacientes", path: "/pessoas/pacientes" },
+        { title: "Pacientes", path: "/pessoas/pacientes/patientsPage" },
         { title: "Funcionários", path: "/pessoas/funcionarios" },
         { title: "Úsuarios", path: "/pessoas/usuarios" },
         { title: "Fornecedores", path: "/pessoas/fornecedores" },
@@ -149,21 +149,20 @@ const Sidebar: React.FC = () => {
       setOpenIndexes([...openIndexes, index]);
     }
   };
-
   return (
     <div className="sidebar">
-      <ul>
-        {menus.map((menu, index) => (
-          <MenuItem
-            key={index}
-            menu={menu}
-            index={index}
-            isOpen={openIndexes.includes(index)}
-            toggleMenu={toggleMenu}
-          />
-        ))}
-      </ul>
-    </div>
+    <ul>
+      {menus.map((menu, index) => (
+        <MenuItem
+          key={index}
+          menu={menu}
+          index={index}
+          isOpen={openIndexes.includes(index)}
+          toggleMenu={toggleMenu}
+        />
+      ))}
+    </ul>
+  </div>
   );
 };
 
