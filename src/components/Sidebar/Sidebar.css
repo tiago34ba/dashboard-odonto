@@ -1,0 +1,45 @@
+/* Sidebar.css */
+.sidebar {
+    background-color: #C0C0C0; /* Fundo azul escuro */
+    color: #1C1C1C; /* Texto branco claro */
+    width: 250px; /* Largura da sidebar */
+    height: 113vh; /* Altura total da janela */
+    padding: 20px; /* Espaçamento interno */
+    font-family: Arial, sans-serif; /* Fonte limpa */
+  }
+  
+  .sidebar ul {
+    list-style-type: none; /* Remove os marcadores de lista */
+    padding: 0; /* Remove o padding padrão */
+    margin: 0; /* Remove as margens padrão */
+  }
+  
+  .sidebar li {
+    padding: 10px 15px; /* Espaçamento interno dos itens */
+    cursor: pointer; /* Troca o cursor ao passar por cima */
+    transition: background-color 0.3s; /* Adiciona animação ao hover */
+    font-size: 16px; /* Tamanho padrão dos menus */
+  }
+  
+  .sidebar li:hover {
+    background-color: #34495e; /* Azul mais escuro ao passar o mouse */
+  }
+  
+  .sidebar .submenu {
+    padding-left: 20px; /* Indenta os submenus */
+    font-size: 14px; /* Tamanho menor para submenus */
+    color: #0000CD; /* Texto cinza claro */
+  }
+  
+  .sidebar .submenu li {
+    padding: 5px 0; /* Espaçamento interno dos submenus */
+  }
+  
+  .sidebar .submenu li:hover {
+    color: #ecf0f1; /* Cor branca ao passar o mouse */
+  }
+  .menu-divider {
+    border-bottom: 3px solid #7f8c8d; /* Linha horizontal */
+    margin-top: 0;
+    margin-bottom: -20px; /* Espaçamento reduzido abaixo */
+  }

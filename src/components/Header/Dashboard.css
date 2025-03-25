@@ -1,0 +1,31 @@
+.app-header {
+  position: sticky; /* Fixa o cabeçalho no topo durante a rolagem */
+  top: 0;
+  width: 100%;
+  background-color: white; /* Ou a cor de fundo desejada */
+  z-index: 100; /* Garante que o cabeçalho fique acima de outros elementos */
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notifications {
+  display: flex;
+  justify-content: center; /* Centraliza os símbolos horizontalmente */
+  gap: 15px; /* Espaço entre os símbolos */
+}
+
+.notifications span {
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+/* Opcional: Responsividade */
+@media (max-width: 768px) {
+  .app-header {
+      padding: 8px 15px;
+  }
+
+  .notifications span {
+      font-size: 1.2em;
+  }
+}

@@ -1,26 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Sidebar from "./components/Sidebar/Sidebar";
+import Header from "./components/Header/Header";
+import Dashboard from "./pages/Dashboard/DashboardCards";
+import "./App.css";
 
-function App() {
+// Carregamento tardio para PatientsPage (exemplo para futuras otimizações)
+const PatientsPage = lazy(() => import("./pages/Pessoas/clientes/PatientsPage/PatientsPage"));
+
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="app">
+        <Sidebar />
+        <div className="content">
+          <Header />
+          <Routes>
+            <Route path="/" element={<Dashboard title={""} value={""} />} />
+            {/* Rota para PatientsPage com Suspense para carregamento tardio */}
+            <Route
+              path="/clientes"
+              element={
+                <Suspense fallback={<div>Carregando...</div>}>
+                  <PatientsPage />
+                </Suspense>
+              }
+            />
+            {/* Adicione outras rotas aqui */}
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;
