@@ -182,7 +182,6 @@ const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
             />
           </div>
         </div>
-
         <div className="form-row">
           <div className="form-field">
             <label htmlFor="cep">CEP:</label>
@@ -230,35 +229,6 @@ const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
               id="bairro"
               value={bairro}
               onChange={(e) => setBairro(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-field">
-            <label htmlFor="responsavel">Responsável:</label>
-            <input
-              type="text"
-              id="responsavel"
-              value={responsavel}
-              onChange={(e) => setResponsavel(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="cpfResponsavel">CPF do Responsável:</label>
-            <input
-              type="text"
-              id="cpfResponsavel"
-              value={cpfResponsavel}
-              onChange={(e) => setCpfResponsavel(e.target.value)}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="telefone2">Telefone 2:</label>
-            <input
-              type="text"
-              id="telefone2"
-              value={telefone2}
-              onChange={(e) => setTelefone2(e.target.value)}
             />
           </div>
         </div>
