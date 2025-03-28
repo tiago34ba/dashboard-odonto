@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaUser } from 'react-icons/fa';
 
 interface AddPatientFormProps {
   onClose: () => void;
@@ -58,6 +59,17 @@ const conveniosOptions = [
   "Vision Med",
 ];
 
+const estadosOptions = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
+  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
+  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
+];
+const tiposSanguineosOptions = [
+  "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"
+];
+const estadosCivisOptions = [
+  "Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "Outro"
+];
 const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -138,6 +150,62 @@ const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
           </div>
         </div>
         <div className="form-row">
+          {/* ... (seus outros campos) */}
+          <div className="form-field">
+            <label htmlFor="nascimento">Data de Nascimento:</label>
+            <input
+              type="date"
+              id="nascimento"
+              value={nascimento}
+              onChange={(e) => setNascimento(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="form-row">
+          {/* ... (seus outros campos) */}
+          <div className="form-field">
+            <label htmlFor="responsavel">Responsável:</label>
+            <input
+              type="text"
+              id="responsavel"
+              value={responsavel}
+              onChange={(e) => setResponsavel(e.target.value)}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="cpfResponsavel">CPF do Responsável:</label>
+            <input
+              type="text"
+              id="cpfResponsavel"
+              value={cpfResponsavel}
+              onChange={(e) => setCpfResponsavel(e.target.value)}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="telefone2">Celular:</label>
+            <input
+              type="text"
+              id="telefone2"
+              value={telefone2}
+              onChange={(e) => setTelefone2(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="form-row">
+          {/* ... (seus outros campos) */}
+          <div className="form-field">
+            <label htmlFor="estado">Estado:</label>
+            <select id="estado" value={estado} onChange={(e) => setEstado(e.target.value)}>
+              <option value="Selecionar">Selecionar</option>
+              {estadosOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="form-row">
           <div className="form-field">
             <label htmlFor="sexo">Sexo:</label>
             <select id="sexo" value={sexo} onChange={(e) => setSexo(e.target.value)}>
@@ -153,6 +221,33 @@ const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
               value={profissao}
               onChange={(e) => setProfissao(e.target.value)}
             />
+          </div>
+          <div className="form-row">
+            {/* ... (seus outros campos) */}
+            <div className="form-field">
+              <label htmlFor="estadoCivil">Estado Civil:</label>
+              <select id="estadoCivil" value={estadoCivil} onChange={(e) => setEstadoCivil(e.target.value)}>
+                {estadosCivisOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="form-row">
+            {/* ... (seus outros campos) */}
+            <div className="form-field">
+              <label htmlFor="tipoSanguineo">Tipo Sanguíneo:</label>
+              <select id="tipoSanguineo" value={tipoSanguineo} onChange={(e) => setTipoSanguineo(e.target.value)}>
+                <option value="">Selecionar</option>
+                {tiposSanguineosOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
         <div className="form-row">
@@ -242,7 +337,9 @@ const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
           />
         </div>
         <div className="button-container">
-          <button type="submit">Adicionar</button>
+          <button type="submit">
+            Adicionar
+          </button>
           <button type="button" onClick={onClose}>Fechar</button>
         </div>
       </form>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "../../../../components/Sidebar/Sidebar";
 import Modal from "./Modal";
-import AddPatientForm from "../../../../components/PatientTable/AddPatientForm";
+import AddPatientForm from "../PatientTable/AddPatientForm";
 
 const PatientsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,7 +48,7 @@ const PatientsPage: React.FC = () => {
                 transition: "background-color 0.3s ease",
                 backgroundColor: "#007bff",
                 color: "white",
-                marginRight: "10px",
+                marginRight: "20px",
               }}
             
             >
@@ -104,7 +104,10 @@ const PatientsPage: React.FC = () => {
                 <td style={{ padding: "10px" }}>{patient.age}</td>
                 <td style={{ padding: "10px" }}>
                   <button style={{ marginRight: "5px", padding: "5px 10px", borderRadius: "4px", border: "none", background: "#007bff", color: "white" }}>Editar</button>
+                  <button style={{ marginRight: "5px", padding: "5px 10px", borderRadius: "4px", border: "none", background: "#007bff", color: "white" }}>Dados</button>
+                  <button style={{ marginRight: "5px", padding: "5px 10px", borderRadius: "4px", border: "none", background: "#007bff", color: "white" }}>Ediar</button>
                   <button style={{ marginRight: "5px", padding: "5px 10px", borderRadius: "4px", border: "none", background: "#f00", color: "white" }}>Excluir</button>
+
                 </td>
               </tr>
             ))}
