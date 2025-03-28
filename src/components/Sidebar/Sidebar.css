@@ -5,8 +5,8 @@
   left: 0;
   width: 250px;
   height: 100vh;
-  background-color: #2c3e50;
-  color: #ecf0f1;
+  background-color: #2c3e50; /* Cor de fundo mais escura */
+  color: #ecf0f1; /* Texto claro */
   overflow-y: auto;
   z-index: 100;
 }
@@ -18,11 +18,11 @@
 }
 
 .sidebar li {
-  padding: 12px 15px;
+  padding: 12px 15px; /* Aumenta o espaçamento interno */
   cursor: pointer;
   transition: background-color 0.3s;
   font-size: 16px;
-  border-bottom: 1px solid #34495e;
+  border-bottom: 1px  #34495e; /* Adiciona divisória entre os itens */
 }
 
 .sidebar li:hover {
@@ -32,11 +32,11 @@
 .sidebar .submenu {
   padding-left: 20px;
   font-size: 14px;
-  color: #95a5a6;
+  color: #95a5a6; /* Texto cinza claro para submenus */
 }
 
 .sidebar .submenu li {
-  padding: 8px 0;
+  padding: 5px 0; /* Aumenta o espaçamento interno dos submenus */
 }
 
 .sidebar .submenu li:hover {
@@ -44,8 +44,8 @@
 }
 
 .menu-divider {
-  border-bottom: 2px solid #34495e;
-  margin: 10px 0;
+  border-bottom: 2px solid #34495e; /* Linha divisória mais clara */
+  margin: 2px  /* Adiciona margem */
 }
 
 /* Content.css */
@@ -53,7 +53,7 @@
   flex: 1;
   margin-left: 250px;
   padding: 20px;
-  background-color: #f4f4f4;
+  background-color: #f4f4f4; /* Fundo mais claro para o conteúdo */
 }
 
 .data-table {
@@ -85,54 +85,81 @@
   cursor: pointer;
   font-size: 18px;
 }
-
-/* PatientTable.css (Adicionado) */
-.patient-table-container {
-  width: 100%;
+.add-patient-form {
   padding: 20px;
-  background-color: #f4f4f4;
-  font-family: sans-serif;
 }
 
-.table-header {
+.add-patient-form h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+.add-patient-form form {
+  display: grid;
+  gap: 15px;
+}
+
+.add-patient-form .form-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
 }
 
-.search-input {
+.add-patient-form .form-field {
+  width: 48%; /* Ajuste a largura para acomodar dois campos por linha */
+}
+
+.add-patient-form label {
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #555;
+}
+
+.add-patient-form input {
+  width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
 }
 
-.patient-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.add-patient-form input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-.patient-table th, .patient-table td {
-  border: 1px solid #ddd;
-  padding: 12px 15px;
-  text-align: left;
+.add-patient-form .button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
-.patient-table th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-}
-
-.action-icons button {
-  background: none;
+.add-patient-form button {
+  padding: 12px 20px;
+  margin-right: 10px;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 18px;
-  margin: 0 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
 }
 
-.edit-btn { color: #3498db; }
-.delete-btn { color: #e74c3c; }
-.view-btn { color: #27ae60; }
+.add-patient-form button[type="submit"] {
+  background-color: #007bff;
+  color: white;
+}
+
+.add-patient-form button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.add-patient-form button[type="button"] {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.add-patient-form button[type="button"]:hover {
+  background-color: #e2e6ea;
+}

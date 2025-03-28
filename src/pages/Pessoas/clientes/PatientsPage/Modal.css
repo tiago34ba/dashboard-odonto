@@ -1,0 +1,53 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%; /* Aumenta a largura para melhor legibilidade */
+    max-width: 600px; /* Aumenta o max-width para melhor legibilidade */
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adiciona sombra para destaque */
+    overflow-y: auto;
+    max-height: 80vh; /* Ajuste a altura máxima conforme necessário */
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #888; /* Cor mais suave para o botão de fechar */
+  }
+  
+  .modal-close:hover {
+    color: #333; /* Escurece a cor no hover para feedback visual */
+  }
+  
+  .form-field label {
+    display: block;
+    margin-bottom: 5px; /* Ajuste o valor conforme necessário */
+  }
+  
+  .observacoes-textarea {
+    width: 400px; /* Largura fixa */
+    height: 70px; /* Altura fixa */
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none; /* Impede o redimensionamento pelo usuário */
+  }
