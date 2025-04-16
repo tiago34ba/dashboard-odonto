@@ -29,3 +29,20 @@
       font-size: 1.2em;
   }
 }
+.header {
+  display: flex;
+  justify-content: center; /* Centraliza horizontalmente */
+  align-items: center; /* Centraliza verticalmente */
+  height: 60px; /* Define uma altura para o cabeçalho */
+  background-color: #f8f9fa; /* Cor de fundo opcional */
+}
+
+.header-notifications {
+  display: flex;
+  gap: 20px; /* Espaçamento entre os ícones */
+}
+
+.icon {
+  font-size: 24px; /* Tamanho dos ícones */
+  cursor: pointer; /* Mostra o cursor de ponteiro ao passar sobre os ícones */
+}

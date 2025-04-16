@@ -25,36 +25,36 @@ const MenuItem: React.FC<{ menu: Menu; index: number; isOpen: boolean; toggleMen
   index,
   isOpen,
   toggleMenu,
-}) => (
-  <>
-    {menu.isDivider && <MenuDivider />}
-    <li>
-      <span
-        className="menu-item"
-        onClick={() => menu.submenus ? toggleMenu(index) : null}
-        style={{ cursor: menu.submenus ? "pointer" : "default" }}
-      >
-        {menu.title === "Dashboard" && <i className="fa fa-home" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Pessoas" && <i className="fa fa-users" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Cadastros" && <i className="fa fa-list-alt" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Agendamentos" && <i className="fa fa-calendar-alt" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Financeiro" && <i className="fa fa-money-bill-alt" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Consultas" && <i className="fa fa-stethoscope" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Horários" && <i className="fa fa-clock" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Minhas Comissões" && <i className="fa fa-briefcase" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Odontogramas" && <i className="fa fa-tooth" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Tratamentos" && <i className="fa fa-medkit" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Orçamentos" && <i className="fa fa-file-invoice-dollar" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Caixas (Aberto)" && <i className="fa fa-cash-register" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Tarefas / Agenda" && <i className="fa fa-tasks" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Anotações" && <i className="fa fa-sticky-note" style={{ marginRight: '8px' }}></i>}
-        {menu.title === "Relatórios" && <i className="fa fa-chart-bar" style={{ marginRight: '8px' }}></i>}
-        {menu.title}
-      </span>
-      {isOpen && menu.submenus && <SubmenuList submenus={menu.submenus} />}
-    </li>
-  </>
-);
+}) => {
+  const navigate = useNavigate();
+
+  return (
+    <>
+      {menu.isDivider && <MenuDivider />}
+      <li>
+        {menu.title === "Dashboard" ? (
+          <span
+            className="menu-item"
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
+          >
+            <i className="fa fa-home" style={{ marginRight: "8px" }}></i>
+            {menu.title}
+          </span>
+        ) : (
+          <span
+            className="menu-item"
+            onClick={() => (menu.submenus ? toggleMenu(index) : null)}
+            style={{ cursor: menu.submenus ? "pointer" : "default" }}
+          >
+            {menu.title}
+          </span>
+        )}
+        {isOpen && menu.submenus && <SubmenuList submenus={menu.submenus} />}
+      </li>
+    </>
+  );
+};
 
 // Componente para a lista de submenus
 const SubmenuList: React.FC<{ submenus: Submenu[] }> = ({ submenus }) => (

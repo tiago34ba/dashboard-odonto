@@ -32,20 +32,38 @@
 .sidebar .submenu {
   padding-left: 20px;
   font-size: 14px;
-  color: #95a5a6; /* Texto cinza claro para submenus */
+  color: #e74c3c; /* Vermelho forte para o texto do submenu */
+  transition: color 0.3s ease-in-out; /* Transição suave para hover */
 }
 
 .sidebar .submenu li {
-  padding: 5px 0; /* Aumenta o espaçamento interno dos submenus */
+  padding: 5px 0; /* Espaçamento interno dos submenus */
 }
 
 .sidebar .submenu li:hover {
-  color: #ecf0f1;
+  color: #c0392b; /* Vermelho mais escuro no hover */
+}
+
+/* Submenu específico para "Pessoas" */
+.sidebar .submenu a {
+  color: #0000FF; /* Vermelho forte */
+  text-decoration: none; /* Remove o sublinhado */
+  transition: color 0.3s ease-in-out; /* Transição suave para hover */
+}
+
+.sidebar .submenu a:hover {
+  color: #c0392b; /* Vermelho mais escuro no hover */
 }
 
 .menu-divider {
   border-bottom: 2px solid #34495e; /* Linha divisória mais clara */
-  margin: 2px  /* Adiciona margem */
+  margin: 10px 0; /* Espaçamento acima e abaixo */
+  opacity: 0.8; /* Torna a linha um pouco translúcida */
+  transition: opacity 0.3s ease-in-out; /* Adiciona transição suave */
+}
+
+.menu-divider:hover {
+  opacity: 1; /* Torna a linha totalmente opaca no hover */
 }
 
 /* Content.css */
