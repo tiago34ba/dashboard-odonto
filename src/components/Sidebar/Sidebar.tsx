@@ -28,6 +28,25 @@ const MenuItem: React.FC<{ menu: Menu; index: number; isOpen: boolean; toggleMen
 }) => {
   const navigate = useNavigate();
 
+  // Mapeamento de ícones para cada menu
+  const menuIcons: { [key: string]: string } = {
+    Dashboard: "fa-home",
+    Pessoas: "fa-users",
+    Cadastros: "fa-folder",
+    Agendamentos: "fa-calendar-alt",
+    Financeiro: "fa-dollar-sign",
+    Consultas: "fa-stethoscope",
+    Horários: "fa-clock",
+    "Minhas Comissões": "fa-chart-line",
+    Odontogramas: "fa-tooth",
+    Tratamentos: "fa-briefcase-medical",
+    Orçamentos: "fa-file-invoice-dollar",
+    "Caixas (Aberto)": "fa-cash-register",
+    "Tarefas / Agenda": "fa-tasks",
+    Anotações: "fa-sticky-note",
+    Relatórios: "fa-chart-pie",
+  };
+
   return (
     <>
       {menu.isDivider && <MenuDivider />}
@@ -38,7 +57,7 @@ const MenuItem: React.FC<{ menu: Menu; index: number; isOpen: boolean; toggleMen
             onClick={() => navigate("/")}
             style={{ cursor: "pointer" }}
           >
-            <i className="fa fa-home" style={{ marginRight: "8px" }}></i>
+            <i className={`fa ${menuIcons[menu.title]}`} style={{ marginRight: "8px" }}></i>
             {menu.title}
           </span>
         ) : (
@@ -47,6 +66,7 @@ const MenuItem: React.FC<{ menu: Menu; index: number; isOpen: boolean; toggleMen
             onClick={() => (menu.submenus ? toggleMenu(index) : null)}
             style={{ cursor: menu.submenus ? "pointer" : "default" }}
           >
+            <i className={`fa ${menuIcons[menu.title]}`} style={{ marginRight: "8px" }}></i>
             {menu.title}
           </span>
         )}

@@ -1,0 +1,370 @@
+/* Estilo geral do modal */
+.view-patient-modal {
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  max-width: 700px;
+  margin: 0 auto;
+  font-family: 'Roboto', Arial, sans-serif;
+  color: #333;
+  overflow-y: auto;
+  max-height: 80vh; /* Limita a altura do modal */
+}
+
+/* Animação de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Título do modal */
+.view-patient-modal h2 {
+  text-align: center;
+  color: #007bff;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  border-bottom: 2px solid #f2f2f2;
+  padding-bottom: 10px;
+}
+
+/* Grade de dados */
+.patient-data-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 colunas */
+  gap: 15px; /* Espaçamento entre os itens */
+}
+
+.patient-data-grid div {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.patient-data-grid div strong {
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* Botão de fechar */
+.close-button {
+  display: block;
+  margin: 20px auto 0;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .view-patient-modal {
+    padding: 20px;
+    max-width: 90%;
+  }
+
+  .view-patient-modal h2 {
+    font-size: 20px;
+  }
+
+  .view-patient-modal ul li {
+    font-size: 14px;
+  }
+
+  .view-patient-modal button {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}
+
+/* Estilo geral */
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+}
+
+/* Estilo do container principal */
+.main-content {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Título */
+h2 {
+  font-size: 24px;
+  color: #007bff;
+  margin-bottom: 20px;
+}
+
+/* Botões */
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+button.primary {
+  background-color: #007bff;
+  color: white;
+}
+
+button.primary:hover {
+  background-color: #0056b3;
+}
+
+button.secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+button.secondary:hover {
+  background-color: #5a6268;
+}
+
+button.danger {
+  background-color: #f00;
+  color: white;
+}
+
+button.danger:hover {
+  background-color: #c00;
+}
+
+/* Filtros */
+.filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filters select,
+.filters input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Tabela */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+table thead {
+  background-color: #f2f2f2;
+}
+
+table th,
+table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+table th {
+  font-weight: bold;
+  color: #333;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+table tr:hover {
+  background-color: #f1f1f1;
+}
+
+table td {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Botões na tabela */
+table button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+table button.edit {
+  background-color: #007bff;
+  color: white;
+}
+
+table button.edit:hover {
+  background-color: #0056b3;
+}
+
+table button.view {
+  background-color: #6c757d;
+  color: white;
+}
+
+table button.view:hover {
+  background-color: #5a6268;
+}
+
+table button.delete {
+  background-color: #f00;
+  color: white;
+}
+
+table button.delete:hover {
+  background-color: #c00;
+}
+
+/* Paginação */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination button:hover {
+  background-color: #0056b3;
+}
+
+.pagination span {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  table th,
+  table td {
+    font-size: 12px;
+  }
+
+  button {
+    font-size: 12px;
+  }
+}
+
+/* Estilo moderno para a classe card */
+.card {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ddd;
+  border-radius: 8px; /* Bordas arredondadas */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
+  overflow: hidden;
+  background-color: #fff; /* Fundo branco */
+}
+
+.card thead {
+  background-color: #007bff; /* Cor de fundo do cabeçalho */
+  color: white; /* Texto branco */
+}
+
+.card th {
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.card td {
+  padding: 10px;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd; /* Linha separadora */
+}
+
+.card tr:nth-child(even) {
+  background-color: #f9f9f9; /* Fundo alternado para linhas pares */
+}
+
+.card tr:hover {
+  background-color: #f1f1f1; /* Fundo ao passar o mouse */
+}
+
+/* Barra separadora entre os dados de cada paciente */
+.card tbody tr {
+  border-top: 2px solid #007bff; /* Barra azul para separar os dados */
+}
+
+.card tbody tr:first-child {
+  border-top: none; /* Remove a barra do primeiro item */
+}
+
+.card button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.card button:hover {
+  opacity: 0.9; /* Efeito de hover */
+}
+
+.card .fa-edit {
+  color: #007bff; /* Ícone de edição */
+}
+
+.card .fa-eye {
+  color: #6c757d; /* Ícone de visualização */
+}
+
+.card .fa-trash {
+  color: #f00; /* Ícone de exclusão */
+}

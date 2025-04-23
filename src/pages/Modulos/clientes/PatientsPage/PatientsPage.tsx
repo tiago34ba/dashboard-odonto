@@ -373,6 +373,7 @@ const PatientsPage: React.FC = () => {
   ]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [selectedPatients, setSelectedPatients] = useState<number[]>([]);
 
   const paginatedPatients = patients.slice(
     (currentPage - 1) * itemsPerPage,
@@ -426,68 +427,218 @@ const PatientsPage: React.FC = () => {
     throw new Error("Function not implemented.");
   }
 
+  const handleDeletePatient = (id: number) => {
+    if (window.confirm("Tem certeza que deseja excluir este paciente?")) {
+      setPatients(patients.filter((patient) => patient.id !== id));
+      alert("Paciente excluído com sucesso!");
+    }
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedPatients(patients.map((patient) => patient.id));
+    } else {
+      setSelectedPatients([]);
+    }
+  };
+
+  const handleSelectPatient = (id: number) => {
+    if (selectedPatients.includes(id)) {
+      setSelectedPatients(selectedPatients.filter((patientId) => patientId !== id));
+    } else {
+      setSelectedPatients([...selectedPatients, id]);
+    }
+  };
+
+  const handleExport = () => {
+    // Implement your export logic here
+  };
+
   return (
     <div className="patients-page" style={{ display: "flex" }}>
       <Sidebar />
       <div className="main-content" style={{ flex: 1, padding: "20px" }}>
-        <div className="actions" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h2 style={{ color: "#333" }}>Lista de Pacientes</h2>
-          <div style={{ display: "flex" }}>
-            <Button primary onClick={handleOpenModal}>+ Adicionar Paciente</Button>
-            <Button>Exportar</Button>
+        <link
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+          rel="stylesheet"
+        />
+        <div
+          className="actions"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            marginBottom: "20px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px" }}>
+            <Button primary onClick={handleOpenModal}>
+              + Cadastrar Usuário
+            </Button>
+            <Button onClick={handleExport}>
+              Exportar
+            </Button>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start", // Alinha ao lado esquerdo
+              alignItems: "center",
+              gap: "20px",
+            }}
+          >
+            <div>
+              Exibir{" "}
+              <select style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }}>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>{" "}
+              resultados por página
+            </div>
+            <div>
+              Buscar:{" "}
+              <input
+                type="text"
+                style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }}
+                placeholder="Digite para buscar..."
+              />
+            </div>
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-          <div>
-            Exibir <select style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }}>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select> resultados por página
-          </div>
-          <div>
-            Buscar: <input type="text" style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }} />
-          </div>
-        </div>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#f2f2f2" }}>
-              <th style={{ padding: "10px", textAlign: "left" }}>Selecionar</th>
-              <th style={{ padding: "10px", textAlign: "left" }}>Nome</th>
-              <th style={{ padding: "10px", textAlign: "left" }}>Telefone</th>
-              <th style={{ padding: "10px", textAlign: "left" }}>Convênio</th>
-              <th style={{ padding: "10px", textAlign: "left" }}>Idade</th>
-              <th style={{ padding: "10px", textAlign: "left" }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedPatients.map((patient) => (
-              <tr key={patient.id} style={{ borderBottom: "1px solid #ddd" }}>
-                <td style={{ padding: "10px" }}><input type="checkbox" /></td>
-                <td style={{ padding: "10px" }}>{patient.name}</td>
-                <td style={{ padding: "10px" }}>{patient.phone}</td>
-                <td style={{ padding: "10px" }}>{patient.insurance}</td>
-                <td style={{ padding: "10px" }}>{patient.age}</td>
-                <td style={{ padding: "10px" }}>
-                  <button onClick={() => handleOpenEditModal(patient)} style={{ marginRight: "5px", padding: "5px 10px", borderRadius: "4px", border: "none", background: "#007bff", color: "white" }}>Editar</button>
-                  <button
-  onClick={() => handleOpenViewModal(patient)}
-  style={{ marginRight: "5px", padding: "5px 10px", borderRadius: "4px", border: "none", background: "#007bff", color: "white" }}
->
-  Dados
-</button>
-                  <button style={{ marginRight: "5px", padding: "5px 10px", borderRadius: "4px", border: "none", background: "#f00", color: "white" }}>Excluir</button>
-                </td>
+        <div style={{ marginTop: "20px" }}>
+          <table
+            className="card" // Adicionada a classe "card"
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              border: "1px solid #ddd",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#f2f2f2" }}>
+                <th style={{ padding: "10px", textAlign: "left" }}>
+                  <input type="checkbox" onChange={handleSelectAll} />
+                </th>
+                <th style={{ padding: "10px", textAlign: "left" }}>Nome</th>
+                <th style={{ padding: "10px", textAlign: "left" }}>Telefone</th>
+                <th style={{ padding: "10px", textAlign: "left" }}>Convênio</th>
+                <th style={{ padding: "10px", textAlign: "left" }}>Idade</th>
+                <th style={{ padding: "10px", textAlign: "left" }}>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ marginTop: "10px", display: "flex", justifyContent: "space-between" }}>
-          <div>Mostrando {currentPage} de {Math.ceil(patients.length / itemsPerPage)} ({patients.length} registros)</div>
+            </thead>
+            <tbody>
+              {paginatedPatients.map((patient, index) => (
+                <tr key={patient.id} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td style={{ padding: "10px" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedPatients.includes(patient.id)}
+                      onChange={() => handleSelectPatient(patient.id)}
+                    />
+                  </td>
+                  <td style={{ padding: "10px" }}>{patient.name}</td>
+                  <td style={{ padding: "10px" }}>{patient.phone}</td>
+                  <td style={{ padding: "10px" }}>{patient.insurance}</td>
+                  <td style={{ padding: "10px" }}>{patient.age}</td>
+                  <td style={{ padding: "10px", display: "flex", gap: "10px" }}>
+                    <button
+                      onClick={() => handleOpenEditModal(patient)}
+                      style={{
+                        padding: "5px 10px",
+                        borderRadius: "4px",
+                        border: "none",
+                        background: "#007bff",
+                        color: "white",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <i className="fas fa-edit" style={{ marginRight: "5px" }}></i> {/* Ícone de edição */}
+                    </button>
+                    <button
+                      onClick={() => handleOpenViewModal(patient)}
+                      style={{
+                        padding: "5px 10px",
+                        borderRadius: "4px",
+                        border: "none",
+                        background: "#6c757d",
+                        color: "white",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <i className="fas fa-eye" style={{ marginRight: "5px" }}></i> {/* Ícone de visualização */}
+                    </button>
+                    <button
+                      onClick={() => handleDeletePatient(patient.id)}
+                      style={{
+                        padding: "5px 10px",
+                        borderRadius: "4px",
+                        border: "none",
+                        background: "#f00",
+                        color: "white",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <i className="fas fa-trash" style={{ marginRight: "5px" }}></i> {/* Ícone de exclusão */}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div
+          style={{
+            marginTop: "20px",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
           <div>
-            <button onClick={handlePreviousPage} style={{ padding: "5px 10px", borderRadius: "4px", border: "1px solid #ddd", marginRight: "5px" }}>Anterior</button>
-            <button style={{ padding: "5px 10px", borderRadius: "4px", border: "1px solid #ddd", marginRight: "5px" }}>{currentPage}</button>
-            <button onClick={handleNextPage} style={{ padding: "5px 10px", borderRadius: "4px", border: "1px solid #ddd" }}>Próximo</button>
+            Mostrando {currentPage} de {Math.ceil(patients.length / itemsPerPage)} (
+            {patients.length} registros)
+          </div>
+          <div>
+            <button
+              onClick={handlePreviousPage}
+              style={{
+                padding: "5px 10px",
+                borderRadius: "4px",
+                border: "1px solid #ddd",
+                marginRight: "5px",
+              }}
+            >
+              Anterior
+            </button>
+            <button
+              style={{
+                padding: "5px 10px",
+                borderRadius: "4px",
+                border: "1px solid #ddd",
+                marginRight: "5px",
+              }}
+            >
+              {currentPage}
+            </button>
+            <button
+              onClick={handleNextPage}
+              style={{
+                padding: "5px 10px",
+                borderRadius: "4px",
+                border: "1px solid #ddd",
+              }}
+            >
+              Próximo
+            </button>
           </div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal}>

@@ -1,6 +1,6 @@
 import React from "react";
 import "./Modal.css";
-import PatientsPage from "../PatientsPage/PatientsPage";
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
