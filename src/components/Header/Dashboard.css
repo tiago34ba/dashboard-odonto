@@ -13,6 +13,48 @@
   justify-content: center; /* Centraliza os símbolos horizontalmente */
   gap: 15px; /* Espaço entre os símbolos */
 }
+/* Styles for the language selector container */
+.language-selector {
+  margin-left: 15px; /* Adjust spacing from 'Perfil' item */
+  display: flex; /* ADD: Align label and select horizontally */
+  align-items: center; /* ADD: Vertically center label and select */
+  gap: 6px; /* ADD: Space between label and select */
+  flex-shrink: 0;
+}
+
+/* Style for the new visible label */
+.language-select-label {
+  font-size: 12px; /* Match dropdown or adjust as needed */
+  color: #333; /* Or your desired text color */
+  white-space: nowrap; /* Prevent the label text from wrapping */
+  /* Add other styles like font-weight if desired */
+}
+
+/* Styles for the dropdown itself - Keep existing small styles */
+.language-select-dropdown {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+  font-size: 12px;
+  height: auto;
+  line-height: normal;
+}
+
+/* Remove .visually-hidden if no longer needed anywhere else */
+/*
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+*/
 
 .notifications span {
   font-size: 1.5em;
@@ -45,4 +87,39 @@
 .icon {
   font-size: 24px; /* Tamanho dos ícones */
   cursor: pointer; /* Mostra o cursor de ponteiro ao passar sobre os ícones */
+}
+
+/* Adicione estes estilos ao seu arquivo Dashboard.css */
+/* Eles ajudam a garantir a visibilidade das bandeiras (emojis) no seletor de idiomas. */
+
+.language-selector {
+  /* Você mencionou no código: "Aplique display: flex; align-items: center; gap: 5px; a esta classe no CSS" */
+  /* Certifique-se de que esses estilos estejam aplicados para um bom alinhamento do label e do select. */
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Ou o espaçamento que preferir */
+}
+
+.language-select-dropdown option {
+  /* Cor do texto dentro das opções. Ajuste se o fundo das opções for escuro. */
+  color: #212529; /* Uma cor escura comum para texto */
+  /* background-color: #fff; */ /* Geralmente o padrão para opções é branco */
+
+  /* Tamanho da fonte para as opções. Emojis são caracteres, então isso os afeta. */
+  font-size: 1em; /* Herda do select, ou defina um valor específico como 14px ou 1rem. */
+
+  /* Ajuda a alinhar o emoji com o texto se eles renderizarem em baselines diferentes. */
+  vertical-align: middle;
+  
+  /* Adiciona um pequeno preenchimento interno para não ficar muito colado nas bordas */
+  padding: 2px 4px;
+}
+
+.language-select-dropdown {
+  /* Garante que o texto do item selecionado (visível quando o dropdown está fechado) também seja claro. */
+  /* color: #212529; */ /* Descomente se necessário */
+  
+  /* Garante que o select em si tenha um tamanho de fonte razoável. */
+  /* font-size: 1em; */ /* Descomente e ajuste se necessário */
+  padding: 5px; /* Um pouco de padding no select pode melhorar a aparência */
 }

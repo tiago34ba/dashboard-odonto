@@ -38,7 +38,7 @@
 /* Grade de dados */
 .patient-data-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 colunas */
+  grid-template-columns: repeat(2, 1fr); /* 2 colunas */
   gap: 15px; /* Espaçamento entre os itens */
 }
 
@@ -95,6 +95,10 @@
     font-size: 14px;
     padding: 10px 20px;
   }
+
+  .patient-data-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Estilo geral */
@@ -112,6 +116,8 @@ body {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 1200px;
 }
 
 /* Título */
@@ -119,6 +125,7 @@ h2 {
   font-size: 24px;
   color: #007bff;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 /* Botões */
@@ -128,7 +135,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button.primary {
@@ -138,6 +145,7 @@ button.primary {
 
 button.primary:hover {
   background-color: #0056b3;
+  transform: scale(1.05);
 }
 
 button.secondary {
@@ -150,12 +158,12 @@ button.secondary:hover {
 }
 
 button.danger {
-  background-color: #f00;
+  background-color: #dc3545;
   color: white;
 }
 
 button.danger:hover {
-  background-color: #c00;
+  background-color: #c82333;
 }
 
 /* Filtros */
@@ -164,6 +172,7 @@ button.danger:hover {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 10px;
 }
 
 .filters select,
@@ -186,7 +195,8 @@ table {
 }
 
 table thead {
-  background-color: #f2f2f2;
+  background-color: #007bff;
+  color: white;
 }
 
 table th,
@@ -198,7 +208,6 @@ table td {
 
 table th {
   font-weight: bold;
-  color: #333;
   text-transform: uppercase;
   font-size: 14px;
 }
@@ -223,7 +232,9 @@ table button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
-  margin-right: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 table button.edit {
@@ -245,20 +256,21 @@ table button.view:hover {
 }
 
 table button.delete {
-  background-color: #f00;
+  background-color: #dc3545;
   color: white;
 }
 
 table button.delete:hover {
-  background-color: #c00;
+  background-color: #c82333;
 }
 
 /* Paginação */
 .pagination {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-top: 20px;
+  gap: 10px;
 }
 
 .pagination button {
@@ -275,9 +287,16 @@ table button.delete:hover {
   background-color: #0056b3;
 }
 
+.pagination button:disabled {
+  background-color: #d6e4f7;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
 .pagination span {
   font-size: 14px;
   color: #333;
+  font-weight: bold;
 }
 
 /* Responsividade */
@@ -299,13 +318,12 @@ table button.delete:hover {
 
 /* Estilo moderno para a classe card */
 .card {
-  width: 100%;
-  border-collapse: collapse;
+  padding: 20px;
   border: 1px solid #ddd;
-  border-radius: 8px; /* Bordas arredondadas */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para destacar */
-  overflow: hidden;
-  background-color: #fff; /* Fundo branco */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  margin-top: 20px;
 }
 
 .card thead {
@@ -367,4 +385,104 @@ table button.delete:hover {
 
 .card .fa-trash {
   color: #f00; /* Ícone de exclusão */
+}
+
+.patients-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.patients-table th,
+.patients-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.patients-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.patients-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.view-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.delete-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Container para os botões de ações */
+.actions-container {
+  display: flex;
+  flex-direction: column; /* Alinha os botões verticalmente */
+  gap: 5px; /* Espaçamento entre os botões */
+}
+
+/* Botões de ações */
+.edit-button,
+.view-button,
+.delete-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Espaçamento entre o ícone e o texto */
+  transition: background-color 0.3s ease;
+}
+
+.view-button {
+  background-color: #6c757d;
+}
+
+.delete-button {
+  background-color: #dc3545;
+}
+
+.edit-button:hover {
+  background-color: #0056b3;
+}
+
+.view-button:hover {
+  background-color: #5a6268;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
 }

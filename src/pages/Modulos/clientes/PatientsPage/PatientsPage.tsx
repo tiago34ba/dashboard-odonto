@@ -3,6 +3,110 @@ import Sidebar from "../../../../components/Sidebar/Sidebar";
 import Modal from "./Modal";
 import AddPatientForm from "../PatientTable/AddPatientForm";
 import styled from "styled-components";
+import * as XLSX from "xlsx";
+
+// Estilos modernizados
+const PageWrapper = styled.div`
+  display: flex;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+const Title = styled.h2`
+  font-size: 24px;
+  color: #333;
+`;
+
+const Actions = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const StyledButton = styled.button<{ color?: string; hoverColor?: string }>`
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: ${(props) => props.color || "#007bff"};
+  color: white;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: ${(props) => props.hoverColor || "#0056b3"};
+  }
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tr:hover {
+    background-color: #f1f1f1;
+  }
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+`;
+
+const ModalContent = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  width: 80%; /* Ajuste de largura */
+  max-width: 600px; /* Largura máxima */
+  max-height: 80vh; /* Altura máxima */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow-y: auto; /* Adiciona barra de rolagem vertical */
+`;
 
 // Define the type for the custom prop
 interface ButtonProps {
@@ -47,8 +151,6 @@ interface Patient {
   telefone2: string;
   observacoes: string;
 }
-
-
 interface EditPatientFormProps {
   patient: Patient;
   onClose: () => void;
@@ -77,13 +179,13 @@ const EditPatientForm: React.FC<EditPatientFormProps> = ({ patient, onClose, onU
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
     "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
     "RS", "RO", "RR", "SC", "SP", "SE", "TO"
-  ];  const estadosCivisOptions = ["Solteiro(a)", "Casado(a)", "Divorciado(a)"];
+  ]; const estadosCivisOptions = ["Solteiro(a)", "Casado(a)", "Divorciado(a)"];
   const tiposSanguineosOptions = ["Selecionar", "A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
   return (
     <div className="edit-patient-form">
       <h2>Editar Paciente</h2>
       <form onSubmit={handleSubmit}>
-      <div className="form-row">
+        <div className="form-row">
           <div className="form-field">
             <label htmlFor="name">Nome:</label>
             <input type="text" id="name" name="name" value={editedPatient.name} onChange={handleChange} />
@@ -225,7 +327,7 @@ const EditPatientForm: React.FC<EditPatientFormProps> = ({ patient, onClose, onU
             <input type="text" id="telefone2" name="telefone2" value={editedPatient.telefone2} onChange={handleChange} />
           </div>
         </div>
-       <div className="button-container">
+        <div className="button-container">
           <button type="submit">Salvar</button>
           <button type="button" onClick={onClose}>Cancelar</button>
         </div>
@@ -450,115 +552,104 @@ const PatientsPage: React.FC = () => {
     }
   };
 
-  const handleExport = () => {
-    // Implement your export logic here
+  const handleExportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(patients); // Converte os dados dos pacientes para uma planilha
+    const workbook = XLSX.utils.book_new(); // Cria um novo livro de trabalho
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Pacientes"); // Adiciona a planilha ao livro
+    XLSX.writeFile(workbook, "Pacientes.xlsx"); // Salva o arquivo Excel
+  };
+
+  const handleExportToXML = () => {
+    const xmlData = patients.map((patient) => {
+      return `
+        <patient>
+          <id>${patient.id}</id>
+          <name>${patient.name}</name>
+          <phone>${patient.phone}</phone>
+          <insurance>${patient.insurance}</insurance>
+          <age>${patient.age}</age>
+          <nascimento>${patient.nascimento}</nascimento>
+          <responsavel>${patient.responsavel}</responsavel>
+          <cpfResponsavel>${patient.cpfResponsavel}</cpfResponsavel>
+          <pessoa>${patient.pessoa}</pessoa>
+          <cpfCnpj>${patient.cpfCnpj}</cpfCnpj>
+          <email>${patient.email}</email>
+          <cep>${patient.cep}</cep>
+          <rua>${patient.rua}</rua>
+          <numero>${patient.numero}</numero>
+          <complemento>${patient.complemento}</complemento>
+          <bairro>${patient.bairro}</bairro>
+          <cidade>${patient.cidade}</cidade>
+          <estado>${patient.estado}</estado>
+          <tipoSanguineo>${patient.tipoSanguineo}</tipoSanguineo>
+          <sexo>${patient.sexo}</sexo>
+          <profissao>${patient.profissao}</profissao>
+          <estadoCivil>${patient.estadoCivil}</estadoCivil>
+          <telefone2>${patient.telefone2}</telefone2>
+          <observacoes>${patient.observacoes}</observacoes>
+        </patient>
+      `;
+    });
+
+    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+    <patients>
+      ${xmlData.join("\n")}
+    </patients>`;
+
+    const blob = new Blob([xmlContent], { type: "application/xml" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Pacientes.xml";
+    link.click();
   };
 
   return (
-    <div className="patients-page" style={{ display: "flex" }}>
+    <PageWrapper>
       <Sidebar />
-      <div className="main-content" style={{ flex: 1, padding: "20px" }}>
-        <link
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-          rel="stylesheet"
-        />
-        <div
-          className="actions"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            marginBottom: "20px",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px" }}>
-            <Button primary onClick={handleOpenModal}>
-              + Cadastrar Usuário
-            </Button>
-            <Button onClick={handleExport}>
-              Exportar
-            </Button>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-start", // Alinha ao lado esquerdo
-              alignItems: "center",
-              gap: "20px",
-            }}
-          >
-            <div>
-              Exibir{" "}
-              <select style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }}>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-              </select>{" "}
-              resultados por página
-            </div>
-            <div>
-              Buscar:{" "}
-              <input
-                type="text"
-                style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }}
-                placeholder="Digite para buscar..."
-              />
-            </div>
-          </div>
-        </div>
-        <div style={{ marginTop: "20px" }}>
-          <table
-            className="card" // Adicionada a classe "card"
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              border: "1px solid #ddd",
-            }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#f2f2f2" }}>
-                <th style={{ padding: "10px", textAlign: "left" }}>
-                  <input type="checkbox" onChange={handleSelectAll} />
-                </th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Nome</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Telefone</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Convênio</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Idade</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedPatients.map((patient, index) => (
-                <tr key={patient.id} style={{ borderBottom: "1px solid #ddd" }}>
-                  <td style={{ padding: "10px" }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedPatients.includes(patient.id)}
-                      onChange={() => handleSelectPatient(patient.id)}
-                    />
-                  </td>
-                  <td style={{ padding: "10px" }}>{patient.name}</td>
-                  <td style={{ padding: "10px" }}>{patient.phone}</td>
-                  <td style={{ padding: "10px" }}>{patient.insurance}</td>
-                  <td style={{ padding: "10px" }}>{patient.age}</td>
-                  <td style={{ padding: "10px", display: "flex", gap: "10px" }}>
+      <MainContent>
+        <Header>
+          <Title>Lista de Pacientes</Title>
+          <Actions>
+            <StyledButton color="#007bff" hoverColor="#0056b3" onClick={handleOpenModal}>
+              <i className="fas fa-plus"></i> Cadastrar Paciente
+            </StyledButton>
+            <StyledButton color="#28a745" hoverColor="#218838" onClick={handleExportToExcel}>
+              <i className="fas fa-file-excel"></i> Exportar Excel
+            </StyledButton>
+            <StyledButton color="#17a2b8" hoverColor="#138496" onClick={handleExportToXML}>
+              <i className="fas fa-file-code"></i> Exportar XML
+            </StyledButton>
+          </Actions>
+        </Header>
+        <Table>
+          <thead>
+            <tr>
+              <th>Selecionar</th>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>Convênio</th>
+              <th>Idade</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedPatients.map((patient) => (
+              <tr key={patient.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedPatients.includes(patient.id)}
+                    onChange={() => handleSelectPatient(patient.id)}
+                  />
+                </td>
+                <td>{patient.name}</td>
+                <td>{patient.phone}</td>
+                <td>{patient.insurance}</td>
+                <td>{patient.age}</td>
+                <td>
+                  <div style={{ display: "flex", gap: "10px" }}>
                     <button
-                      onClick={() => handleOpenEditModal(patient)}
-                      style={{
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                        border: "none",
-                        background: "#007bff",
-                        color: "white",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <i className="fas fa-edit" style={{ marginRight: "5px" }}></i> {/* Ícone de edição */}
-                    </button>
-                    <button
+                      title="Visualizar"
                       onClick={() => handleOpenViewModal(patient)}
                       style={{
                         padding: "5px 10px",
@@ -567,91 +658,94 @@ const PatientsPage: React.FC = () => {
                         background: "#6c757d",
                         color: "white",
                         cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
                       }}
                     >
-                      <i className="fas fa-eye" style={{ marginRight: "5px" }}></i> {/* Ícone de visualização */}
+                      <i className="fas fa-eye"></i>
                     </button>
                     <button
+                      title="Editar"
+                      onClick={() => handleOpenEditModal(patient)}
+                      style={{
+                        padding: "5px 10px",
+                        borderRadius: "4px",
+                        border: "none",
+                        background: "#ffc107",
+                        color: "white",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <i className="fas fa-edit"></i>
+                    </button>
+                    <button
+                      title="Excluir"
                       onClick={() => handleDeletePatient(patient.id)}
                       style={{
                         padding: "5px 10px",
                         borderRadius: "4px",
                         border: "none",
-                        background: "#f00",
+                        background: "#dc3545",
                         color: "white",
                         cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
                       }}
                     >
-                      <i className="fas fa-trash" style={{ marginRight: "5px" }}></i> {/* Ícone de exclusão */}
+                      <i className="fas fa-trash"></i>
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div
-          style={{
-            marginTop: "20px",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            Mostrando {currentPage} de {Math.ceil(patients.length / itemsPerPage)} (
-            {patients.length} registros)
-          </div>
-          <div>
-            <button
-              onClick={handlePreviousPage}
-              style={{
-                padding: "5px 10px",
-                borderRadius: "4px",
-                border: "1px solid #ddd",
-                marginRight: "5px",
-              }}
-            >
-              Anterior
-            </button>
-            <button
-              style={{
-                padding: "5px 10px",
-                borderRadius: "4px",
-                border: "1px solid #ddd",
-                marginRight: "5px",
-              }}
-            >
-              {currentPage}
-            </button>
-            <button
-              onClick={handleNextPage}
-              style={{
-                padding: "5px 10px",
-                borderRadius: "4px",
-                border: "1px solid #ddd",
-              }}
-            >
-              Próximo
-            </button>
-          </div>
-        </div>
-        <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-          <AddPatientForm onClose={handleCloseModal} />
-        </Modal>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        {isModalOpen && (
+          <>
+            <ModalOverlay onClick={handleCloseModal} />
+            <ModalContent>
+              <h3>Cadastrar Paciente</h3>
+              <AddPatientForm
+                onClose={handleCloseModal}
+                onAddPatient={(newPatient) =>
+                  setPatients([
+                    ...patients,
+                    {
+                      id: newPatient.id,
+                      name: newPatient.nome,
+                      phone: newPatient.telefone,
+                      insurance: newPatient.convenio || "Nenhum",
+                      age: newPatient.nascimento ? String(new Date().getFullYear() - new Date(newPatient.nascimento).getFullYear()) : "",
+                      nascimento: newPatient.nascimento,
+                      responsavel: newPatient.responsavel,
+                      cpfResponsavel: newPatient.cpfResponsavel,
+                      pessoa: newPatient.pessoa,
+                      cpfCnpj: newPatient.cpfCnpj,
+                      email: newPatient.email,
+                      cep: newPatient.cep,
+                      rua: newPatient.rua,
+                      numero: newPatient.numero,
+                      complemento: newPatient.complemento,
+                      bairro: newPatient.bairro,
+                      cidade: newPatient.cidade,
+                      estado: newPatient.estado,
+                      tipoSanguineo: newPatient.tipoSanguineo || "",
+                      sexo: newPatient.sexo,
+                      profissao: newPatient.profissao,
+                      estadoCivil: newPatient.estadoCivil,
+                      telefone2: newPatient.telefone2,
+                      observacoes: newPatient.observacoes,
+                    },
+                  ])
+                }
+              />
+            </ModalContent>
+          </>
+        )}
         <Modal isOpen={isEditModalOpen} onClose={handleCloseEditModal}>
           {patientToEdit && <EditPatientForm patient={patientToEdit} onClose={handleCloseEditModal} onUpdate={handleUpdatePatient} />}
         </Modal>
         <Modal isOpen={isViewModalOpen} onClose={handleCloseViewModal}>
           {patientToView && <ViewPatientModal patient={patientToView} onClose={handleCloseViewModal} />}
         </Modal>
-      </div>
-    </div>
+      </MainContent>
+    </PageWrapper>
   );
 };
 

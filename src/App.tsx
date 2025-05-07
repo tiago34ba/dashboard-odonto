@@ -5,6 +5,7 @@ import Header from "./components/Header/Header";
 import Dashboard from "./pages/Dashboard/DashboardCards";
 import PatientsPage from "./pages/Modulos/clientes/PatientsPage/PatientsPage";
 import UsersPage from "./pages/Modulos/Usuarios/UsersPage/UsersPage";
+import EmployeePage from "./pages/Modulos/funcionarios/EmployeePage/EmployeePage";
 import "./App.css";
 
 const App: React.FC = () => {
@@ -18,6 +19,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Dashboard title={""} value={""} />} />
             <Route path="/pessoas/pacientes/PatientsPage" element={<PatientsPage />} />
             <Route path="/pessoas/usuarios" element={<UsersPage />} /> {/* Ajuste da rota */}
+            <Route path="/pessoas/funcionarios" element={<EmployeePage />} />
           </Routes>
         </div>
       </div>

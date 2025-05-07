@@ -1,6 +1,110 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import './UsersPage.css'; // Importando o arquivo CSS
+import styled from 'styled-components';
 import Sidebar from "../../../../components/Sidebar/Sidebar";
+import * as XLSX from "xlsx";
+
+// Estilos modernizados
+const PageWrapper = styled.div`
+  display: flex;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+const Title = styled.h2`
+  font-size: 24px;
+  color: #333;
+`;
+
+const Actions = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const StyledButton = styled.button<{ color?: string; hoverColor?: string }>`
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: ${(props) => props.color || "#007bff"};
+  color: white;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: ${(props) => props.hoverColor || "#0056b3"};
+  }
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tr:hover {
+    background-color: #f1f1f1;
+  }
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+`;
+
+const ModalContent = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  width: 80%;
+  max-width: 600px;
+  max-height: 80vh;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow-y: auto;
+`;
 
 interface User {
   nome: string;
@@ -10,18 +114,6 @@ interface User {
   estado: string;
   nivel: string;
 }
-
-interface ButtonProps {
-onClick: () => void;
-children: React.ReactNode;
-primary?: boolean;
-}
-
-const Button: React.FC<ButtonProps> = ({ onClick, children, primary }) => (
-  <button onClick={onClick} className={primary ? 'primary' : ''}>
-    {children}
-  </button>
-);
 
 const UsersPage: React.FC = () => {
   const [user, setUser] = useState<User>({
@@ -108,240 +200,151 @@ const UsersPage: React.FC = () => {
     }
   };
 
-  const handleExport = () => {
-    alert('Exportar usuários');
+  const handleExport = (format: "excel" | "xml") => {
+    if (format === "excel") {
+      // Exportar para Excel
+      const worksheet = XLSX.utils.json_to_sheet(users); // Converte os dados para uma planilha
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Usuários");
+      XLSX.writeFile(workbook, "usuarios.xlsx"); // Salva o arquivo como Excel
+    } else if (format === "xml") {
+      // Exibir os dados no formato JSON no console
+      console.log("Dados dos Usuários (JSON):", JSON.stringify(users, null, 2));
+
+      // Exportar para XML com quebras de linha
+      const xmlData = users
+        .map((user) => {
+          return `
+          <Usuario>
+            <Nome>${user.nome}</Nome>
+            <Email>${user.email}</Email>
+            <Telefone>${user.telefone}</Telefone>
+            <Cidade>${user.cidade}</Cidade>
+            <Estado>${user.estado}</Estado>
+            <Nivel>${user.nivel}</Nivel>
+          </Usuario>`;
+        })
+        .join("\n"); // Adiciona quebra de linha entre os usuários
+
+      const xmlFile = `<?xml version="1.0" encoding="UTF-8"?>
+<Usuarios>
+${xmlData}
+</Usuarios>`;
+
+      // Gera o arquivo XML e força o download
+      const blob = new Blob([xmlFile.trim()], { type: "application/octet-stream" }); // Define o tipo como "octet-stream"
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "usuarios.xml";
+      link.click();
+    }
   };
 
-  return (
-    <div className="users-page-wrapper">
-      <link
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-        rel="stylesheet"
-      />
-      <div className="users-page" style={{ display: "flex", flexDirection: "column", height: "0vh" }}>
-        <Sidebar />
-      </div>
-      <div className="main-content" style={{ flex: "1 1 auto", padding: "20px", display: "flex", flexDirection: "column" }}>
-        <div
-          className="actions"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            marginBottom: "20px",
-          }}
-        >
-          <div style={{ display: "flex", gap: "10px" }}>
-            <Button primary onClick={handleOpenModal}>
-              + Cadastrar Usuário
-            </Button>
-            <Button onClick={handleExport}>
-              Exportar
-            </Button>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-            <div>
-              Exibir{" "}
-              <select style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }}>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-              </select>{" "}
-              resultados por página
-            </div>
-            <div>
-              Buscar:{" "}
-              <input
-                type="text"
-                style={{ padding: "5px", borderRadius: "4px", border: "1px solid #ddd" }}
-                placeholder="Digite para buscar..."
-              />
-            </div>
-          </div>
-        </div>
-        <div style={{ flex: "1 1 auto", overflow: "auto", marginBottom: "20px" }}>
-          <h2>Usuários Cadastrados</h2>
-          <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #ddd" }}>
-            <thead>
-              <tr style={{ backgroundColor: "#f2f2f2" }}>
-                <th style={{ padding: "10px", textAlign: "left" }}>Selecionar</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Nome</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Email</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Telefone</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Cidade</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Estado</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Nível</th>
-                <th style={{ padding: "10px", textAlign: "left" }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u, index) => (
-                <tr key={index} style={{ borderBottom: "1px solid #ddd" }}>
-                  <td style={{ padding: "10px" }}>
-                    <input type="checkbox" />
-                  </td>
-                  <td style={{ padding: "10px" }}>{u.nome}</td>
-                  <td style={{ padding: "10px" }}>{u.email}</td>
-                  <td style={{ padding: "10px" }}>{u.telefone}</td>
-                  <td style={{ padding: "10px" }}>{u.cidade}</td>
-                  <td style={{ padding: "10px" }}>{u.estado}</td>
-                  <td style={{ padding: "10px" }}>{u.nivel}</td>
-                  <td style={{ padding: "10px", display: "flex", gap: "10px" }}>
-                    <button
-                      onClick={() => handleEdit(index)}
-                      style={{
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                        background: "#007bff",
-                        color: "white",
-                        border: "none",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <i className="fas fa-edit" style={{ color: "#fff" }}></i> {/* Ícone de edição */}
-                    </button>
-                    <button
-                      onClick={() => handleViewDetails(index)}
-                      style={{
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                        background: "#6c757d",
-                        color: "white",
-                        border: "none",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <i className="fas fa-eye" style={{ color: "#fff" }}></i> {/* Ícone de visualização */}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      style={{
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                        background: "#f00",
-                        color: "white",
-                        border: "none",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <i className="fas fa-trash" style={{ color: "#fff" }}></i> {/* Ícone de exclusão */}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div
-          className="pagination"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "5px",
-            marginTop: "20px",
-          }}
-        >
-          <button style={{ padding: "5px 10px", borderRadius: "4px", border: "1px solid #ddd" }}>Anterior</button>
-          <span>Página 1 de 5</span>
-          <button style={{ padding: "5px 10px", borderRadius: "4px", border: "1px solid #ddd" }}>Próximo</button>
-        </div>
-      </div>
+  const handleExportToExcel = () => handleExport("excel");
+  const handleExportToXML = () => handleExport("xml");
 
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button className="close-modal" onClick={handleCloseModal}>
-              &times;
-            </button>
-            <h2>Cadastrar Usuário</h2>
-            <form onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="nome">Nome:</label>
-                <input
-                  type="text"
-                  id="nome"
-                  name="nome"
-                  value={user.nome}
-                  onChange={handleChange}
-                  placeholder="Digite o Nome"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="email">Email:</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={user.email}
-                  onChange={handleChange}
-                  placeholder="Digite o Email"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="telefone">Telefone:</label>
-                <input
-                  type="tel"
-                  id="telefone"
-                  name="telefone"
-                  value={user.telefone}
-                  onChange={handleChange}
-                  placeholder="Digite o Telefone"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="cidade">Cidade:</label>
-                <input
-                  type="text"
-                  id="cidade"
-                  name="cidade"
-                  value={user.cidade}
-                  onChange={handleChange}
-                  placeholder="Digite a Cidade"
-                />
-              </div>
-              <div>
-                <label htmlFor="estado">Estado:</label>
-                <input
-                  type="text"
-                  id="estado"
-                  name="estado"
-                  value={user.estado}
-                  onChange={handleChange}
-                  placeholder="Digite o Estado"
-                />
-              </div>
-              <div>
-                <label htmlFor="nivel">Nível:</label>
-                <select
-                  id="nivel"
-                  name="nivel"
-                  value={user.nivel}
-                  onChange={handleChange}
-                >
-                  <option value="">Selecionar Nível</option>
-                  {niveis.map((nivel) => (
-                    <option key={nivel} value={nivel}>
-                      {nivel}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit">Salvar</button>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+  return (
+    <PageWrapper>
+      <Sidebar />
+      <MainContent>
+        <Header>
+          <Title>Usuários Cadastrados</Title>
+          <Actions>
+            <StyledButton color="#007bff" hoverColor="#0056b3" onClick={handleOpenModal}>
+              <i className="fas fa-plus"></i> Cadastrar Usuário
+            </StyledButton>
+            <StyledButton color="#28a745" hoverColor="#218838" onClick={handleExportToExcel}>
+              <i className="fas fa-file-excel"></i> Exportar para Excel
+            </StyledButton>
+            <StyledButton color="#17a2b8" hoverColor="#138496" onClick={handleExportToXML}>
+              <i className="fas fa-file-code"></i> Exportar para XML
+            </StyledButton>
+          </Actions>
+        </Header>
+        <Table>
+          <thead>
+            <tr>
+              <th>Selecionar</th>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Telefone</th>
+              <th>Cidade</th>
+              <th>Estado</th>
+              <th>Nível</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((u, index) => (
+              <tr key={index}>
+                <td>
+                  <input type="checkbox" />
+                </td>
+                <td>{u.nome}</td>
+                <td>{u.email}</td>
+                <td>{u.telefone}</td>
+                <td>{u.cidade}</td>
+                <td>{u.estado}</td>
+                <td>{u.nivel}</td>
+                <td style={{ display: "flex", gap: "10px" }}>
+                  <StyledButton color="#007bff" hoverColor="#0056b3" onClick={() => handleEdit(index)}>
+                    <i className="fas fa-edit"></i>
+                  </StyledButton>
+                  <StyledButton color="#6c757d" hoverColor="#5a6268" onClick={() => handleViewDetails(index)}>
+                    <i className="fas fa-eye"></i>
+                  </StyledButton>
+                  <StyledButton color="#f00" hoverColor="#c00" onClick={() => handleDelete(index)}>
+                    <i className="fas fa-trash"></i>
+                  </StyledButton>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        {isModalOpen && (
+          <>
+            <ModalOverlay onClick={handleCloseModal} />
+            <ModalContent>
+              <h3>Cadastrar Usuário</h3>
+              <form onSubmit={handleSubmit}>
+                <div>
+                  <label>Nome:</label>
+                  <input type="text" name="nome" value={user.nome} onChange={handleChange} />
+                </div>
+                <div>
+                  <label>Email:</label>
+                  <input type="email" name="email" value={user.email} onChange={handleChange} />
+                </div>
+                <div>
+                  <label>Telefone:</label>
+                  <input type="tel" name="telefone" value={user.telefone} onChange={handleChange} />
+                </div>
+                <div>
+                  <label>Cidade:</label>
+                  <input type="text" name="cidade" value={user.cidade} onChange={handleChange} />
+                </div>
+                <div>
+                  <label>Estado:</label>
+                  <input type="text" name="estado" value={user.estado} onChange={handleChange} />
+                </div>
+                <div>
+                  <label>Nível:</label>
+                  <select name="nivel" value={user.nivel} onChange={handleChange}>
+                    <option value="">Selecionar</option>
+                    {niveis.map((nivel) => (
+                      <option key={nivel} value={nivel}>
+                        {nivel}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button type="submit">Salvar</button>
+              </form>
+            </ModalContent>
+          </>
+        )}
+      </MainContent>
+    </PageWrapper>
   );
 };
 

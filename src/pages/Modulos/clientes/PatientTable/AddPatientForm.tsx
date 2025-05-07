@@ -1,8 +1,32 @@
 import React, { useState } from "react";
-import { FaUser } from 'react-icons/fa';
 
 interface AddPatientFormProps {
   onClose: () => void;
+  onAddPatient: (newPatient: { 
+    id: number; 
+    nome: string; 
+    telefone: string; 
+    nascimento: string; 
+    pessoa: string; 
+    cpfCnpj: string; 
+    email: string; 
+    cep: string; 
+    rua: string; 
+    numero: string; 
+    complemento: string; 
+    bairro: string; 
+    cidade: string; 
+    estado: string; 
+    tipoSanguineo: string; 
+    sexo: string; 
+    profissao: string; 
+    estadoCivil: string; 
+    convenio: string; 
+    responsavel: string; 
+    cpfResponsavel: string; 
+    telefone2: string; 
+    observacoes: string; 
+  }) => void; // Nova propriedade
 }
 
 const conveniosOptions = [
@@ -70,7 +94,7 @@ const tiposSanguineosOptions = [
 const estadosCivisOptions = [
   "Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "Outro"
 ];
-const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
+const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose, onAddPatient }) => {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [nascimento, setNascimento] = useState("");
@@ -95,8 +119,35 @@ const AddPatientForm: React.FC<AddPatientFormProps> = ({ onClose }) => {
   const [observacoes, setObservacoes] = useState("");
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log({ nome, telefone, convenio, cidade });
-    onClose();
+
+    const newPatient = {
+      id: Date.now(), // Gera um ID único
+      nome,
+      telefone,
+      nascimento,
+      pessoa,
+      cpfCnpj,
+      email,
+      cep,
+      rua,
+      numero,
+      complemento,
+      bairro,
+      cidade,
+      estado,
+      tipoSanguineo,
+      sexo,
+      profissao,
+      estadoCivil,
+      convenio,
+      responsavel,
+      cpfResponsavel,
+      telefone2,
+      observacoes,
+    };
+
+    onAddPatient(newPatient); // Envia os dados para o componente pai
+    onClose(); // Fecha o modal
   };
 
   return (
