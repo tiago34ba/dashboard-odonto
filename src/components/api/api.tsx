@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8000/api", // Substitua pela URL da sua API Laravel
+  baseURL: "http://127.0.0.1:8000/api/", // URL correta da API Laravel
   timeout: 5000, // Tempo limite para requisições
   headers: {
     "Content-Type": "application/json",
@@ -12,7 +12,7 @@ const axiosInstance = axios.create({
 // Interceptores para adicionar tokens de autenticação, se necessário
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // Exemplo: obtendo o token do localStorage
+    const token = localStorage.getItem("token"); // Obtendo o token do localStorage
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;

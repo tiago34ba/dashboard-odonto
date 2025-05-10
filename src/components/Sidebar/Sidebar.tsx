@@ -1,43 +1,54 @@
 import React, { useState } from "react";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import "./Sidebar.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Interfaces para menus e submenus
-interface Submenu {
-  title: string;
-  path: string; // Adicione a propriedade path
-}
-
 interface Menu {
-  title: string;
-  submenus?: Submenu[];
+  title?: string; // Tornar o título opcional
+  path?: string;
+  submenus?: Menu[];
   isDivider?: boolean;
-  path?: string; // Adicione a propriedade path para menus principais
 }
 
 // Componente para o separador de menu
 const MenuDivider: React.FC = () => <div className="menu-divider"></div>;
 
-// Componente para um item de menu
-const MenuItem: React.FC<{ menu: Menu; index: number; isOpen: boolean; toggleMenu: (index: number) => void }> = ({
-  menu,
-  index,
-  isOpen,
-  toggleMenu,
-}) => {
+// Componente recursivo para renderizar menus e submenus
+const RecursiveMenu: React.FC<{ menu: Menu }> = ({ menu }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Mapeamento de ícones para cada menu
+  // Mapeamento de ícones para cada menu e submenu
   const menuIcons: { [key: string]: string } = {
     Dashboard: "fa-home",
     Pessoas: "fa-users",
+    Pacientes: "fa-user-injured",
+    Funcionários: "fa-user-tie",
+    Úsuarios: "fa-user-shield",
+    Fornecedores: "fa-truck",
     Cadastros: "fa-folder",
+    Procedimentos: "fa-tools",
+    Convênios: "fa-handshake",
+    "Itens Anamnese": "fa-notes-medical",
+    "Grupos Anamnese": "fa-layer-group",
+    formas_pgto: "fa-credit-card",
+    frequencias: "fa-calendar-check",
+    cargos: "fa-briefcase",
+    grupo_acessos: "fa-users-cog",
+    acessos: "fa-key",
     Agendamentos: "fa-calendar-alt",
+    Agendados: "fa-calendar-day",
+    "Relatório de Agendamentos": "fa-file-alt",
+    "Relatório de Procedimentos": "fa-file-medical",
     Financeiro: "fa-dollar-sign",
+    "Contas a Pagar": "fa-money-bill-wave",
+    "Contas a Receber": "fa-money-check-alt",
+    "Recebimentos Convênio": "fa-hand-holding-usd",
+    Comissões: "fa-chart-line",
     Consultas: "fa-stethoscope",
     Horários: "fa-clock",
-    "Minhas Comissões": "fa-chart-line",
+    "Minhas Comissões": "fa-chart-bar",
     Odontogramas: "fa-tooth",
     Tratamentos: "fa-briefcase-medical",
     Orçamentos: "fa-file-invoice-dollar",
@@ -45,50 +56,49 @@ const MenuItem: React.FC<{ menu: Menu; index: number; isOpen: boolean; toggleMen
     "Tarefas / Agenda": "fa-tasks",
     Anotações: "fa-sticky-note",
     Relatórios: "fa-chart-pie",
+    "Relatório Financeiro": "fa-file-invoice",
+    "Relatório Sintético Despesas": "fa-file-excel",
+    "Relatório Sintético Receber": "fa-file-contract",
+    "Relatório Balanço Anual": "fa-chart-area",
+    "Relatório Inadimplementes": "fa-exclamation-circle",
   };
 
   return (
     <>
       {menu.isDivider && <MenuDivider />}
-      <li>
-        {menu.title === "Dashboard" ? (
+      {menu.title && ( // Verifica se o menu possui título antes de renderizar
+        <li>
           <span
             className="menu-item"
-            onClick={() => navigate("/")}
-            style={{ cursor: "pointer" }}
-          >
-            <i className={`fa ${menuIcons[menu.title]}`} style={{ marginRight: "8px" }}></i>
-            {menu.title}
-          </span>
-        ) : (
-          <span
-            className="menu-item"
-            onClick={() => (menu.submenus ? toggleMenu(index) : null)}
+            onClick={() => {
+              if (menu.path) {
+                navigate(menu.path);
+              } else {
+                setIsOpen(!isOpen);
+              }
+            }}
             style={{ cursor: menu.submenus ? "pointer" : "default" }}
           >
-            <i className={`fa ${menuIcons[menu.title]}`} style={{ marginRight: "8px" }}></i>
+            <i className={`fa ${menuIcons[menu.title] || "fa-folder"}`} style={{ marginRight: "8px" }}></i>
             {menu.title}
           </span>
-        )}
-        {isOpen && menu.submenus && <SubmenuList submenus={menu.submenus} />}
-      </li>
+          {isOpen && menu.submenus && (
+            <ul className="submenu">
+              {menu.submenus.map((submenu, idx) => (
+                <RecursiveMenu key={idx} menu={submenu} />
+              ))}
+            </ul>
+          )}
+        </li>
+      )}
     </>
   );
 };
 
-// Componente para a lista de submenus
-const SubmenuList: React.FC<{ submenus: Submenu[] }> = ({ submenus }) => (
-  <ul className="submenu">
-    {submenus.map((submenu, idx) => (
-      <li key={idx}><Link to={submenu.path}>{submenu.title}</Link></li>
-    ))}
-  </ul>
-);
-
 // Componente principal Sidebar
 const Sidebar: React.FC = () => {
   const menus: Menu[] = [
-    { title: "Dashboard", path: "/" }, // Altere o path para "/"
+    { title: "Dashboard", path: "/" },
     { isDivider: true, title: "" },
     {
       title: "Pessoas",
@@ -130,21 +140,19 @@ const Sidebar: React.FC = () => {
         { title: "Comissões", path: "/financeiro/comissoes" },
       ],
     },
-    { isDivider: true, title: "" },
-
+    { isDivider: true, title: "" }, // Divisor abaixo de "Financeiro"
     { title: "Consultas", path: "/consultas" },
     { title: "Horários", path: "/horarios" },
     { title: "Minhas Comissões", path: "/minhas-comissoes" },
-    { isDivider: true, title: "" },
+    { isDivider: true, title: "" }, // Divisor abaixo de "Minhas Comissões"
     { title: "Odontogramas", path: "/odontogramas" },
     { title: "Tratamentos", path: "/tratamentos" },
     { title: "Orçamentos", path: "/orcamentos" },
-    { isDivider: true, title: "" },
+    { isDivider: true, title: "" }, // Divisor abaixo de "Orçamentos"
     { title: "Caixas (Aberto)", path: "/caixas-aberto" },
     { title: "Tarefas / Agenda", path: "/tarefas-agenda" },
     { title: "Anotações", path: "/anotacoes" },
-    { isDivider: true, title: "" },
-
+    { isDivider: true, title: "" }, // Divisor abaixo de "Anotações"
     {
       title: "Relatórios",
       submenus: [
@@ -154,35 +162,17 @@ const Sidebar: React.FC = () => {
         { title: "Relatório Balanço Anual", path: "/relatorios/relatorio-balanco-anual" },
         { title: "Relatório Inadimplementes", path: "/relatorios/relatorio-inadimplementes" },
       ],
-      
     },
-  
-    // ... (restante dos menus)
   ];
 
-  const [openIndexes, setOpenIndexes] = useState<number[]>([]);
-
-  const toggleMenu = (index: number) => {
-    if (openIndexes.includes(index)) {
-      setOpenIndexes(openIndexes.filter((i) => i !== index));
-    } else {
-      setOpenIndexes([...openIndexes, index]);
-    }
-  };
   return (
     <div className="sidebar">
-    <ul>
-      {menus.map((menu, index) => (
-        <MenuItem
-          key={index}
-          menu={menu}
-          index={index}
-          isOpen={openIndexes.includes(index)}
-          toggleMenu={toggleMenu}
-        />
-      ))}
-    </ul>
-  </div>
+      <ul>
+        {menus.map((menu, index) => (
+          <RecursiveMenu key={index} menu={menu} />
+        ))}
+      </ul>
+    </div>
   );
 };
 
