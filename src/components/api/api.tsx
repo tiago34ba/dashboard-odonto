@@ -12,7 +12,8 @@ const axiosInstance = axios.create({
 // Interceptores para adicionar tokens de autenticação, se necessário
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // Obtendo o token do localStorage
+    // Removendo dependência do localStorage
+    const token = "seu_token_aqui"; // Substitua pelo token obtido de outra forma, se necessário
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
@@ -21,5 +22,17 @@ axiosInstance.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// Função para armazenar dados na API
+export const storeData = async (endpoint: string, data: object) => {
+  try {
+    const response = await axiosInstance.post(endpoint, data);
+    console.log("Dados armazenados com sucesso:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao armazenar dados:", error);
+    throw error;
+  }
+};
 
 export default axiosInstance;

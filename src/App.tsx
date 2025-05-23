@@ -16,9 +16,9 @@ const App: React.FC = () => {
         <div className="content">
           <Header />
           <Routes>
-            <Route path="/" element={<Dashboard title={""} value={""} />} />
+            <Route path="/" element={<Dashboard title="" value="" />} />
             <Route path="/pessoas/pacientes/PatientsPage" element={<PatientsPage />} />
-            <Route path="/pessoas/usuarios" element={<UsersPage />} /> {/* Ajuste da rota */}
+            <Route path="/pessoas/usuarios" element={<UsersPage />} />
             <Route path="/pessoas/funcionarios" element={<EmployeePage />} />
           </Routes>
         </div>
