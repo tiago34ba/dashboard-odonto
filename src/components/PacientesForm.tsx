@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { storeData } from "./api/api"; // Importa a função storeData
+import storeData from "./api/api"; // Importa a função storeData
 
 const PacientesForm = () => {
   const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ const PacientesForm = () => {
     e.preventDefault();
     try {
       // Chama a função storeData para enviar os dados para a API Laravel
-      const response = await storeData("pessoas/pacientes", formData);
+      const response = await storeData("pessoas/pacientes", { data: formData });
       alert("Paciente cadastrado com sucesso!");
       console.log("Resposta da API:", response);
 

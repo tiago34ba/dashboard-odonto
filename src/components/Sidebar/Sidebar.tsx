@@ -126,7 +126,7 @@ const Sidebar: React.FC = () => {
     {
       title: "Agendamentos",
       submenus: [
-        { title: "Agendados", path: "/agendamentos/agendados" },
+        { title: "Agendados", path: "/agendamentos" },
         { title: "Relatório de Agendamentos", path: "/agendamentos/relatorio-agendamentos" },
         { title: "Relatório de Procedimentos", path: "/agendamentos/relatorio-procedimentos" },
       ],

@@ -1,38 +1,42 @@
 import axios from "axios";
+import { getApiConfig, isProduction } from "../../config/security";
 
-const axiosInstance = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/", // URL correta da API Laravel
-  timeout: 5000, // Tempo limite para requisições
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
+// Configuração segura da API usando configurações centralizadas
+const apiConfig = getApiConfig();
+
+const api = axios.create({
+  ...apiConfig,
+  // Configurações adicionais de segurança
+  httpsAgent: isProduction() ? {
+    rejectUnauthorized: true, // Verificar certificados SSL em produção
+  } : undefined,
 });
 
-// Interceptores para adicionar tokens de autenticação, se necessário
-axiosInstance.interceptors.request.use(
+// Interceptor para adicionar token de autenticação
+api.interceptors.request.use(
   (config) => {
-    // Removendo dependência do localStorage
-    const token = "seu_token_aqui"; // Substitua pelo token obtido de outra forma, se necessário
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // O token será enviado automaticamente via cookies httpOnly
+    // Não precisamos mais acessar localStorage
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Função para armazenar dados na API
-export const storeData = async (endpoint: string, data: object) => {
-  try {
-    const response = await axiosInstance.post(endpoint, data);
-    console.log("Dados armazenados com sucesso:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao armazenar dados:", error);
-    throw error;
+// Interceptor para tratar respostas e erros
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Redirecionar para login em caso de não autorizado
+      // O cookie será removido automaticamente pelo backend
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
   }
-};
+);
 
-export default axiosInstance;
+export default api;

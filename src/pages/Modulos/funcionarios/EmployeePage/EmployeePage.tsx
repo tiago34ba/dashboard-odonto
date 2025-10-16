@@ -43,7 +43,7 @@ const StyledButton = styled.button<{ color?: string; hoverColor?: string }>`
   font-size: 14px;
   display: flex;
   align-items: center;
-  justify-content: center; /* Centraliza o conteúdo */
+  justify-content: center;
   gap: 5px;
   background-color: ${(props) => props.color || "#007bff"};
   color: white;
@@ -51,11 +51,11 @@ const StyledButton = styled.button<{ color?: string; hoverColor?: string }>`
 
   &:hover {
     background-color: ${(props) => props.hoverColor || "#0056b3"};
-    transform: scale(1.05); /* Efeito de zoom ao passar o mouse */
+    transform: scale(1.05);
   }
 
   i {
-    font-size: 16px; /* Ajusta o tamanho do ícone */
+    font-size: 16px;
   }
 `;
 
@@ -91,96 +91,95 @@ const Modal = styled.div`
   left: 50%;
   transform: translate(-50%, -50%);
   background: #ffffff;
-  padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  width: 600px; /* Ajuste da largura */
-  max-width: 90%;
-  max-height: 80vh; /* Limita a altura máxima */
-  overflow: hidden; /* Esconde o conteúdo que ultrapassa */
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
 const ModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+  background-color: #f8f9fa;
 
   h3 {
     font-size: 20px;
     color: #333;
     margin: 0;
+    font-weight: 600;
   }
 
   button {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 24px;
     cursor: pointer;
     color: #999;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
 
     &:hover {
       color: #333;
+      background-color: #e9ecef;
     }
   }
 `;
 
-const ModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+const ModalBody = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
 `;
 
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+const ScrollableContainer = styled.div`
+  padding: 24px;
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
 
-  label {
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
+  &::-webkit-scrollbar {
+    width: 8px;
   }
 
-  input,
-  select {
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 100%;
-    box-sizing: border-box;
+  &::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 8px;
+  }
 
-    &:focus {
-      border-color: #007bff;
-      outline: none;
-    }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
   }
 `;
 
-const FormRow = styled.div`
-  display: flex;
-  gap: 20px;
-
-  > div {
-    flex: 1;
-  }
-`;
-
-const ModalActions = styled.div`
+const ModalFooter = styled.div`
+  padding: 20px 24px;
+  border-top: 1px solid #e9ecef;
+  background-color: #f8f9fa;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 12px;
 
   button {
-    padding: 10px 15px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.3s ease;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 100px;
 
     &.close {
       background-color: #6c757d;
@@ -202,6 +201,114 @@ const ModalActions = styled.div`
   }
 `;
 
+const FormSection = styled.div`
+  margin-bottom: 32px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const SectionTitle = styled.h4`
+  font-size: 16px;
+  color: #495057;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+  font-weight: 600;
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+  }
+
+  input,
+  select {
+    padding: 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+  }
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  &.checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+
+    input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+  }
+`;
+
+const PhotoPreview = styled.div`
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+  }
+`;
+
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+`;
+
+const InfoItem = styled.div`
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+
+  strong {
+    display: block;
+    color: #495057;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  span {
+    color: #212529;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+`;
+
 const Overlay = styled.div`
   position: fixed;
   top: 0;
@@ -210,29 +317,6 @@ const Overlay = styled.div`
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
-`;
-
-const ScrollableContainer = styled.div`
-  max-height: calc(80vh - 60px); /* Altura ajustada para caber no modal */
-  overflow-y: auto; /* Adiciona barra de rolagem vertical */
-  padding-right: 10px; /* Espaço para evitar sobreposição com a barra de rolagem */
-  margin-right: -10px; /* Ajusta o alinhamento */
-  scrollbar-width: thin; /* Estiliza a barra de rolagem no Firefox */
-  scrollbar-color: #ccc transparent;
-
-  /* Estilização para navegadores baseados em WebKit */
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: #aaa;
-  }
 `;
 
 interface Employee {
@@ -370,7 +454,6 @@ const EmployeesPage: React.FC = () => {
         state: "",
         zipCode: "",
       },
-      
       interval: "",
       cro: "",
       commission: 0,
@@ -474,6 +557,8 @@ const EmployeesPage: React.FC = () => {
             ))}
           </tbody>
         </Table>
+
+        {/* Modal de Cadastro */}
         {isModalOpen && (
           <>
             <Overlay onClick={handleCloseModal} />
@@ -482,129 +567,126 @@ const EmployeesPage: React.FC = () => {
                 <h3>Cadastrar Funcionário</h3>
                 <button onClick={handleCloseModal}>&times;</button>
               </ModalHeader>
-              <ScrollableContainer>
-                <ModalContent>
+              <ModalBody>
+                <ScrollableContainer>
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
                       handleAddEmployee();
                     }}
                   >
-                    <FormGroup>
-                      <label>Nome:</label>
-                      <input
-                        type="text"
-                        value={newEmployee.name}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, name: e.target.value })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Telefone:</label>
-                      <input
-                        type="text"
-                        value={newEmployee.phone}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, phone: e.target.value })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Email:</label>
-                      <input
-                        type="email"
-                        value={newEmployee.email}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, email: e.target.value })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Cargo:</label>
-                      <select
-                        className="form-select"
-                        name="role"
-                        id="role"
-                        value={newEmployee.role}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, role: e.target.value })
-                        }
-                      >
-                        <option value="">Selecione o cargo</option>
-                        <option value="Secretária">Secretária</option>
-                        <option value="Auxiliar Dentista">Auxiliar Dentista</option>
-                        <option value="Dentista">Dentista</option>
-                        <option value="Faxineiro">Faxineiro</option>
-                      </select>
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Foto:</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              setNewEmployee({ ...newEmployee, photo: event.target?.result as string });
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                      {newEmployee.photo && (
-                        <img
-                          src={newEmployee.photo}
-                          alt="Foto do Funcionário"
-                          style={{ width: "100px", height: "100px", borderRadius: "8px", marginTop: "10px" }}
+                    {/* Informações Básicas */}
+                    <FormSection>
+                      <SectionTitle>Informações Básicas</SectionTitle>
+                      <FormGrid>
+                        <FormGroup>
+                          <label>Nome:</label>
+                          <input
+                            type="text"
+                            value={newEmployee.name}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, name: e.target.value })
+                            }
+                            required
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <label>Telefone:</label>
+                          <input
+                            type="text"
+                            value={newEmployee.phone}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, phone: e.target.value })
+                            }
+                            required
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <label>Email:</label>
+                          <input
+                            type="email"
+                            value={newEmployee.email}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, email: e.target.value })
+                            }
+                            required
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <label>Cargo:</label>
+                          <select
+                            value={newEmployee.role}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, role: e.target.value })
+                            }
+                            required
+                          >
+                            <option value="">Selecione o cargo</option>
+                            <option value="Secretária">Secretária</option>
+                            <option value="Auxiliar Dentista">Auxiliar Dentista</option>
+                            <option value="Dentista">Dentista</option>
+                            <option value="Faxineiro">Faxineiro</option>
+                          </select>
+                        </FormGroup>
+                        <FormGroup>
+                          <label>Data Cadastro:</label>
+                          <input
+                            type="date"
+                            value={newEmployee.registrationDate}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, registrationDate: e.target.value })
+                            }
+                            required
+                          />
+                        </FormGroup>
+                      </FormGrid>
+                    </FormSection>
+
+                    {/* Foto */}
+                    <FormSection>
+                      <SectionTitle>Foto do Funcionário</SectionTitle>
+                      <FormGroup className="full-width">
+                        <label>Foto:</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                setNewEmployee({ ...newEmployee, photo: event.target?.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
                         />
-                      )}
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Ativo:</label>
-                      <input
-                        type="checkbox"
-                        checked={newEmployee.active}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, active: e.target.checked })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Data Cadastro:</label>
-                      <input
-                        type="date"
-                        value={newEmployee.registrationDate}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, registrationDate: e.target.value })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Chave Pix:</label>
-                      <input
-                        type="text"
-                        value={newEmployee.pixKey}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, pixKey: e.target.value })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Acessar Painel:</label>
-                      <input
-                        type="checkbox"
-                        checked={newEmployee.accessPanel}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, accessPanel: e.target.checked })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Endereço:</label>
-                      <FormRow>
+                        {newEmployee.photo && (
+                          <PhotoPreview>
+                            <img src={newEmployee.photo} alt="Foto do Funcionário" />
+                            <span>Foto carregada com sucesso</span>
+                          </PhotoPreview>
+                        )}
+                      </FormGroup>
+                    </FormSection>
+
+                    {/* Endereço */}
+                    <FormSection>
+                      <SectionTitle>Endereço</SectionTitle>
+                      <FormGrid>
+                        <FormGroup>
+                          <label>CEP:</label>
+                          <input
+                            type="text"
+                            value={newEmployee.address.zipCode}
+                            onChange={(e) =>
+                              setNewEmployee({
+                                ...newEmployee,
+                                address: { ...newEmployee.address, zipCode: e.target.value },
+                              })
+                            }
+                          />
+                        </FormGroup>
                         <FormGroup>
                           <label>Rua:</label>
                           <input
@@ -631,8 +713,6 @@ const EmployeesPage: React.FC = () => {
                             }
                           />
                         </FormGroup>
-                      </FormRow>
-                      <FormRow>
                         <FormGroup>
                           <label>Complemento:</label>
                           <input
@@ -659,8 +739,6 @@ const EmployeesPage: React.FC = () => {
                             }
                           />
                         </FormGroup>
-                      </FormRow>
-                      <FormRow>
                         <FormGroup>
                           <label>Cidade:</label>
                           <input
@@ -687,69 +765,104 @@ const EmployeesPage: React.FC = () => {
                             }
                           />
                         </FormGroup>
+                      </FormGrid>
+                    </FormSection>
+
+                    {/* Configurações Profissionais */}
+                    <FormSection>
+                      <SectionTitle>Configurações Profissionais</SectionTitle>
+                      <FormGrid>
                         <FormGroup>
-                          <label>CEP:</label>
+                          <label>CRO:</label>
                           <input
                             type="text"
-                            value={newEmployee.address.zipCode}
+                            value={newEmployee.cro}
                             onChange={(e) =>
-                              setNewEmployee({
-                                ...newEmployee,
-                                address: { ...newEmployee.address, zipCode: e.target.value },
-                              })
+                              setNewEmployee({ ...newEmployee, cro: e.target.value })
                             }
                           />
                         </FormGroup>
-                      </FormRow>
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Intervalo:</label>
-                      <input
-                        type="text"
-                        value={newEmployee.interval}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, interval: e.target.value })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>CRO:</label>
-                      <input
-                        type="text"
-                        value={newEmployee.cro}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, cro: e.target.value })
-                        }
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <label>Comissão:</label>
-                      <input
-                        type="number"
-                        value={newEmployee.commission}
-                        onChange={(e) =>
-                          setNewEmployee({ ...newEmployee, commission: parseInt(e.target.value) })
-                        }
-                      />
-                    </FormGroup>
-                    <ModalActions>
-                      <button type="submit" className="save">
-                        Salvar
-                      </button>
-                      <button
-                        type="button"
-                        className="close"
-                        onClick={handleCloseModal}
-                      >
-                        Cancelar
-                      </button>
-                    </ModalActions>
+                        <FormGroup>
+                          <label>Intervalo:</label>
+                          <input
+                            type="text"
+                            value={newEmployee.interval}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, interval: e.target.value })
+                            }
+                            placeholder="Ex: 30 Minutos"
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <label>Comissão (%):</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={newEmployee.commission}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, commission: parseInt(e.target.value) || 0 })
+                            }
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <label>Chave Pix:</label>
+                          <input
+                            type="text"
+                            value={newEmployee.pixKey}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, pixKey: e.target.value })
+                            }
+                            placeholder="Email, telefone ou CPF"
+                          />
+                        </FormGroup>
+                      </FormGrid>
+                    </FormSection>
+
+                    {/* Configurações do Sistema */}
+                    <FormSection>
+                      <SectionTitle>Configurações do Sistema</SectionTitle>
+                      <FormGrid>
+                        <FormGroup className="checkbox">
+                          <input
+                            type="checkbox"
+                            id="active"
+                            checked={newEmployee.active}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, active: e.target.checked })
+                            }
+                          />
+                          <label htmlFor="active">Funcionário ativo</label>
+                        </FormGroup>
+                        <FormGroup className="checkbox">
+                          <input
+                            type="checkbox"
+                            id="accessPanel"
+                            checked={newEmployee.accessPanel}
+                            onChange={(e) =>
+                              setNewEmployee({ ...newEmployee, accessPanel: e.target.checked })
+                            }
+                          />
+                          <label htmlFor="accessPanel">Pode acessar o painel administrativo</label>
+                        </FormGroup>
+                      </FormGrid>
+                    </FormSection>
                   </form>
-                </ModalContent>
-              </ScrollableContainer>
+                </ScrollableContainer>
+              </ModalBody>
+              <ModalFooter>
+                <button type="button" className="close" onClick={handleCloseModal}>
+                  Cancelar
+                </button>
+                <button type="submit" className="save" onClick={handleAddEmployee}>
+                  Salvar Funcionário
+                </button>
+              </ModalFooter>
             </Modal>
           </>
         )}
+
+        {/* Modal de Visualização */}
         {selectedEmployee && (
           <>
             <Overlay onClick={handleCloseDetails} />
@@ -758,36 +871,109 @@ const EmployeesPage: React.FC = () => {
                 <h3>Detalhes do Funcionário</h3>
                 <button onClick={handleCloseDetails}>&times;</button>
               </ModalHeader>
-              <ScrollableContainer>
-                <ModalContent>
-                  <p><strong>Nome:</strong> {selectedEmployee.name}</p>
-                  <p><strong>Telefone:</strong> {selectedEmployee.phone}</p>
-                  <p><strong>Email:</strong> {selectedEmployee.email}</p>
-                  <p><strong>Cargo:</strong> {selectedEmployee.role}</p>
-                  <p><strong>Foto:</strong></p>
-                  <img
-                    src={selectedEmployee.photo}
-                    alt={selectedEmployee.name}
-                    style={{ width: "100px", height: "100px", borderRadius: "8px" }}
-                  />
-                  <p><strong>Ativo:</strong> {selectedEmployee.active ? "Sim" : "Não"}</p>
-                  <p><strong>Data Cadastro:</strong> {selectedEmployee.registrationDate}</p>
-                  <p><strong>Chave Pix:</strong> {selectedEmployee.pixKey}</p>
-                  <p><strong>Acessar Painel:</strong> {selectedEmployee.accessPanel ? "Sim" : "Não"}</p>
-                  <p><strong>Endereço:</strong> {`${selectedEmployee.address.street}, ${selectedEmployee.address.number}, ${selectedEmployee.address.complement} - ${selectedEmployee.address.neighborhood}, ${selectedEmployee.address.city}/${selectedEmployee.address.state} - ${selectedEmployee.address.zipCode}`}</p>
-                  <p><strong>Intervalo:</strong> {selectedEmployee.interval}</p>
-                  <p><strong>CRO:</strong> {selectedEmployee.cro}</p>
-                  <p><strong>Comissão:</strong> {selectedEmployee.commission}%</p>
-                </ModalContent>
-              </ScrollableContainer>
-              <ModalActions>
-                <button
-                  className="close"
-                  onClick={handleCloseDetails}
-                >
+              <ModalBody>
+                <ScrollableContainer>
+                  <FormSection>
+                    <SectionTitle>Informações Pessoais</SectionTitle>
+                    <InfoGrid>
+                      <InfoItem>
+                        <strong>Nome</strong>
+                        <span>{selectedEmployee.name}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Telefone</strong>
+                        <span>{selectedEmployee.phone}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Email</strong>
+                        <span>{selectedEmployee.email}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Cargo</strong>
+                        <span>{selectedEmployee.role}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Data de Cadastro</strong>
+                        <span>{selectedEmployee.registrationDate}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Status</strong>
+                        <span>{selectedEmployee.active ? "Ativo" : "Inativo"}</span>
+                      </InfoItem>
+                    </InfoGrid>
+                  </FormSection>
+
+                  {selectedEmployee.photo && (
+                    <FormSection>
+                      <SectionTitle>Foto</SectionTitle>
+                      <PhotoPreview>
+                        <img src={selectedEmployee.photo} alt={selectedEmployee.name} />
+                      </PhotoPreview>
+                    </FormSection>
+                  )}
+
+                  <FormSection>
+                    <SectionTitle>Endereço</SectionTitle>
+                    <InfoGrid>
+                      <InfoItem>
+                        <strong>CEP</strong>
+                        <span>{selectedEmployee.address.zipCode}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Rua</strong>
+                        <span>{selectedEmployee.address.street}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Número</strong>
+                        <span>{selectedEmployee.address.number}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Complemento</strong>
+                        <span>{selectedEmployee.address.complement || "Não informado"}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Bairro</strong>
+                        <span>{selectedEmployee.address.neighborhood}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Cidade/Estado</strong>
+                        <span>{selectedEmployee.address.city}/{selectedEmployee.address.state}</span>
+                      </InfoItem>
+                    </InfoGrid>
+                  </FormSection>
+
+                  <FormSection>
+                    <SectionTitle>Informações Profissionais</SectionTitle>
+                    <InfoGrid>
+                      <InfoItem>
+                        <strong>CRO</strong>
+                        <span>{selectedEmployee.cro || "Não se aplica"}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Intervalo</strong>
+                        <span>{selectedEmployee.interval}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Comissão</strong>
+                        <span>{selectedEmployee.commission}%</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Chave Pix</strong>
+                        <span>{selectedEmployee.pixKey}</span>
+                      </InfoItem>
+                      <InfoItem>
+                        <strong>Acesso ao Painel</strong>
+                        <span>{selectedEmployee.accessPanel ? "Sim" : "Não"}</span>
+                      </InfoItem>
+                    </InfoGrid>
+                  </FormSection>
+                </ScrollableContainer>
+              </ModalBody>
+              <ModalFooter>
+                <button className="close" onClick={handleCloseDetails}>
                   Fechar
                 </button>
-              </ModalActions>
+              </ModalFooter>
             </Modal>
           </>
         )}
