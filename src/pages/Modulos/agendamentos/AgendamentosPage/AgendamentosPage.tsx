@@ -365,7 +365,6 @@ const StatLabel = styled.div`
 export default function AgendamentosPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>(dadosFakeAgendamentos);
   const [filteredAgendamentos, setFilteredAgendamentos] = useState<Agendamento[]>(dadosFakeAgendamentos);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [filtros, setFiltros] = useState({
     paciente: '',
     dentista: '',
@@ -423,67 +422,6 @@ export default function AgendamentosPage() {
     return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
   };
 
-  // Função para salvar novo agendamento
-  const handleSaveAgendamento = (novoAgendamento: any) => {
-    // Mapear os dados do formulário para o formato da lista
-    const agendamento: Agendamento = {
-      id: agendamentos.length + 1,
-      paciente: getPacienteNome(novoAgendamento.paciente_id),
-      dentista: getDentistaNome(novoAgendamento.dentista_id),
-      procedimento: getProcedimentoNome(novoAgendamento.procedimento_id),
-      data: novoAgendamento.data,
-      hora: novoAgendamento.hora,
-      status: 'agendado',
-      telefone: novoAgendamento.telefone_contato || '',
-      observacoes: novoAgendamento.observacoes || ''
-    };
-
-    setAgendamentos(prev => [...prev, agendamento]);
-    alert('Agendamento criado com sucesso!');
-  };
-
-  // Funções auxiliares para obter nomes pelos IDs
-  const getPacienteNome = (id: string) => {
-    const pacientes = [
-      { id: '1', nome: 'Maria Silva Santos' },
-      { id: '2', nome: 'Carlos Eduardo Lima' },
-      { id: '3', nome: 'Fernanda Oliveira' },
-      { id: '4', nome: 'Roberto Souza' },
-      { id: '5', nome: 'Juliana Santos' },
-      { id: '6', nome: 'Paulo Henrique' },
-      { id: '7', nome: 'Sandra Regina' },
-      { id: '8', nome: 'José Carlos' }
-    ];
-    return pacientes.find(p => p.id === id)?.nome || 'Paciente não encontrado';
-  };
-
-  const getDentistaNome = (id: string) => {
-    const dentistas = [
-      { id: '1', nome: 'Dr. João Pereira' },
-      { id: '2', nome: 'Dra. Ana Costa' },
-      { id: '3', nome: 'Dr. Carlos Silva' },
-      { id: '4', nome: 'Dra. Patrícia Lima' },
-      { id: '5', nome: 'Dra. Mariana Santos' }
-    ];
-    return dentistas.find(d => d.id === id)?.nome || 'Dentista não encontrado';
-  };
-
-  const getProcedimentoNome = (id: string) => {
-    const procedimentos = [
-      { id: '1', nome: 'Limpeza e Profilaxia' },
-      { id: '2', nome: 'Restauração em Resina' },
-      { id: '3', nome: 'Tratamento de Canal' },
-      { id: '4', nome: 'Extração Simples' },
-      { id: '5', nome: 'Consulta Ortodôntica' },
-      { id: '6', nome: 'Implante Dentário' },
-      { id: '7', nome: 'Prótese Fixa' },
-      { id: '8', nome: 'Clareamento Dental' },
-      { id: '9', nome: 'Cirurgia de Siso' },
-      { id: '10', nome: 'Aplicação de Flúor' }
-    ];
-    return procedimentos.find(p => p.id === id)?.nome || 'Procedimento não encontrado';
-  };
-
   return (
     <PageWrapper>
       <Sidebar />
@@ -494,7 +432,7 @@ export default function AgendamentosPage() {
             Agendamentos
           </Title>
           <Actions>
-            <StyledButton variant="primary" onClick={() => setIsModalOpen(true)}>
+            <StyledButton variant="primary">
               <FaPlus />
               Novo Agendamento
             </StyledButton>
@@ -613,13 +551,6 @@ export default function AgendamentosPage() {
             </tbody>
           </Table>
         </TableContainer>
-
-        {/* Modal de Novo Agendamento */}
-        <ModalAgendamento
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSaveAgendamento}
-        />
       </MainContent>
     </PageWrapper>
   );

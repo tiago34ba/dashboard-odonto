@@ -508,13 +508,241 @@ const ViewPatientModal: React.FC<{ patient: Patient; onClose: () => void }> = ({
   );
 };
 
+// Dados fake para teste do layout
+const fakePatients: Patient[] = [
+  {
+    id: 1,
+    name: "Maria Silva Santos",
+    convenio: "Unimed",
+    telefone: "(11) 99876-5432",
+    idade: 35,
+    data_nascimento: "1988-05-15",
+    responsavel: null,
+    cpf_responsavel: null,
+    celular: "(11) 98765-4321",
+    estado: "SP",
+    sexo: "Feminino",
+    profissao: "Enfermeira",
+    estado_civil: "Casado(a)",
+    tipo_sanguineo: "A+",
+    pessoa: "Física",
+    cpf_cnpj: "123.456.789-01",
+    email: "maria.silva@email.com",
+    cep: "01234-567",
+    rua: "Rua das Flores",
+    numero: "123",
+    complemento: "Apt 45",
+    bairro: "Centro",
+    cidade: "São Paulo",
+    observacoes: "Paciente hipertensa, necessita acompanhamento regular",
+    created_at: "2025-01-15T10:30:00Z",
+    updated_at: "2025-10-15T14:20:00Z"
+  },
+  {
+    id: 2,
+    name: "João Carlos Oliveira",
+    convenio: "Bradesco Saúde",
+    telefone: "(21) 98765-4321",
+    idade: 42,
+    data_nascimento: "1981-11-22",
+    responsavel: null,
+    cpf_responsavel: null,
+    celular: "(21) 97654-3210",
+    estado: "RJ",
+    sexo: "Masculino",
+    profissao: "Engenheiro Civil",
+    estado_civil: "Solteiro(a)",
+    tipo_sanguineo: "O-",
+    pessoa: "Física",
+    cpf_cnpj: "987.654.321-09",
+    email: "joao.oliveira@email.com",
+    cep: "20000-123",
+    rua: "Avenida Atlântica",
+    numero: "456",
+    complemento: null,
+    bairro: "Copacabana",
+    cidade: "Rio de Janeiro",
+    observacoes: null,
+    created_at: "2025-02-20T09:15:00Z",
+    updated_at: "2025-10-10T11:45:00Z"
+  },
+  {
+    id: 3,
+    name: "Ana Paula Ferreira",
+    convenio: "SulAmérica",
+    telefone: "(31) 97777-8888",
+    idade: 28,
+    data_nascimento: "1995-03-08",
+    responsavel: null,
+    cpf_responsavel: null,
+    celular: "(31) 96666-7777",
+    estado: "MG",
+    sexo: "Feminino",
+    profissao: "Professora",
+    estado_civil: "Solteiro(a)",
+    tipo_sanguineo: "B+",
+    pessoa: "Física",
+    cpf_cnpj: "456.789.123-45",
+    email: "ana.ferreira@email.com",
+    cep: "30000-456",
+    rua: "Rua da Liberdade",
+    numero: "789",
+    complemento: "Casa 2",
+    bairro: "Savassi",
+    cidade: "Belo Horizonte",
+    observacoes: "Alergia à penicilina",
+    created_at: "2025-03-10T16:22:00Z",
+    updated_at: "2025-10-12T08:30:00Z"
+  },
+  {
+    id: 4,
+    name: "Carlos Eduardo Lima",
+    convenio: "Nenhum",
+    telefone: "(47) 94444-5555",
+    idade: 55,
+    data_nascimento: "1968-09-14",
+    responsavel: null,
+    cpf_responsavel: null,
+    celular: "(47) 93333-4444",
+    estado: "SC",
+    sexo: "Masculino",
+    profissao: "Comerciante",
+    estado_civil: "Divorciado(a)",
+    tipo_sanguineo: "AB+",
+    pessoa: "Física",
+    cpf_cnpj: "789.123.456-78",
+    email: "carlos.lima@email.com",
+    cep: "88000-789",
+    rua: "Rua XV de Novembro",
+    numero: "321",
+    complemento: null,
+    bairro: "Centro",
+    cidade: "Florianópolis",
+    observacoes: "Diabético tipo 2",
+    created_at: "2025-04-05T13:10:00Z",
+    updated_at: "2025-09-28T17:55:00Z"
+  },
+  {
+    id: 5,
+    name: "Fernanda Costa Almeida",
+    convenio: "Amil",
+    telefone: "(85) 92222-3333",
+    idade: 31,
+    data_nascimento: "1992-12-03",
+    responsavel: null,
+    cpf_responsavel: null,
+    celular: "(85) 91111-2222",
+    estado: "CE",
+    sexo: "Feminino",
+    profissao: "Advogada",
+    estado_civil: "Casado(a)",
+    tipo_sanguineo: "A-",
+    pessoa: "Física",
+    cpf_cnpj: "321.654.987-12",
+    email: "fernanda.almeida@email.com",
+    cep: "60000-321",
+    rua: "Avenida Beira Mar",
+    numero: "654",
+    complemento: "Ed. Oceano, Apt 1205",
+    bairro: "Meireles",
+    cidade: "Fortaleza",
+    observacoes: "Gestante - 2º trimestre",
+    created_at: "2025-05-18T11:40:00Z",
+    updated_at: "2025-10-16T15:25:00Z"
+  },
+  {
+    id: 6,
+    name: "Roberto Souza Pereira",
+    convenio: "Hapvida",
+    telefone: "(71) 98888-9999",
+    idade: 67,
+    data_nascimento: "1956-07-25",
+    responsavel: "Maria Souza Pereira",
+    cpf_responsavel: "654.321.987-54",
+    celular: "(71) 97777-8888",
+    estado: "BA",
+    sexo: "Masculino",
+    profissao: "Aposentado",
+    estado_civil: "Casado(a)",
+    tipo_sanguineo: "O+",
+    pessoa: "Física",
+    cpf_cnpj: "147.258.369-85",
+    email: "roberto.pereira@email.com",
+    cep: "40000-147",
+    rua: "Rua Castro Alves",
+    numero: "852",
+    complemento: null,
+    bairro: "Pelourinho",
+    cidade: "Salvador",
+    observacoes: "Portador de marca-passo, evitar procedimentos com equipamentos eletrônicos",
+    created_at: "2025-06-12T08:20:00Z",
+    updated_at: "2025-10-08T12:15:00Z"
+  },
+  {
+    id: 7,
+    name: "Juliana Martins Rocha",
+    convenio: "Porto Seguro",
+    telefone: "(61) 95555-6666",
+    idade: 29,
+    data_nascimento: "1994-01-17",
+    responsavel: null,
+    cpf_responsavel: null,
+    celular: "(61) 94444-5555",
+    estado: "DF",
+    sexo: "Feminino",
+    profissao: "Psicóloga",
+    estado_civil: "Solteiro(a)",
+    tipo_sanguineo: "B-",
+    pessoa: "Física",
+    cpf_cnpj: "963.852.741-96",
+    email: "juliana.rocha@email.com",
+    cep: "70000-963",
+    rua: "SHIS QI 15",
+    numero: "10",
+    complemento: "Bloco A, Apt 203",
+    bairro: "Lago Sul",
+    cidade: "Brasília",
+    observacoes: "Histórico familiar de problemas cardíacos",
+    created_at: "2025-07-22T14:35:00Z",
+    updated_at: "2025-10-14T09:10:00Z"
+  },
+  {
+    id: 8,
+    name: "Pedro Henrique Santos",
+    convenio: "Nenhum",
+    telefone: "(81) 93333-4444",
+    idade: 24,
+    data_nascimento: "1999-10-30",
+    responsavel: "Luiza Santos",
+    cpf_responsavel: "159.753.486-27",
+    celular: "(81) 92222-3333",
+    estado: "PE",
+    sexo: "Masculino",
+    profissao: "Estudante",
+    estado_civil: "Solteiro(a)",
+    tipo_sanguineo: "AB-",
+    pessoa: "Física",
+    cpf_cnpj: "852.741.963-30",
+    email: "pedro.santos@email.com",
+    cep: "50000-852",
+    rua: "Rua da Aurora",
+    numero: "147",
+    complemento: null,
+    bairro: "Boa Vista",
+    cidade: "Recife",
+    observacoes: null,
+    created_at: "2025-08-08T10:50:00Z",
+    updated_at: "2025-10-11T13:40:00Z"
+  }
+];
+
 const PatientsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [patientToView, setPatientToView] = useState<Patient | null>(null);
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patients, setPatients] = useState<Patient[]>(fakePatients); // Inicializa com dados fake
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [selectedPatients, setSelectedPatients] = useState<number[]>([]);
@@ -537,23 +765,32 @@ const PatientsPage: React.FC = () => {
         else if (response.data && Array.isArray(response.data.data)) {
           patientsData = response.data.data;
         }
-        // Se não conseguir encontrar um array, inicializa como array vazio
+        // Se não conseguir encontrar um array, usa dados fake
         else {
           if (process.env.NODE_ENV === 'development') {
-            console.warn("Dados não estão no formato de array:", response.data);
+            console.warn("Dados não estão no formato de array, usando dados fake:", response.data);
           }
-          setPatients([]);
+          setPatients(fakePatients);
           return;
         }
         
-        // Usar dados diretamente sem descriptografia
-        setPatients(patientsData);
+        // Se a API retornou dados vazios, usa dados fake para teste
+        if (patientsData.length === 0) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log("API retornou dados vazios, usando dados fake para teste do layout");
+          }
+          setPatients(fakePatients);
+        } else {
+          // Usar dados da API
+          setPatients(patientsData);
+        }
       })
       .catch(error => {
         if (process.env.NODE_ENV === 'development') {
-          console.error("Erro ao buscar pacientes:", error);
+          console.error("Erro ao buscar pacientes, usando dados fake:", error);
         }
-        setPatients([]); // Garante que patients seja um array mesmo em caso de erro
+        // Em caso de erro, usa dados fake para teste do layout
+        setPatients(fakePatients);
       });
   }, []);
 

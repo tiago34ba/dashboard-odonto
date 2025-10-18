@@ -83,6 +83,43 @@ const Table = styled.table`
   tr:hover {
     background-color: #f1f1f1;
   }
+  
+  /* Largura específica para a coluna de ações */
+  th:last-child,
+  td:last-child {
+    width: 280px;
+    min-width: 280px;
+  }
+`;
+
+const ActionButtonsContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+`;
+
+const ActionButton = styled(StyledButton)`
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  min-width: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 const Modal = styled.div`
@@ -501,19 +538,31 @@ const EmployeesPage: React.FC = () => {
               hoverColor="#0056b3"
               onClick={handleOpenModal}
             >
-              <i className="fas fa-plus"></i> Cadastrar Funcionário
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '16px', height: '16px' }}>
+                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.1 3.89 23 5 23H11V21H5V3H14V8H19V9H21ZM17 13C18.1 13 19 13.9 19 15S18.1 17 17 17 15 16.1 15 15 15.9 13 17 13ZM20 19.5C20 20.3 19.3 21 18.5 21H15.5C14.7 21 14 20.3 14 19.5V18.5C14 17.7 14.7 17 15.5 17H18.5C19.3 17 20 17.7 20 18.5V19.5Z"/>
+              </svg>
+              Cadastrar Funcionário
             </StyledButton>
+            
             <StyledButton color="#28a745" hoverColor="#218838" onClick={handleExportToExcel}>
-              <i className="fas fa-file-excel"></i> Exportar Excel
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '16px', height: '16px' }}>
+                <path d="M14 2H6C4.89 2 4 2.9 4 4V20C4 21.11 4.89 22 6 22H18C19.11 22 20 21.11 20 20V8L14 2M18 20H6V4H13V9H18V20M9.5 12.5L11 15H10L9.2 13.5L8.5 15H7.5L9 12.5L7.5 10H8.5L9.2 11.5L10 10H11L9.5 12.5M14.5 10H16V11.5H14.5V13H16V14.5H14.5V16H13V10H14.5Z"/>
+              </svg>
+              Exportar Excel
             </StyledButton>
-            <StyledButton color="#17a2b8" hoverColor="#138496" onClick={handleExportToXML}>
-              <i className="fas fa-file-code"></i> Exportar XML
+            
+            <StyledButton color="#fd7e14" hoverColor="#e66b00" onClick={handleExportToXML}>
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '16px', height: '16px' }}>
+                <path d="M14 2H6C4.89 2 4 2.9 4 4V20C4 21.11 4.89 22 6 22H18C19.11 22 20 21.11 20 20V8L14 2M18 20H6V4H13V9H18V20M8.5 10.5L10 12L8.5 13.5L9.5 14.5L11.5 12L9.5 9.5L8.5 10.5M12.5 9.5L10.5 12L12.5 14.5L13.5 13.5L12 12L13.5 10.5L12.5 9.5M15.5 10.5L14 12L15.5 13.5L16.5 14.5L18.5 12L16.5 9.5L15.5 10.5Z"/>
+              </svg>
+              Exportar XML
             </StyledButton>
           </Actions>
         </Header>
         <Table>
           <thead>
             <tr>
+              <th>Nome</th>
               <th>Ativo</th>
               <th>Data Cadastro</th>
               <th>Chave Pix</th>
@@ -524,34 +573,49 @@ const EmployeesPage: React.FC = () => {
           <tbody>
             {employees.map((employee) => (
               <tr key={employee.id}>
+                <td>{employee.name}</td>
                 <td>{employee.active ? "Sim" : "Não"}</td>
                 <td>{employee.registrationDate}</td>
                 <td>{employee.pixKey}</td>
                 <td>{employee.accessPanel ? "Sim" : "Não"}</td>
                 <td>
-                  <Actions>
-                    <StyledButton
-                      color="#007bff"
-                      hoverColor="#0056b3"
+                  <ActionButtonsContainer>
+                    <ActionButton 
+                      color="#17a2b8" 
+                      hoverColor="#138496" 
                       onClick={() => handleViewDetails(employee)}
+                      title="Ver dados completos"
                     >
-                      <i className="fas fa-eye"></i> Visualizar
-                    </StyledButton>
-                    <StyledButton
-                      color="#ffc107"
-                      hoverColor="#e0a800"
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                      </svg>
+                      Dados
+                    </ActionButton>
+                    
+                    <ActionButton 
+                      color="#ffc107" 
+                      hoverColor="#e0a800" 
                       onClick={() => handleOpenEditModal(employee)}
+                      title="Editar funcionário"
                     >
-                      <i className="fas fa-edit"></i> Editar
-                    </StyledButton>
-                    <StyledButton
-                      color="#dc3545"
-                      hoverColor="#c82333"
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                      </svg>
+                      Editar
+                    </ActionButton>
+                    
+                    <ActionButton 
+                      color="#dc3545" 
+                      hoverColor="#c82333" 
                       onClick={() => handleDeleteEmployee(employee.id)}
+                      title="Excluir funcionário"
                     >
-                      <i className="fas fa-trash"></i> Excluir
-                    </StyledButton>
-                  </Actions>
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                      </svg>
+                      Excluir
+                    </ActionButton>
+                  </ActionButtonsContainer>
                 </td>
               </tr>
             ))}
