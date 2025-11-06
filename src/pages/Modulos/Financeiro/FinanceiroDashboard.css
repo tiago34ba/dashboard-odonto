@@ -1,0 +1,126 @@
+﻿.financeiro-dashboard-new {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+.dashboard-header-new {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn-adicionar-conta {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-adicionar-conta:hover {
+  background: #0056b3;
+}
+
+.filtros-data {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-data {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 120px;
+}
+
+.btn-relatorio {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cards-status {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.card-status {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: white;
+  font-weight: 500;
+}
+
+.card-status.vencidas {
+  background: #dc3545;
+}
+
+.card-status.vence-hoje {
+  background: #fd7e14;
+}
+
+.card-status.vence-amanha {
+  background: #6c757d;
+}
+
+.card-status.recebidas {
+  background: #28a745;
+}
+
+.card-status.total {
+  background: #343a40;
+}
+
+.card-icon {
+  font-size: 16px;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-label {
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.card-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dashboard-content {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

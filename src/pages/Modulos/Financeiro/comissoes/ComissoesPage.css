@@ -1,0 +1,179 @@
+/* Comissões Page - Estilo baseado na imagem */
+
+.comissoes-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 20px;
+}
+
+.comissoes-header {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filtros-container {
+  margin-bottom: 20px;
+}
+
+.filtros-grupo {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filtro-data {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+.filtro-icon {
+  font-size: 16px;
+  color: #666;
+}
+
+.input-data-comissoes {
+  border: none;
+  outline: none;
+  font-size: 14px;
+  width: 100px;
+  color: #333;
+}
+
+.filtro-funcionario {
+  position: relative;
+}
+
+.select-funcionario {
+  padding: 10px 35px 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  min-width: 180px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+
+.select-funcionario:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.btn-baixar-comissoes {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-baixar-comissoes:hover {
+  background: #218838;
+}
+
+.navegacao-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.navegacao-links,
+.navegacao-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-link,
+.status-link {
+  font-size: 14px;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link:hover,
+.status-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.nav-separator {
+  color: #666;
+  font-size: 14px;
+}
+
+.comissoes-content {
+  background: white;
+  border-radius: 8px;
+  padding: 40px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lista-vazia {
+  text-align: center;
+}
+
+.mensagem-vazia {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .comissoes-page {
+    padding: 10px;
+  }
+  
+  .filtros-grupo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filtro-data,
+  .select-funcionario,
+  .btn-baixar-comissoes {
+    width: 100%;
+  }
+  
+  .navegacao-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  
+  .navegacao-links,
+  .navegacao-status {
+    justify-content: center;
+  }
+}

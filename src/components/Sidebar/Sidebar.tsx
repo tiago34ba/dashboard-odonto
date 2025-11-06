@@ -34,9 +34,9 @@ const RecursiveMenu: React.FC<{ menu: Menu }> = ({ menu }) => {
     "Grupos Anamnese": "fa-layer-group",
     formas_pgto: "fa-credit-card",
     frequencias: "fa-calendar-check",
-    cargos: "fa-briefcase",
-    grupo_acessos: "fa-users-cog",
-    acessos: "fa-key",
+    Cargos: "fa-briefcase",
+    "Grupo de Acessos": "fa-users-cog",
+    Acessos: "fa-key",
     Agendamentos: "fa-calendar-alt",
     Agendados: "fa-calendar-day",
     "Relatório de Agendamentos": "fa-file-alt",
@@ -106,7 +106,7 @@ const Sidebar: React.FC = () => {
         { title: "Pacientes", path: "/dashboard/pessoas/pacientes/PatientsPage" },
         { title: "Funcionários", path: "/dashboard/pessoas/funcionarios" },
         { title: "Úsuarios", path: "/dashboard/pessoas/usuarios" },
-        { title: "Fornecedores", path: "/dashboard/pessoas/fornecedores" },
+        { title: "Fornecedores", path: "/dashboard/cadastros/fornecedores" },
       ],
     },
     {
@@ -118,9 +118,9 @@ const Sidebar: React.FC = () => {
         { title: "Grupos Anamnese", path: "/dashboard/cadastros/grupos-anamnese" },
         { title: "formas_pgto", path: "/dashboard/cadastros/formas-pgto" },
         { title: "frequencias", path: "/dashboard/cadastros/frequencias" },
-        { title: "cargos", path: "/dashboard/cadastros/cargos" },
-        { title: "grupo_acessos", path: "/dashboard/cadastros/grupo-acessos" },
-        { title: "acessos", path: "/dashboard/cadastros/acessos" },
+        { title: "Cargos", path: "/dashboard/cadastros/cargos" },
+        { title: "Grupo de Acessos", path: "/dashboard/cadastros/grupo-acessos" },
+        { title: "Acessos", path: "/dashboard/cadastros/acessos" },
       ],
     },
     {
@@ -134,10 +134,11 @@ const Sidebar: React.FC = () => {
     {
       title: "Financeiro",
       submenus: [
-        { title: "Contas a Pagar", path: "/dashboard/financeiro/contas-a-pagar" },
-        { title: "Contas a Receber", path: "/dashboard/financeiro/contas-a-receber" },
+        { title: "Contas a Pagar", path: "/dashboard/financeiro/contas-pagar" },
+        { title: "Contas a Receber", path: "/dashboard/financeiro/contas-receber" },
         { title: "Recebimentos Convênio", path: "/dashboard/financeiro/recebimentos-convenio" },
         { title: "Comissões", path: "/dashboard/financeiro/comissoes" },
+        { title: "Consulta", path: "/dashboard/financeiro/consulta" },
       ],
     },
     { isDivider: true, title: "" }, // Divisor abaixo de "Financeiro"

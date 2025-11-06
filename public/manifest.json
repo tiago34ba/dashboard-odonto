@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "SSait Odonto",
+  "name": "SSait Odonto - Sistema Odontológico",
+  "description": "Sistema completo de gestão odontológica",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,31 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#007bff",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["medical", "productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Acessar dashboard principal",
+      "url": "/dashboard",
+      "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pacientes",
+      "short_name": "Pacientes",
+      "description": "Gerenciar pacientes",
+      "url": "/dashboard/pessoas/pacientes/PatientsPage",
+      "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
+    },
+    {
+      "name": "Agendamentos",
+      "short_name": "Agendamentos",
+      "description": "Gerenciar agendamentos",
+      "url": "/dashboard/agendamentos",
+      "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
+    }
+  ]
 }
