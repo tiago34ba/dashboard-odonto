@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GrupoAcessosList from '../components/GrupoAcessosList';
+import GrupoAcessosList from './Modulos/cadastros/GrupoAcessos/components/GrupoAcessosList';
 
 const GrupoAcessosPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);

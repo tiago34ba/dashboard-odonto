@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import ModalAgendamento from "./ModalAgendamento";
 import styled from "styled-components";
 import { FaPlus, FaEdit, FaTrash, FaCalendarCheck, FaClock, FaUser, FaCheck, FaTimes } from "react-icons/fa";
@@ -424,7 +423,6 @@ export default function AgendamentosPage() {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>

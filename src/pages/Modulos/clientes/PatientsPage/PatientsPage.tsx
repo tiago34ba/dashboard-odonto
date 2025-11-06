@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import api from "../../../../components/api/api";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import Modal from "./Modal";
 import AddPatientForm from "../PatientTable/AddPatientForm";
-import LazyComponent, { VirtualList } from "../../../../components/LazyComponent/LazyComponent";
+import LazyComponent, { VirtualList } from "../../../../components/shared/LazyComponent/LazyComponent";
 import styled from "styled-components";
 import * as XLSX from "xlsx";
 
@@ -947,7 +946,6 @@ const PatientsPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>Lista de Pacientes</Title>

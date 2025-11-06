@@ -1,10 +1,10 @@
 import React, { Suspense } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Sidebar from "./components/Sidebar/Sidebar";
-import Header from "./components/Header/Header";
-import { ConsentBanner } from "./components/LGPD/ConsentBanner";
-import { Notification, useNotification } from "./components/Notification/Notification";
-import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
+import Sidebar from "./components/layout/Sidebar/Sidebar";
+import Header from "./components/layout/Header/Header";
+import { ConsentBanner } from "./components/ui/LGPD/ConsentBanner";
+import { Notification, useNotification } from "./components/ui/Notification/Notification";
+import LoadingSpinner from "./components/ui/LoadingSpinner/LoadingSpinner";
 import "./App.css";
 
 // Lazy loading das páginas principais
@@ -37,6 +37,19 @@ const ContasReceberPage = React.lazy(() => import("./pages/Modulos/Financeiro/Co
 const RecebimentosConvenioPage = React.lazy(() => import("./pages/Modulos/Financeiro/RecebimentosConvenio/RecebimentosConvenioPage"));
 const ComissoesPage = React.lazy(() => import("./pages/Modulos/Financeiro/comissoes/ComissoesPage"));
 const ConsultaPage = React.lazy(() => import("./pages/Modulos/Financeiro/consulta/ConsultaPage"));
+const HorariosPage = React.lazy(() => import("./pages/Modulos/horarios/HorariosPage"));
+const MinhasComissoesPage = React.lazy(() => import("./pages/Modulos/MinhasComissoes/MinhasComissoesPage"));
+const OdontogramasPage = React.lazy(() => import("./pages/Modulos/Odontogramas/OdontogramasPage"));
+const TratamentosPage = React.lazy(() => import("./pages/Modulos/Tratamentos/TratamentosPage"));
+const OrcamentosPage = React.lazy(() => import("./pages/Modulos/Orcamentos/OrcamentosPage"));
+const CaixaPage = React.lazy(() => import("./pages/Modulos/Caixa/CaixaPage"));
+const TarefasPage = React.lazy(() => import("./pages/Modulos/Tarefas/TarefasPage"));
+const AnotacoesPage = React.lazy(() => import("./pages/Modulos/Anotacoes/AnotacoesPage"));
+const RelatorioFinanceiroPage = React.lazy(() => import("./pages/Modulos/Relatorios/RelatorioFinanceiroPage"));
+const RelatorioSinteticoDespesasPage = React.lazy(() => import("./pages/Modulos/Relatorios/RelatorioSinteticoDespesasPage"));
+const RelatorioSinteticoRecebimentosPage = React.lazy(() => import("./pages/Modulos/Relatorios/RelatorioSinteticoRecebimentosPage"));
+const RelatorioBalancoAnualPage = React.lazy(() => import("./pages/Modulos/Relatorios/RelatorioBalancoAnualPage"));
+const RelatorioInadimplentesPage = React.lazy(() => import("./pages/Modulos/Relatorios/RelatorioInadimplentesPage"));
 
 const App: React.FC = () => {
   const { notifications, hideNotification } = useNotification();
@@ -100,6 +113,19 @@ const App: React.FC = () => {
                       <Route path="/financeiro/comissoes" element={<ComissoesPage />} />
                       <Route path="/financeiro/consulta" element={<ConsultaPage />} />
                       <Route path="/consultas" element={<ConsultaPage />} />
+                      <Route path="/horarios" element={<HorariosPage />} />
+                      <Route path="/minhas-comissoes" element={<MinhasComissoesPage />} />
+                      <Route path="/odontogramas" element={<OdontogramasPage />} />
+                      <Route path="/tratamentos" element={<TratamentosPage />} />
+                      <Route path="/orcamentos" element={<OrcamentosPage />} />
+                      <Route path="/caixas-aberto" element={<CaixaPage />} />
+                      <Route path="/tarefas-agenda" element={<TarefasPage />} />
+                      <Route path="/anotacoes" element={<AnotacoesPage />} />
+                      <Route path="/relatorios/relatorio-financeiro" element={<RelatorioFinanceiroPage />} />
+                      <Route path="/relatorios/relatorio-sintetico-despesas" element={<RelatorioSinteticoDespesasPage />} />
+                      <Route path="/relatorios/relatorio-sintetico-receber" element={<RelatorioSinteticoRecebimentosPage />} />
+                      <Route path="/relatorios/relatorio-balanco-anual" element={<RelatorioBalancoAnualPage />} />
+                      <Route path="/relatorios/relatorio-inadimplementes" element={<RelatorioInadimplentesPage />} />
                     </Routes>
                   </Suspense>
                 </div>

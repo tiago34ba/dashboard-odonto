@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import ModalConvenio from "./ModalConvenio";
 import styled from "styled-components";
 import { 
@@ -485,7 +484,6 @@ ${filteredConvenios.map(c => `
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>

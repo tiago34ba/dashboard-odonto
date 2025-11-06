@@ -1,0 +1,451 @@
+.minhas-comissoes-page {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.comissoes-header {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e3e6f0;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-title::before {
+  content: '💼';
+  font-size: 28px;
+}
+
+.btn-relatorio {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.btn-relatorio:hover {
+  background: linear-gradient(135deg, #218838, #1ea580);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.filters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.date-filters {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.date-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: border-color 0.2s ease;
+}
+
+.date-input-group:focus-within {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.date-input-group label {
+  font-size: 16px;
+  color: #666;
+}
+
+.date-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #333;
+  width: 120px;
+  font-family: inherit;
+}
+
+.date-input::placeholder {
+  color: #999;
+}
+
+.filter-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-link {
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.filter-link:hover {
+  background-color: #e3f2fd;
+  color: #0056b3;
+}
+
+.filter-link.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+.vertical-separator {
+  color: #ccc;
+  font-weight: 300;
+  margin: 0 10px;
+}
+
+.resumo-cards {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.resumo-card {
+  flex: 1;
+  min-width: 200px;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.resumo-card:hover {
+  transform: translateY(-2px);
+}
+
+.resumo-card.total {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.resumo-card.pendente {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.resumo-card.pago {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+.card-icon {
+  font-size: 24px;
+  opacity: 0.9;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  opacity: 0.9;
+  letter-spacing: 0.5px;
+}
+
+.card-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.comissoes-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e3e6f0;
+  overflow: hidden;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  text-align: center;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
+}
+
+.comissoes-table-container {
+  overflow-x: auto;
+}
+
+.comissoes-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.comissoes-table thead {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.comissoes-table th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.comissoes-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.comissoes-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.comissoes-table tbody tr:hover {
+  background-color: #f8f9ff;
+}
+
+.paciente-cell {
+  font-weight: 600;
+  color: #2c3e50;
+  max-width: 200px;
+}
+
+.paciente-info strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.procedimento-cell {
+  color: #5a6c7d;
+  max-width: 150px;
+}
+
+.valor-cell,
+.comissao-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #28a745;
+}
+
+.percentual-cell {
+  font-weight: 600;
+  color: #6c757d;
+  text-align: center;
+}
+
+.data-cell {
+  color: #5a6c7d;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.status-cell {
+  text-align: center;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.status-pago {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-pendente {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.status-cancelado {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.acoes-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-action {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.1);
+}
+
+.btn-action.view:hover {
+  background-color: #e3f2fd;
+}
+
+.btn-action.download:hover {
+  background-color: #e8f5e8;
+}
+
+.comissoes-footer {
+  padding: 20px 24px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #eee;
+}
+
+.footer-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.stat-item {
+  color: #5a6c7d;
+  font-size: 14px;
+}
+
+.stat-item strong {
+  color: #2c3e50;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .comissoes-table th,
+  .comissoes-table td {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+  
+  .paciente-cell {
+    max-width: 150px;
+  }
+  
+  .procedimento-cell {
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .minhas-comissoes-page {
+    padding: 12px;
+  }
+  
+  .header-top {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .filters-section {
+    gap: 16px;
+  }
+  
+  .date-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .filter-links {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .vertical-separator {
+    display: none;
+  }
+  
+  .resumo-cards {
+    flex-direction: column;
+  }
+  
+  .footer-stats {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .comissoes-table-container {
+    font-size: 11px;
+  }
+  
+  .comissoes-table th,
+  .comissoes-table td {
+    padding: 8px 4px;
+  }
+  
+  .paciente-cell,
+  .procedimento-cell {
+    max-width: 100px;
+  }
+}

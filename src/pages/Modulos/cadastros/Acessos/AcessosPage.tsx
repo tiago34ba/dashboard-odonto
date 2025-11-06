@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import AcessosList from "../../../../components/AcessosList";
-import AcessosForm from "../../../../components/AcessosForm";
+import AcessosList from "./components/AcessosList";
+import AcessosForm from "./components/AcessosForm";
 
 const AcessosPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<'list' | 'form'>('list');

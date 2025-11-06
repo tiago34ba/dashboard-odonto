@@ -1,5 +1,5 @@
 import React from 'react';
-import AcessosList from '../components/AcessosList';
+import AcessosList from './Modulos/cadastros/Acessos/components/AcessosList';
 
 const AcessosPage: React.FC = () => {
   const handleCreate = () => {

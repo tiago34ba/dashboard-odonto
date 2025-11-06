@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import styled from "styled-components";
 
 // Estilos modernizados
@@ -528,7 +527,6 @@ const EmployeesPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>Lista de Funcionários</Title>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './FinanceiroDashboard.css';
-import ContasPagarDashboard from '../../../components/ContasPagar/ContasPagarDashboard';
-import ContasReceberList from '../../../components/ContasReceber/ContasReceberList';
+ import ContasPagarDashboard from './components/ContasPagar/ContasPagarDashboard';
+import ContasReceberList from './components/ContasReceber/ContasReceberList';
 
 interface FinanceiroDashboardProps {}
 

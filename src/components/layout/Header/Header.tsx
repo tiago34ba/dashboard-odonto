@@ -9,8 +9,8 @@ import {
 } from "react-icons/fa";
 
 // Lazy loading dos gráficos
-const PieChartComponent = lazy(() => import("../../components/Charts/PieChartComponent"));
-const FinancialPieChart = lazy(() => import("../../components/Charts/FinancialPieChart"));
+const PieChartComponent = lazy(() => import("../../shared/Charts/PieChartComponent"));
+const FinancialPieChart = lazy(() => import("../../shared/Charts/FinancialPieChart"));
 
 interface CardProps {
   title: string;

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import ModalItemAnamnese from "./ModalItemAnamnese";
 import styled from "styled-components";
 import { 
@@ -455,7 +454,6 @@ export default function ItensAnamnesePage() {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>

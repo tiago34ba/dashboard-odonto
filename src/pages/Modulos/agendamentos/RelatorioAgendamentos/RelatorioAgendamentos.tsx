@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import styled from "styled-components";
 import { 
   FaCalendarAlt, 
@@ -334,7 +333,6 @@ export default function RelatorioAgendamentos() {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>

@@ -97,6 +97,11 @@
   background: #343a40;
 }
 
+.card-status.todas-pendentes {
+  background: linear-gradient(135deg, #4a90e2, #357abd);
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
 .card-icon {
   font-size: 16px;
 }

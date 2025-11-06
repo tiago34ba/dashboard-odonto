@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import GrupoAcessosList from "../../../../components/GrupoAcessosList";
-import GrupoAcessosForm from "../../../../components/GrupoAcessosForm";
+import GrupoAcessosList from "./components/GrupoAcessosList";
+import GrupoAcessosForm from "./components/GrupoAcessosForm";
 
 const GrupoAcessosPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<'list' | 'form'>('list');

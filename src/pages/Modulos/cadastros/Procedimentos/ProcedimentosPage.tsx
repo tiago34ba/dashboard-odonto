@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import ModalProcedimento from "./ModalProcedimento";
 import styled from "styled-components";
 import { 
@@ -472,7 +471,6 @@ ${filteredProcedimentos.map(p => `
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>

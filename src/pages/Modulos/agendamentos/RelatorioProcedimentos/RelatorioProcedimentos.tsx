@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import styled from "styled-components";
 import { 
   FaToolbox, 
@@ -529,7 +528,6 @@ export default function RelatorioProcedimentos() {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>

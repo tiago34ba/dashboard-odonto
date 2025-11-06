@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import CargosList from "../../../../components/CargosList";
-import CargosForm from "../../../../components/CargosForm";
+import CargosList from "./components/CargosList";
+import CargosForm from "./components/CargosForm";
 
 const CargosPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<'list' | 'form'>('list');

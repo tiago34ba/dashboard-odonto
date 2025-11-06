@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import ModalGrupoAnamnese from "./ModalGrupoAnamnese";
 import styled from "styled-components";
 import { 
@@ -175,7 +174,6 @@ const GruposAnamnesePage: React.FC = () => {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <PageHeader>
           <HeaderTitle>

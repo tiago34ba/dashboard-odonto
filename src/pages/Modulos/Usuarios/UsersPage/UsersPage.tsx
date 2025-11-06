@@ -1,6 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import styled from 'styled-components';
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import * as XLSX from "xlsx";
 
 // Estilos modernizados
@@ -245,7 +244,6 @@ ${xmlData}
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <Header>
           <Title>Usuários Cadastrados</Title>

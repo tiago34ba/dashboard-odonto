@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ContasPagarList from '../../../../components/ContasPagar/ContasPagarList';
+import ContasPagarList from '../components/ContasPagar/ContasPagarList';
 import '../FinanceiroDashboard.css';
 
 interface ContaPagar {

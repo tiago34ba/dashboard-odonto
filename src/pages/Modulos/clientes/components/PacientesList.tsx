@@ -1,8 +1,8 @@
 // Componente de exemplo para listar pacientes
 import React, { useState, useEffect } from 'react';
-import { usePacientes, usePacienteSearch, useReferenceData } from '../hooks/useApi';
-import { Paciente, PacienteFilters } from '../services/api';
-import { maskSensitiveData } from '../utils/encryption';
+import { usePacientes, usePacienteSearch, useReferenceData } from '../../../../hooks/useApi';
+import { Paciente, PacienteFilters } from '../../../../services/api';
+import { maskSensitiveData } from '../../../../utils/encryption';
 
 interface PacientesListProps {
   showMasked?: boolean;

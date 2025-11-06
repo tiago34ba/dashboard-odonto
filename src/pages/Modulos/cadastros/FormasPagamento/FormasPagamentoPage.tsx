@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import styled from "styled-components";
 import { 
   FaPlus, 
@@ -438,7 +437,6 @@ const FormasPagamentoPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <PageHeader>
           <HeaderTitle>

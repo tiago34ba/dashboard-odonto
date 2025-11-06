@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../../../components/Sidebar/Sidebar";
 import styled from "styled-components";
 import * as FaIcons from "react-icons/fa";
 
@@ -375,7 +374,6 @@ const FrequenciasPage: React.FC = () => {
 
   return (
     <PageWrapper>
-      <Sidebar />
       <MainContent>
         <PageHeader>
           <HeaderTitle>

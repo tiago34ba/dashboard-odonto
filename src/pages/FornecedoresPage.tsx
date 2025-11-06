@@ -1,5 +1,5 @@
 import React from 'react';
-import FornecedoresList from '../components/FornecedoresList';
+import FornecedoresList from './Modulos/cadastros/Fornecedores/components/FornecedoresList';
 
 interface Fornecedor {
   id: number;
