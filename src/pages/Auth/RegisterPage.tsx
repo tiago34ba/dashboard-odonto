@@ -388,12 +388,32 @@ const RegisterPage: React.FC = () => {
         throw new Error('Você deve aceitar a política de privacidade');
       }
 
-      // Simular API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Envio real para API Laravel
+      const payload = {
+        nome: formData.firstName,
+        sobrenome: formData.lastName,
+        email: formData.email,
+        telefone: formData.phone,
+        clinica: formData.clinicName,
+        especialidade: formData.specialty,
+        senha: formData.password
+      };
 
-      // Registro simulado (você substituirá por API real)
+      const response = await fetch('http://127.0.0.1:8000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao criar conta');
+      }
+
       setSuccess('Conta criada com sucesso! Redirecionando para login...');
-      
       setTimeout(() => {
         navigate('/login');
       }, 2000);

@@ -1,4 +1,49 @@
-﻿.financeiro-dashboard-new {
+﻿.btn-conta-individual {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15);
+  transition: background 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.btn-conta-individual:hover {
+  background: #b52a3a;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+}
+/* Botões dinâmicos de contas individuais */
+.contas-botoes-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Botão dinâmico de conta individual - cores mais legíveis */
+.btn-conta-individual {
+  background: linear-gradient(135deg, #f8f9fa 60%, #e9ecef 100%);
+  color: #212529;
+  border: 1px solid #adb5bd;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(33, 37, 41, 0.08);
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.btn-conta-individual:hover {
+  background: linear-gradient(135deg, #e2e6ea 60%, #dee2e6 100%);
+  color: #007bff;
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(33, 37, 41, 0.18);
+}
+.financeiro-dashboard-new {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;

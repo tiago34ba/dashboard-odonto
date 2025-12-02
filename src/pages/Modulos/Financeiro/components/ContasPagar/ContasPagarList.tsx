@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './ContasPagarList.css';
+import { contasPagarFakes } from '../../ContasPagar/contasPagarFakes';
 
 interface ContaPagar {
   id: number;
@@ -34,9 +35,11 @@ interface ContasPagarListProps {
   onEdit?: (conta: ContaPagar) => void;
   onDelete?: (id: number) => void;
   onPay?: (conta: ContaPagar) => void;
+  filterStatus?: string;
+  contaFiltroId?: number | null;
 }
 
-const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onPay }) => {
+const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onPay, filterStatus, contaFiltroId }) => {
   const [contas, setContas] = useState<ContaPagar[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,47 +52,39 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onP
 
   // Filter state
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterCategoria, setFilterCategoria] = useState<string>('');
   const [viewMode] = useState<'cards' | 'table'>('cards');
 
   const fetchContasPagar = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
-      // Lista vazia - aguardando integração com API real
-      const contasFake: ContaPagar[] = [];
+      // Usar dados fakes para exibição
+      let dadosFiltrados = contasPagarFakes;
 
-      // Simular delay da API
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Aplicar filtros nos dados
-      let dadosFiltrados = contasFake;
-
-      if (search.trim()) {
-        const s = search.toLowerCase();
-        dadosFiltrados = dadosFiltrados.filter(conta =>
-          conta.descricao.toLowerCase().includes(s) ||
-          conta.fornecedor.toLowerCase().includes(s) ||
-          conta.codigo.toLowerCase().includes(s) ||
-          conta.categoria.toLowerCase().includes(s)
-        );
+      if (contaFiltroId) {
+        dadosFiltrados = dadosFiltrados.filter(conta => conta.id === contaFiltroId);
+      } else {
+        if (search.trim()) {
+          const s = search.toLowerCase();
+          dadosFiltrados = dadosFiltrados.filter(conta =>
+            conta.descricao.toLowerCase().includes(s) ||
+            conta.fornecedor.toLowerCase().includes(s) ||
+            (conta.codigo ? conta.codigo.toLowerCase().includes(s) : false) ||
+            conta.categoria.toLowerCase().includes(s)
+          );
+        }
+        if (filterStatus) {
+          dadosFiltrados = dadosFiltrados.filter(conta => conta.status === filterStatus);
+        }
+        if (filterCategoria) {
+          dadosFiltrados = dadosFiltrados.filter(conta => conta.categoria === filterCategoria);
+        }
       }
-
-      if (filterStatus) {
-        dadosFiltrados = dadosFiltrados.filter(conta => conta.status === filterStatus);
-      }
-
-      if (filterCategoria) {
-        dadosFiltrados = dadosFiltrados.filter(conta => conta.categoria === filterCategoria);
-      }
-
       // Simular paginação
       const startIndex = (currentPage - 1) * perPage;
       const endIndex = startIndex + perPage;
       const paginatedData = dadosFiltrados.slice(startIndex, endIndex);
-
       setContas(paginatedData);
       setLastPage(Math.max(1, Math.ceil(dadosFiltrados.length / perPage)));
       setTotal(dadosFiltrados.length);

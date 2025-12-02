@@ -1,58 +1,49 @@
 import React, { useState } from "react";
 import GrupoAcessosList from "./components/GrupoAcessosList";
 import GrupoAcessosForm from "./components/GrupoAcessosForm";
+import Modal from "../../Usuarios/UsersPage/Modal";
 
 const GrupoAcessosPage: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'list' | 'form'>('list');
+  const [showModal, setShowModal] = useState(false);
   const [editingGrupo, setEditingGrupo] = useState<any>(null);
 
   const handleEdit = (grupo: any) => {
     setEditingGrupo(grupo);
-    setCurrentView('form');
+    setShowModal(true);
   };
 
   const handleCreate = () => {
     setEditingGrupo(null);
-    setCurrentView('form');
+    setShowModal(true);
   };
 
-  const handleBackToList = () => {
+  const handleCloseModal = () => {
+    setShowModal(false);
     setEditingGrupo(null);
-    setCurrentView('list');
   };
 
   const handleSave = (grupoData: any) => {
     // Implementar lógica de salvamento
     console.log('Salvando grupo de acessos:', grupoData);
-    setCurrentView('list');
+    setShowModal(false);
   };
 
   return (
     <div className="p-6">
-      {currentView === 'list' ? (
-        <div>
-          <div className="mb-4">
-            <button 
-              onClick={handleCreate}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-            >
-              ➕ Novo Grupo de Acessos
-            </button>
-          </div>
-          {// @ts-ignore
-          React.createElement(GrupoAcessosList as any, {
-            onEdit: handleEdit,
-            onCreate: handleCreate,
-          })}
-        </div>
-      ) : (
-        // @ts-ignore
-        React.createElement(GrupoAcessosForm as any, {
-          grupo: editingGrupo,
-          onSave: handleSave,
-          onCancel: handleBackToList,
-        })
-      )}
+      <div className="mb-4">
+        <button 
+          onClick={handleCreate}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          ➕ Novo Cargo
+        </button>
+      </div>
+      {/* Lista de grupos de acesso */}
+      <GrupoAcessosList onEdit={handleEdit} onCreate={handleCreate} />
+      {/* Modal do formulário */}
+      <Modal isOpen={showModal} onClose={handleCloseModal}>
+        <GrupoAcessosForm grupo={editingGrupo} onSave={handleSave} onCancel={handleCloseModal} />
+      </Modal>
     </div>
   );
 };

@@ -371,8 +371,11 @@ const PlanosPage: React.FC = () => {
                   ))}
                 </FeaturesList>
 
-                <PlanButton featured={plan.featured} onClick={handleGoToRegister}>
-                  {plan.featured ? 'Começar Agora' : 'Selecionar Plano'}
+                <PlanButton
+                  featured={plan.featured}
+                  onClick={() => navigate('/pagamento', { state: { plano: plan.name, preco: plan.price } })}
+                >
+                  Selecionar Plano
                 </PlanButton>
               </PlanCard>
             ))}

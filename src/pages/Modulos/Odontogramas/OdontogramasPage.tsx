@@ -191,13 +191,67 @@ const OdontogramasPage: React.FC = () => {
   };
 
   const renderDentes = (dentes: number[], tipo: 'superiores' | 'inferiores') => {
+    // SVGs realistas para cada tipo de dente
+    const getToothSVG = (numero: number, hasInfo: boolean) => {
+      // Incisivos centrais/laterais
+      const incisivos = [11, 12, 21, 22, 31, 32, 41, 42];
+      // Caninos
+      const caninos = [13, 23, 33, 43];
+      // Pré-molares
+      const premolares = [14, 15, 24, 25, 34, 35, 44, 45];
+      // Molares
+      const molares = [16, 17, 18, 26, 27, 28, 36, 37, 38, 46, 47, 48];
+
+      // SVGs realistas
+      if (incisivos.includes(numero)) {
+        return (
+          <svg viewBox="0 0 40 60" className="dente-svg">
+            <path d="M20 8 Q28 18 20 55 Q12 18 20 8 Z" fill={hasInfo ? '#fff' : '#e0e0e0'} stroke="#bbb" strokeWidth="2"/>
+            <ellipse cx="20" cy="18" rx="7" ry="5" fill="#fff" opacity="0.7" />
+          </svg>
+        );
+      }
+      if (caninos.includes(numero)) {
+        return (
+          <svg viewBox="0 0 40 60" className="dente-svg">
+            <path d="M20 10 Q35 30 20 55 Q5 30 20 10 Z" fill={hasInfo ? '#fff' : '#e0e0e0'} stroke="#bbb" strokeWidth="2"/>
+            <ellipse cx="20" cy="22" rx="6" ry="4" fill="#fff" opacity="0.7" />
+          </svg>
+        );
+      }
+      if (premolares.includes(numero)) {
+        return (
+          <svg viewBox="0 0 40 60" className="dente-svg">
+            <ellipse cx="20" cy="32" rx="10" ry="20" fill={hasInfo ? '#fff' : '#e0e0e0'} stroke="#bbb" strokeWidth="2"/>
+            <ellipse cx="20" cy="20" rx="7" ry="5" fill="#fff" opacity="0.7" />
+            <ellipse cx="20" cy="44" rx="7" ry="5" fill="#fff" opacity="0.7" />
+          </svg>
+        );
+      }
+      if (molares.includes(numero)) {
+        return (
+          <svg viewBox="0 0 40 60" className="dente-svg">
+            <rect x="8" y="14" width="24" height="32" rx="10" fill={hasInfo ? '#fff' : '#e0e0e0'} stroke="#bbb" strokeWidth="2"/>
+            <ellipse cx="20" cy="44" rx="9" ry="7" fill="#fff" opacity="0.7" />
+            <ellipse cx="20" cy="22" rx="8" ry="6" fill="#fff" opacity="0.7" />
+          </svg>
+        );
+      }
+      // Decíduos e fallback
+      return (
+        <svg viewBox="0 0 40 60" className="dente-svg">
+          <ellipse cx="20" cy="30" rx="10" ry="20" fill={hasInfo ? '#fff' : '#e0e0e0'} stroke="#bbb" strokeWidth="2"/>
+          <ellipse cx="20" cy="18" rx="7" ry="5" fill="#fff" opacity="0.7" />
+        </svg>
+      );
+    };
+
     return (
-      <div className={`dentes-row ${tipo}`}>
+      <div className={`dentes-row ${tipo}`}> 
         {dentes.map(numero => {
           const denteInfo = formData.dentes.find(d => d.numero === numero);
           const isSelected = selectedDente === numero;
           const hasInfo = !!denteInfo;
-          
           return (
             <div key={numero} className="dente-container">
               <div className="dente-numero">{numero}</div>
@@ -205,19 +259,7 @@ const OdontogramasPage: React.FC = () => {
                 className={`dente ${isSelected ? 'selected' : ''} ${hasInfo ? 'has-info' : ''}`}
                 onClick={() => handleDenteClick(numero)}
               >
-                {tipo === 'superiores' ? (
-                  <svg viewBox="0 0 40 60" className="dente-svg">
-                    <path d="M20 5 L30 15 L30 50 L25 55 L15 55 L10 50 L10 15 Z" 
-                          fill={hasInfo ? '#ff6b6b' : '#e0e0e0'} 
-                          stroke="#666" strokeWidth="1"/>
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 40 60" className="dente-svg">
-                    <path d="M20 55 L30 45 L30 10 L25 5 L15 5 L10 10 L10 45 Z" 
-                          fill={hasInfo ? '#ff6b6b' : '#e0e0e0'} 
-                          stroke="#666" strokeWidth="1"/>
-                  </svg>
-                )}
+                {getToothSVG(numero, hasInfo)}
               </div>
             </div>
           );

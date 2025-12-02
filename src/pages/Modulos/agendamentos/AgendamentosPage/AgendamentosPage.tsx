@@ -370,6 +370,7 @@ export default function AgendamentosPage() {
     status: '',
     data: '',
   });
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Função para filtrar agendamentos
   useEffect(() => {
@@ -430,7 +431,7 @@ export default function AgendamentosPage() {
             Agendamentos
           </Title>
           <Actions>
-            <StyledButton variant="primary">
+            <StyledButton variant="primary" onClick={() => setShowAddModal(true)}>
               <FaPlus />
               Novo Agendamento
             </StyledButton>
@@ -549,7 +550,43 @@ export default function AgendamentosPage() {
             </tbody>
           </Table>
         </TableContainer>
-      </MainContent>
-    </PageWrapper>
-  );
+      {showAddModal && (
+        <React.Suspense fallback={null}>
+          {(() => {
+            const AddAgendamentoModal = require('../../agendamentos/components/AddAgendamentoModal').default;
+            return (
+              <AddAgendamentoModal
+                onClose={() => setShowAddModal(false)}
+                onSubmit={(novo: {
+                  paciente: string;
+                  profissional: string;
+                  procedimento: string;
+                  data: string;
+                  hora: string;
+                  telefone: string;
+                  observacoes?: string;
+                  retorno?: boolean;
+                }) => {
+                  setAgendamentos([...agendamentos, {
+                    id: agendamentos.length + 1,
+                    paciente: novo.paciente,
+                    dentista: novo.profissional,
+                    procedimento: novo.procedimento,
+                    data: novo.data,
+                    hora: novo.hora,
+                    status: 'agendado',
+                    telefone: novo.telefone,
+                    observacoes: novo.observacoes
+                  }]);
+                  setShowAddModal(false);
+                }}
+                agendamentosExistentes={agendamentos.map(a => ({ data: a.data, hora: a.hora, status: a.status }))}
+              />
+            );
+          })()}
+        </React.Suspense>
+      )}
+    </MainContent>
+  </PageWrapper>
+);
 }

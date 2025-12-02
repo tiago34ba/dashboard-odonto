@@ -9,15 +9,21 @@ const LockOpenIcon = ({ className }: { className?: string }) => (
   <span className={`${className} inline-block`}>🔓</span>
 );
 
-const AcessosForm = () => {
+interface AcessosFormProps {
+  acesso?: any;
+  onSave?: (acessoData: any) => void;
+  onCancel?: () => void;
+}
+
+const AcessosForm: React.FC<AcessosFormProps> = ({ acesso, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
-    nome: "",
-    codigo: "",
-    descricao: "",
-    categoria: "Usuários",
-    nivel_risco: "baixo",
-    sistema_interno: true,
-    ativo: true,
+    nome: acesso?.nome || "",
+    codigo: acesso?.codigo || "",
+    descricao: acesso?.descricao || "",
+    categoria: acesso?.categoria || "Usuários",
+    nivel_risco: acesso?.nivel_risco || "baixo",
+    sistema_interno: acesso?.sistema_interno ?? true,
+    ativo: acesso?.ativo ?? true,
   });
 
   const [loading, setLoading] = useState(false);
@@ -72,7 +78,7 @@ const AcessosForm = () => {
       const result = await response.json();
       alert("Acesso cadastrado com sucesso!");
       console.log("Resposta da API:", result);
-
+      if (onSave) onSave(formData);
       // Limpa o formulário após o envio
       setFormData({
         nome: "",
@@ -338,6 +344,7 @@ const AcessosForm = () => {
             type="button"
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             onClick={() => {
+              if (onCancel) onCancel();
               setFormData({
                 nome: "",
                 codigo: "",
@@ -350,14 +357,14 @@ const AcessosForm = () => {
               setError(null);
             }}
           >
-            Limpar
+            Cancelar
           </button>
           <button
             type="submit"
             disabled={loading}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Cadastrando..." : "Cadastrar Acesso"}
+            {loading ? "Cadastrando..." : acesso ? "Salvar Alterações" : "Cadastrar Acesso"}
           </button>
         </div>
       </form>

@@ -6,12 +6,14 @@ import { ConsentBanner } from "./components/ui/LGPD/ConsentBanner";
 import { Notification, useNotification } from "./components/ui/Notification/Notification";
 import LoadingSpinner from "./components/ui/LoadingSpinner/LoadingSpinner";
 import "./App.css";
+import PagamentoPage from "./pages/Pagamento/PagamentoPage";
 
 // Lazy loading das páginas principais
 const InstitucionalPage = React.lazy(() => import("./pages/Institucional/InstitucionalPage"));
 const PlanosPage = React.lazy(() => import("./pages/Planos/PlanosPage"));
 const LoginPage = React.lazy(() => import("./pages/Auth/LoginPage"));
 const RegisterPage = React.lazy(() => import("./pages/Auth/RegisterPage"));
+const TestePagamentoPage = React.lazy(() => import("./pages/TestePagamento/TestePagamentoPage"));
 
 // Lazy loading das páginas do dashboard
 const Dashboard = React.lazy(() => import("./pages/Dashboard/DashboardCards"));
@@ -54,6 +56,11 @@ const RelatorioInadimplentesPage = React.lazy(() => import("./pages/Modulos/Rela
 const App: React.FC = () => {
   const { notifications, hideNotification } = useNotification();
 
+  // Limpa o localStorage ao acessar qualquer rota
+  React.useEffect(() => {
+    localStorage.clear();
+  }, []);
+
   const handleConsentAccept = () => {
     console.log('Consentimento LGPD aceito');
   };
@@ -76,6 +83,8 @@ const App: React.FC = () => {
             
             {/* Página de Planos (sem sidebar/header) */}
             <Route path="/planos" element={<PlanosPage />} />
+            {/* Rota dedicada para pagamento Mercado Pago */}
+            <Route path="/pagamento" element={<PagamentoPage />} />
             
             {/* Páginas de Autenticação (sem sidebar/header) */}
             <Route path="/login" element={<LoginPage />} />
@@ -105,27 +114,34 @@ const App: React.FC = () => {
                       <Route path="/cadastros/cargos" element={<CargosPage />} />
                       <Route path="/cadastros/grupo-acessos" element={<GrupoAcessosPage />} />
                       <Route path="/cadastros/acessos" element={<AcessosPage />} />
-                      <Route path="/cadastros/fornecedores" element={<FornecedoresPage />} />
+                      <Route path="/fornecedores" element={<FornecedoresPage />} />
                       <Route path="/financeiro" element={<FinanceiroDashboard />} />
                       <Route path="/financeiro/contas-pagar" element={<ContasPagarPage />} />
                       <Route path="/financeiro/contas-receber" element={<ContasReceberPage />} />
                       <Route path="/financeiro/recebimentos-convenio" element={<RecebimentosConvenioPage />} />
                       <Route path="/financeiro/comissoes" element={<ComissoesPage />} />
-                      <Route path="/financeiro/consulta" element={<ConsultaPage />} />
                       <Route path="/consultas" element={<ConsultaPage />} />
+                      <Route path="/financeiro/consulta" element={<ConsultaPage />} />
                       <Route path="/horarios" element={<HorariosPage />} />
                       <Route path="/minhas-comissoes" element={<MinhasComissoesPage />} />
                       <Route path="/odontogramas" element={<OdontogramasPage />} />
                       <Route path="/tratamentos" element={<TratamentosPage />} />
                       <Route path="/orcamentos" element={<OrcamentosPage />} />
+                      <Route path="/caixa" element={<CaixaPage />} />
                       <Route path="/caixas-aberto" element={<CaixaPage />} />
+                      <Route path="/tarefas" element={<TarefasPage />} />
                       <Route path="/tarefas-agenda" element={<TarefasPage />} />
                       <Route path="/anotacoes" element={<AnotacoesPage />} />
+                      <Route path="/relatorios/financeiro" element={<RelatorioFinanceiroPage />} />
                       <Route path="/relatorios/relatorio-financeiro" element={<RelatorioFinanceiroPage />} />
+                      <Route path="/relatorios/sintetico-despesas" element={<RelatorioSinteticoDespesasPage />} />
                       <Route path="/relatorios/relatorio-sintetico-despesas" element={<RelatorioSinteticoDespesasPage />} />
+                      <Route path="/relatorios/sintetico-recebimentos" element={<RelatorioSinteticoRecebimentosPage />} />
                       <Route path="/relatorios/relatorio-sintetico-receber" element={<RelatorioSinteticoRecebimentosPage />} />
+                      <Route path="/relatorios/balanco-anual" element={<RelatorioBalancoAnualPage />} />
                       <Route path="/relatorios/relatorio-balanco-anual" element={<RelatorioBalancoAnualPage />} />
-                      <Route path="/relatorios/relatorio-inadimplementes" element={<RelatorioInadimplentesPage />} />
+                      <Route path="/relatorios/inadimplentes" element={<RelatorioInadimplentesPage />} />
+                        <Route path="/relatorios/relatorio-inadimplementes" element={<RelatorioInadimplentesPage />} />
                     </Routes>
                   </Suspense>
                 </div>
@@ -133,21 +149,17 @@ const App: React.FC = () => {
             } />
           </Routes>
         </Suspense>
-        
-        {/* Banner de Consentimento LGPD */}
         <ConsentBanner
           onAccept={handleConsentAccept}
           onReject={handleConsentReject}
           onCustomize={handleConsentCustomize}
         />
-        
-        {/* Notificações */}
-        {notifications.map(notification => (
+        {notifications.map((notif) => (
           <Notification
-            key={notification.id}
-            message={notification.message}
-            type={notification.type}
-            onClose={() => hideNotification(notification.id)}
+            key={notif.id}
+            message={notif.message}
+            type={notif.type}
+            onClose={() => hideNotification(notif.id)}
           />
         ))}
       </div>
@@ -156,3 +168,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

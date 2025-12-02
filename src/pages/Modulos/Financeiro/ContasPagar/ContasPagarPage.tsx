@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ContasPagarList from '../components/ContasPagar/ContasPagarList';
+import ModalContaPagarPadrao from './ModalContaPagarPadrao';
 import '../FinanceiroDashboard.css';
 
 interface ContaPagar {
@@ -23,7 +24,10 @@ interface ContaPagar {
 const ContasPagarPage: React.FC = () => {
   const [dataInicio, setDataInicio] = useState('01/11/2025');
   const [dataFim, setDataFim] = useState('30/11/2025');
-  
+  const [showModal, setShowModal] = useState(false);
+  const [statusFiltro, setStatusFiltro] = useState<string | null>(null);
+  const [contaFiltroId, setContaFiltroId] = useState<number | null>(null);
+
   // Dados resumo para contas a pagar
   const resumoContasPagar = {
     vencidas: 2450.75,
@@ -34,35 +38,37 @@ const ContasPagarPage: React.FC = () => {
     todasPendentes: 4541.25
   };
 
+  // Importa os dados fakes
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const contasPagarFakes = require('./contasPagarFakes').contasPagarFakes;
+
   const formatCurrency = (value: number) => {
     return `R$ ${value.toFixed(2).replace('.', ',')}`;
   };
 
   const handleCreate = () => {
-    console.log('Criar nova conta a pagar');
-    // Aqui você abriria um modal ou navegaria para página de criação
-    alert('Funcionalidade de criar conta a pagar será implementada');
+    setShowModal(true);
   };
 
-  const handleEdit = (conta: ContaPagar) => {
-    console.log('Editar conta a pagar:', conta);
-    // Aqui você abriria um modal ou navegaria para página de edição
-    alert(`Funcionalidade de editar conta: ${conta.descricao} será implementada`);
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleEdit = (conta: any) => {
+    // Implementar edição
   };
 
   const handleDelete = (id: number) => {
-    console.log('Excluir conta a pagar:', id);
-    // Aqui você mostraria uma confirmação e faria a exclusão
-    const confirm = window.confirm('Tem certeza que deseja excluir esta conta?');
-    if (confirm) {
-      alert(`Conta ${id} seria excluída (funcionalidade será implementada)`);
-    }
+    // Implementar exclusão
   };
 
-  const handlePay = (conta: ContaPagar) => {
-    console.log('Efetuar pagamento da conta:', conta);
-    // Aqui você abriria um modal de pagamento
-    alert(`Funcionalidade de pagamento da conta: ${conta.descricao} será implementada`);
+  const handlePay = (conta: any) => {
+    // Implementar pagamento
+  };
+
+  const handleSubmitModal = (conta: any) => {
+    // Implementar cadastro
+    setShowModal(false);
   };
 
   return (
@@ -96,7 +102,7 @@ const ContasPagarPage: React.FC = () => {
 
         {/* Cards coloridos de status */}
         <div className="cards-status">
-          <div className="card-status vencidas">
+          <div className="card-status vencidas" onClick={() => {setStatusFiltro('Vencido'); setContaFiltroId(null);}} style={{cursor:'pointer'}}>
             <div className="card-icon">🚨</div>
             <div className="card-content">
               <span className="card-label">Vencidas</span>
@@ -104,7 +110,7 @@ const ContasPagarPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="card-status vence-hoje">
+          <div className="card-status vence-hoje" onClick={() => {setStatusFiltro('VenceHoje'); setContaFiltroId(null);}} style={{cursor:'pointer'}}>
             <div className="card-icon">⏰</div>
             <div className="card-content">
               <span className="card-label">Vence Hoje</span>
@@ -112,7 +118,7 @@ const ContasPagarPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="card-status vence-amanha">
+          <div className="card-status vence-amanha" onClick={() => {setStatusFiltro('VenceAmanha'); setContaFiltroId(null);}} style={{cursor:'pointer'}}>
             <div className="card-icon">📅</div>
             <div className="card-content">
               <span className="card-label">Vence Amanhã</span>
@@ -120,7 +126,7 @@ const ContasPagarPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="card-status total">
+          <div className="card-status total" onClick={() => {setStatusFiltro('Total'); setContaFiltroId(null);}} style={{cursor:'pointer'}}>
             <div className="card-icon">💰</div>
             <div className="card-content">
               <span className="card-label">Total</span>
@@ -128,7 +134,7 @@ const ContasPagarPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="card-status todas-pendentes">
+          <div className="card-status todas-pendentes" onClick={() => {setStatusFiltro('Pendente'); setContaFiltroId(null);}} style={{cursor:'pointer'}}>
             <div className="card-icon">📋</div>
             <div className="card-content">
               <span className="card-label">Todas Pendentes</span>
@@ -136,17 +142,44 @@ const ContasPagarPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Botões dinâmicos para cada conta do Modal/Fake - layout igual aos cards */}
+        <div className="contas-botoes-lista" style={{display:'flex', flexWrap:'wrap', gap:'10px', marginTop:'16px'}}>
+          {contasPagarFakes.map((conta:any) => (
+            <div
+              key={conta.id}
+              className="card-status todas-pendentes"
+              style={{flex:'1 1 180px', minWidth:'180px', maxWidth:'220px', display:'flex', alignItems:'center', gap:'8px', borderRadius:'8px', cursor:'pointer', color:'white', fontWeight:500, justifyContent:'space-between'}}
+              onClick={() => {setContaFiltroId(conta.id); setStatusFiltro(null);}}
+            >
+              <div className="card-icon">🔢</div>
+              <div className="card-content" style={{flex:'1', display:'flex', flexDirection:'column', gap:'2px'}}>
+                <span className="card-label">{conta.descricao}</span>
+                <span className="card-value">{formatCurrency(conta.valor_original || Math.floor(Math.random()*1000+100))}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Lista de Contas a Pagar */}
+      {/* Lista de Contas a Pagar filtrada */}
       <div className="dashboard-content">
         <ContasPagarList
           onCreate={handleCreate}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onPay={handlePay}
+          filterStatus={statusFiltro === 'Pendente' ? 'Pendente' : statusFiltro === 'Vencido' ? 'Vencido' : undefined}
+          contaFiltroId={contaFiltroId}
         />
+        {/* Exemplo: pode expandir lógica para outros filtros como VenceHoje, VenceAmanha, Total, ou por conta individual */}
       </div>
+      {/* Modal de cadastro de conta a pagar */}
+      <ModalContaPagarPadrao
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmitModal}
+      />
     </div>
   );
 };
