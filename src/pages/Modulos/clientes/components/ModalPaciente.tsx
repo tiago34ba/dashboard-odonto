@@ -697,12 +697,43 @@ const ModalPaciente: React.FC<ModalPacienteProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (validateForm()) {
-      onSave(formData);
-      onClose();
+      try {
+        // Mapeia os campos para o formato esperado pelo backend
+        const mappedData = {
+          name: formData.name,
+          phone: formData.telefone,
+          insurance: formData.convenio,
+          age: formData.idade,
+          nascimento: formData.data_nascimento,
+          responsavel: formData.responsavel,
+          cpfResponsavel: formData.cpf_responsavel,
+          pessoa: formData.pessoa,
+          cpfCnpj: formData.cpf_cnpj,
+          email: formData.email,
+          cep: formData.endereco?.cep,
+          rua: formData.endereco?.logradouro,
+          numero: formData.endereco?.numero,
+          complemento: formData.endereco?.complemento,
+          bairro: formData.endereco?.bairro,
+          cidade: formData.endereco?.cidade,
+          estado: formData.estado,
+          tipoSanguineo: formData.tipo_sanguineo,
+          sexo: formData.sexo,
+          profissao: formData.profissao,
+          estadoCivil: formData.estado_civil,
+          telefone2: formData.celular,
+          observacoes: formData.observacoes,
+        };
+        const api = require('../../../../services/api').default;
+        await api.createPaciente(mappedData);
+        onSave(formData);
+        onClose();
+      } catch (error) {
+        alert('Erro ao cadastrar paciente!');
+      }
     }
   };
 

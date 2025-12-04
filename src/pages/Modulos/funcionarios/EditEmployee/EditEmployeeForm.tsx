@@ -4,26 +4,16 @@ interface Patient {
   id: number;
   name: string;
   phone: string;
-  insurance: string;
-  age: string;
-  nascimento: string;
-  responsavel: string;
-  cpfResponsavel: string;
-  pessoa: string;
-  cpfCnpj: string;
   email: string;
-  cep: string;
-  rua: string;
-  numero: string;
-  complemento: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  tipoSanguineo: string;
-  sexo: string;
-  profissao: string;
-  estadoCivil: string;
-  telefone2: string;
+  cro: string;
+  specialty: string;
+  active: boolean;
+  hire_date: string;
+  birth_date: string;
+  address: string;
+  salary: string;
+  commission_rate: string;
+  user_id: string;
   observacoes: string;
 }
 
@@ -64,6 +54,56 @@ const EditPatientForm: React.FC<EditPatientFormProps> = ({ patient, onClose, onU
           <div className="form-field">
             <label htmlFor="phone">Telefone:</label>
             <input type="text" id="phone" name="phone" value={editedPatient.phone} onChange={handleChange} />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="email">Email:</label>
+            <input type="email" id="email" name="email" value={editedPatient.email} onChange={handleChange} />
+          </div>
+          <div className="form-field">
+            <label htmlFor="cro">CRO:</label>
+            <input type="text" id="cro" name="cro" value={editedPatient.cro || ''} onChange={handleChange} />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="specialty">Especialidade:</label>
+            <input type="text" id="specialty" name="specialty" value={editedPatient.specialty || ''} onChange={handleChange} />
+          </div>
+          <div className="form-field">
+            <label htmlFor="active">Ativo:</label>
+            <input type="checkbox" id="active" name="active" checked={!!editedPatient.active} onChange={e => handleChange({ ...e, target: { ...e.target, value: e.target.checked } })} />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="hire_date">Data de Admissão:</label>
+            <input type="date" id="hire_date" name="hire_date" value={editedPatient.hire_date || ''} onChange={handleChange} />
+          </div>
+          <div className="form-field">
+            <label htmlFor="birth_date">Data de Nascimento:</label>
+            <input type="date" id="birth_date" name="birth_date" value={editedPatient.birth_date || ''} onChange={handleChange} />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="address">Endereço:</label>
+            <input type="text" id="address" name="address" value={editedPatient.address || ''} onChange={handleChange} />
+          </div>
+          <div className="form-field">
+            <label htmlFor="salary">Salário:</label>
+            <input type="text" id="salary" name="salary" value={editedPatient.salary || ''} onChange={handleChange} />
+          </div>
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label htmlFor="commission_rate">Comissão (%):</label>
+            <input type="text" id="commission_rate" name="commission_rate" value={editedPatient.commission_rate || ''} onChange={handleChange} />
+          </div>
+          <div className="form-field">
+            <label htmlFor="user_id">Usuário Vinculado:</label>
+            <input type="text" id="user_id" name="user_id" value={editedPatient.user_id || ''} onChange={handleChange} />
           </div>
         </div>
         <div className="form-row">

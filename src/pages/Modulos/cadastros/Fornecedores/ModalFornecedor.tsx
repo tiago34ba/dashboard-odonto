@@ -620,10 +620,14 @@ const ModalFornecedor: React.FC<ModalFornecedorProps> = ({
     contato: '',
     telefone: '',
     email: '',
+    pix: '',
+    pix_key_type: '',
     endereco: {
       cep: '',
       logradouro: '',
       numero: '',
+      complemento: '',
+      bairro: '',
       cidade: '',
       estado: ''
     },
@@ -669,10 +673,14 @@ const ModalFornecedor: React.FC<ModalFornecedorProps> = ({
         contato: '',
         telefone: '',
         email: '',
+        pix: '',
+        pix_key_type: '',
         endereco: {
           cep: '',
           logradouro: '',
           numero: '',
+          complemento: '',
+          bairro: '',
           cidade: '',
           estado: ''
         },

@@ -2,15 +2,14 @@ import { PlanoType, PagamentoPix, StatusPagamento } from '../types/pagamento.typ
 
 // Configurações da API PIX
 const PIX_CONFIG = {
-  CHAVE_PIX: '71996285453',
-  AGENCIA: '4803',
-  CONTA: '000860463765-4',
-  BANCO_NOME: 'Caixa Econômica',
-  BANCO_CODIGO: '104',
-  BANCO_API_URL: 'https://api.mercadopago.com/v1',
-  // Para desenvolvimento, vamos usar uma API mock
-  MOCK_API_URL: 'http://localhost:3001/api/pix',
-  IS_PRODUCTION: false
+  CHAVE_PIX: process.env.REACT_APP_PIX_KEY || '',
+  AGENCIA: process.env.REACT_APP_PIX_AGENCIA || '',
+  CONTA: process.env.REACT_APP_PIX_CONTA || '',
+  BANCO_NOME: process.env.REACT_APP_PIX_BANCO_NOME || '',
+  BANCO_CODIGO: process.env.REACT_APP_PIX_BANCO_CODIGO || '',
+  BANCO_API_URL: process.env.REACT_APP_MERCADOPAGO_API_URL || 'https://api.mercadopago.com/v1',
+  MOCK_API_URL: process.env.REACT_APP_PIX_MOCK_API_URL || 'http://localhost:3001/api/pix',
+  IS_PRODUCTION: process.env.REACT_APP_IS_PRODUCTION === 'true'
 };
 
 export class PixService {

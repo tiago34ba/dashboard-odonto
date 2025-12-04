@@ -11,6 +11,11 @@ interface ProcedimentoData {
   duracao: number;
   descricao: string;
   ativo: boolean;
+  accepts_agreement: boolean;
+  preparation: string;
+  time: string;
+  requires_anesthesia: boolean;
+  complexity_level: number;
 }
 
 interface ModalProcedimentoProps {
@@ -245,7 +250,12 @@ const ModalProcedimento: React.FC<ModalProcedimentoProps> = ({
     valor: 0,
     duracao: 30,
     descricao: '',
-    ativo: true
+    ativo: true,
+    accepts_agreement: false,
+    preparation: '',
+    time: '',
+    requires_anesthesia: false,
+    complexity_level: 1
   });
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
@@ -259,7 +269,12 @@ const ModalProcedimento: React.FC<ModalProcedimentoProps> = ({
         valor: procedimento.valor || 0,
         duracao: procedimento.duracao || 30,
         descricao: procedimento.descricao || '',
-        ativo: procedimento.ativo !== undefined ? procedimento.ativo : true
+        ativo: procedimento.ativo !== undefined ? procedimento.ativo : true,
+        accepts_agreement: procedimento.accepts_agreement || false,
+        preparation: procedimento.preparation || '',
+        time: procedimento.time || '',
+        requires_anesthesia: procedimento.requires_anesthesia || false,
+        complexity_level: procedimento.complexity_level || 1
       });
     } else {
       setFormData({
@@ -269,7 +284,12 @@ const ModalProcedimento: React.FC<ModalProcedimentoProps> = ({
         valor: 0,
         duracao: 30,
         descricao: '',
-        ativo: true
+        ativo: true,
+        accepts_agreement: false,
+        preparation: '',
+        time: '',
+        requires_anesthesia: false,
+        complexity_level: 1
       });
     }
     setErrors({});
@@ -459,13 +479,12 @@ const ModalProcedimento: React.FC<ModalProcedimentoProps> = ({
               </FormRow>
             </Section>
 
-            {/* Descrição */}
+            {/* Descrição e Campos Adicionais */}
             <Section>
               <SectionTitle>
                 <FaStickyNote />
-                Descrição
+                Descrição e Detalhes
               </SectionTitle>
-              
               <FormGroup>
                 <Label htmlFor="descricao">Descrição do Procedimento</Label>
                 <TextArea
@@ -476,7 +495,61 @@ const ModalProcedimento: React.FC<ModalProcedimentoProps> = ({
                   placeholder="Descrição detalhada do procedimento (opcional)"
                 />
               </FormGroup>
-
+              <FormGroup>
+                <Label htmlFor="preparation">Preparação</Label>
+                <TextArea
+                  id="preparation"
+                  name="preparation"
+                  value={formData.preparation}
+                  onChange={handleInputChange}
+                  placeholder="Instruções de preparação (opcional)"
+                />
+              </FormGroup>
+              <FormRow>
+                <FormGroup>
+                  <Label htmlFor="time">Tempo (minutos)</Label>
+                  <Input
+                    id="time"
+                    name="time"
+                    type="number"
+                    value={formData.time}
+                    onChange={handleInputChange}
+                    placeholder="Ex: 30"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="complexity_level">Nível de Complexidade</Label>
+                  <Input
+                    id="complexity_level"
+                    name="complexity_level"
+                    type="number"
+                    min="1"
+                    max="4"
+                    value={formData.complexity_level}
+                    onChange={handleInputChange}
+                  />
+                </FormGroup>
+              </FormRow>
+              <CheckboxGroup>
+                <Checkbox
+                  type="checkbox"
+                  id="accepts_agreement"
+                  name="accepts_agreement"
+                  checked={formData.accepts_agreement}
+                  onChange={handleInputChange}
+                />
+                <Label htmlFor="accepts_agreement">Aceita Convênio</Label>
+              </CheckboxGroup>
+              <CheckboxGroup>
+                <Checkbox
+                  type="checkbox"
+                  id="requires_anesthesia"
+                  name="requires_anesthesia"
+                  checked={formData.requires_anesthesia}
+                  onChange={handleInputChange}
+                />
+                <Label htmlFor="requires_anesthesia">Requer Anestesia</Label>
+              </CheckboxGroup>
               <CheckboxGroup>
                 <Checkbox
                   type="checkbox"
