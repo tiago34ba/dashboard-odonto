@@ -747,41 +747,31 @@ const PatientsPage: React.FC = () => {
   const itemsPerPage = 10;
   const [selectedPatients, setSelectedPatients] = useState<number[]>([]);
 
-  useEffect(() => {
+  // Função para buscar pacientes do backend
+  const fetchPatients = () => {
     api.get("/pessoas/pacientes")
       .then(response => {
-        // Log apenas em desenvolvimento
         if (process.env.NODE_ENV === 'development') {
           console.log("Resposta da API:", response.data);
         }
-        
         let patientsData = [];
-        
-        // Verifica se response.data é um array
         if (Array.isArray(response.data)) {
           patientsData = response.data;
-        } 
-        // Se a API retornar paginação do Laravel (response.data.data)
-        else if (response.data && Array.isArray(response.data.data)) {
+        } else if (response.data && Array.isArray(response.data.data)) {
           patientsData = response.data.data;
-        }
-        // Se não conseguir encontrar um array, usa dados fake
-        else {
+        } else {
           if (process.env.NODE_ENV === 'development') {
             console.warn("Dados não estão no formato de array, usando dados fake:", response.data);
           }
           setPatients(fakePatients);
           return;
         }
-        
-        // Se a API retornou dados vazios, usa dados fake para teste
         if (patientsData.length === 0) {
           if (process.env.NODE_ENV === 'development') {
             console.log("API retornou dados vazios, usando dados fake para teste do layout");
           }
           setPatients(fakePatients);
         } else {
-          // Usar dados da API
           setPatients(patientsData);
         }
       })
@@ -789,9 +779,12 @@ const PatientsPage: React.FC = () => {
         if (process.env.NODE_ENV === 'development') {
           console.error("Erro ao buscar pacientes, usando dados fake:", error);
         }
-        // Em caso de erro, usa dados fake para teste do layout
         setPatients(fakePatients);
       });
+  };
+
+  useEffect(() => {
+    fetchPatients();
   }, []);
 
   const paginatedPatients = Array.isArray(patients) 
@@ -1074,39 +1067,9 @@ const PatientsPage: React.FC = () => {
               <h3>Cadastrar Paciente</h3>
               <AddPatientForm
                 onClose={handleCloseModal}
-                onAddPatient={(newPatient) => {
-                  const currentPatients = Array.isArray(patients) ? patients : [];
-                  setPatients([
-                    ...currentPatients,
-                    {
-                      id: newPatient.id,
-                      name: newPatient.nome,
-                      convenio: newPatient.convenio || "Nenhum",
-                      telefone: newPatient.telefone,
-                      idade: newPatient.nascimento ? new Date().getFullYear() - new Date(newPatient.nascimento).getFullYear() : 0,
-                      data_nascimento: newPatient.nascimento,
-                      responsavel: newPatient.responsavel,
-                      cpf_responsavel: newPatient.cpfResponsavel,
-                      celular: newPatient.telefone2,
-                      estado: newPatient.estado,
-                      sexo: newPatient.sexo,
-                      profissao: newPatient.profissao,
-                      estado_civil: newPatient.estadoCivil,
-                      tipo_sanguineo: newPatient.tipoSanguineo || "",
-                      pessoa: newPatient.pessoa,
-                      cpf_cnpj: newPatient.cpfCnpj,
-                      email: newPatient.email,
-                      cep: newPatient.cep,
-                      rua: newPatient.rua,
-                      numero: newPatient.numero,
-                      complemento: newPatient.complemento,
-                      bairro: newPatient.bairro,
-                      cidade: newPatient.cidade,
-                      observacoes: newPatient.observacoes,
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString(),
-                    },
-                  ]);
+                onAddPatient={() => {
+                  fetchPatients();
+                  handleCloseModal();
                 }}
               />
             </ModalContent>

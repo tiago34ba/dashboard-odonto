@@ -566,6 +566,8 @@ interface Fornecedor {
     cep: string;
     logradouro: string;
     numero: string;
+    complemento?: string;
+    bairro?: string;
     cidade: string;
     estado: string;
   };
@@ -589,6 +591,8 @@ interface FormFornecedor {
     cep: string;
     logradouro: string;
     numero: string;
+    complemento?: string;
+    bairro?: string;
     cidade: string;
     estado: string;
   };
@@ -620,8 +624,6 @@ const ModalFornecedor: React.FC<ModalFornecedorProps> = ({
     contato: '',
     telefone: '',
     email: '',
-    pix: '',
-    pix_key_type: '',
     endereco: {
       cep: '',
       logradouro: '',
@@ -673,8 +675,6 @@ const ModalFornecedor: React.FC<ModalFornecedorProps> = ({
         contato: '',
         telefone: '',
         email: '',
-        pix: '',
-        pix_key_type: '',
         endereco: {
           cep: '',
           logradouro: '',

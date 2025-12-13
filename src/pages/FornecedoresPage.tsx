@@ -53,13 +53,15 @@ const FornecedoresPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <FornecedoresList
-        onCreate={handleCreate}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onView={handleView}
-      />
+    <div className="fornecedores-container">
+      <div className="fornecedores-content max-w-7xl mx-auto">
+        <FornecedoresList
+          onCreate={handleCreate}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onView={handleView}
+        />
+      </div>
     </div>
   );
 };

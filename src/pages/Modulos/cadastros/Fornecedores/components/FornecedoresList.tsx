@@ -1,3 +1,4 @@
+import './FornecedoresList.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import './FornecedoresList.css';
 
@@ -408,11 +409,10 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
   return (
     <div className="fornecedores-container py-6 px-4 sm:px-6 lg:px-8">
       <div className="fornecedores-content max-w-7xl mx-auto">
-        
         {/* Header da Página */}
         <div className="fornecedores-header bg-white rounded-xl shadow-lg border border-gray-200 mb-4">
           <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <div className="fornecedores-logo w-12 h-12 rounded-lg flex items-center justify-center">
@@ -431,18 +431,17 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={onCreate}
-                  className="btn-primary text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-md hover:shadow-lg">
-                  <span>➕ Novo Fornecedor</span>
+                  className="btn-primary text-white px-6 py-3 rounded-xl flex items-center space-x-2 transition-all duration-200 shadow-lg hover:scale-105 hover:shadow-xl text-lg font-bold">
+                  <span>➕ Cadastrar Fornecedor</span>
                 </button>
               </div>
             </div>
           </div>
-          
           {/* Barra de Busca e Filtros */}
           <div className="px-6 py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center flex-1">
-                <div className="flex items-center bg-white border border-gray-300 rounded-md">
+            <div className="flex flex-col md:flex-row items-center gap-4">
+              <div className="flex items-center flex-1 w-full">
+                <div className="flex items-center bg-white border border-gray-300 rounded-md w-full">
                   <div className="pl-3 pr-2 flex items-center">
                     <span className="text-gray-400">🔍</span>
                   </div>
@@ -475,7 +474,6 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
                 <span>⚙️ Filtros</span>
               </button>
             </div>
-
             {/* Painel de Filtros */}
             {showFilters && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">

@@ -1,7 +1,13 @@
 import React, { useState } from "react";
-import api from "../../../../components/api/api"; // Importa a API configurada
+// Update the import path if necessary, or create the file if missing
+import { apiService } from "../../../../services/api";
+// If the file does not exist, create 'src/services/api.ts' and export 'apiService' from it.
 
-const PacientesForm = () => {
+interface PacientesFormProps {
+  onPacienteAdicionado?: () => void;
+}
+
+const PacientesForm: React.FC<PacientesFormProps> = ({ onPacienteAdicionado }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,7 +22,18 @@ const PacientesForm = () => {
     profissao: "",
     estado_civil: "",
     tipo_sanguineo: "",
+    convenio: "",
+    pessoa: "",
+    cpf_cnpj: "",
+    cep: "",
+    rua: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    cidade: "",
+    observacoes: "",
   });
+  const [apiDebug, setApiDebug] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -26,12 +43,21 @@ const PacientesForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Chama a API para enviar os dados para o backend Laravel
-      const response = await api.post("pessoas/pacientes", { data: formData });
-      alert("Paciente cadastrado com sucesso!");
-      console.log("Resposta da API:", response);
+      // Mapeia os campos do formulário para os nomes esperados pelo backend
+      const payload = {
+        ...formData,
+        idade: formData.idade ? Number(formData.idade) : undefined,
+      };
+          const response = await apiService.createPaciente(payload);
+          setApiDebug(JSON.stringify(response, null, 2));
+          if (response && response.id) {
+            alert("Paciente cadastrado com sucesso no MySQL! ID: " + response.id);
+            if (onPacienteAdicionado) onPacienteAdicionado();
+          } else {
+            alert("Paciente cadastrado, mas sem retorno de ID. Verifique o banco.");
+            if (onPacienteAdicionado) onPacienteAdicionado();
+          }
 
-      // Limpa o formulário após o envio
       setFormData({
         name: "",
         email: "",
@@ -46,14 +72,26 @@ const PacientesForm = () => {
         profissao: "",
         estado_civil: "",
         tipo_sanguineo: "",
+        convenio: "",
+        pessoa: "",
+        cpf_cnpj: "",
+        cep: "",
+        rua: "",
+        numero: "",
+        complemento: "",
+        bairro: "",
+        cidade: "",
+        observacoes: "",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao cadastrar paciente:", error);
+      setApiDebug(error?.response ? JSON.stringify(error.response.data, null, 2) : String(error));
       alert("Erro ao cadastrar paciente. Verifique os dados e tente novamente.");
     }
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit}>
       <div>
         <label>Nome</label>
@@ -174,9 +212,105 @@ const PacientesForm = () => {
           onChange={handleChange}
         />
       </div>
+      <div>
+        <label>Convênio</label>
+        <input
+          type="text"
+          name="convenio"
+          value={formData.convenio}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Pessoa (Física/Jurídica)</label>
+        <input
+          type="text"
+          name="pessoa"
+          value={formData.pessoa}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>CPF/CNPJ</label>
+        <input
+          type="text"
+          name="cpf_cnpj"
+          value={formData.cpf_cnpj}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>CEP</label>
+        <input
+          type="text"
+          name="cep"
+          value={formData.cep}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Rua</label>
+        <input
+          type="text"
+          name="rua"
+          value={formData.rua}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Número</label>
+        <input
+          type="text"
+          name="numero"
+          value={formData.numero}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Complemento</label>
+        <input
+          type="text"
+          name="complemento"
+          value={formData.complemento}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Bairro</label>
+        <input
+          type="text"
+          name="bairro"
+          value={formData.bairro}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Cidade</label>
+        <input
+          type="text"
+          name="cidade"
+          value={formData.cidade}
+          onChange={handleChange}
+        />
+      </div>
+      <div>
+        <label>Observações</label>
+        <input
+          type="text"
+          name="observacoes"
+          value={formData.observacoes}
+          onChange={handleChange}
+        />
+      </div>
       <button type="submit">Salvar</button>
     </form>
+    {apiDebug && (
+      <div style={{marginTop: 16, background: '#f3f3f3', padding: 12, borderRadius: 8}}>
+        <strong>Resposta da API (debug):</strong>
+        <pre style={{fontSize: 12, color: '#333'}}>{apiDebug}</pre>
+      </div>
+    )}
+    </>
   );
 };
-
 export default PacientesForm;

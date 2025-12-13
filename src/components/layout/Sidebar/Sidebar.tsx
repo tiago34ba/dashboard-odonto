@@ -138,7 +138,6 @@ const Sidebar: React.FC = () => {
         { title: "Contas a Receber", path: "/dashboard/financeiro/contas-receber" },
         { title: "Recebimentos Convênio", path: "/dashboard/financeiro/recebimentos-convenio" },
         { title: "Comissões", path: "/dashboard/financeiro/comissoes" },
-        { title: "Consulta", path: "/dashboard/financeiro/consulta" },
       ],
     },
     { isDivider: true, title: "" }, // Divisor abaixo de "Financeiro"
