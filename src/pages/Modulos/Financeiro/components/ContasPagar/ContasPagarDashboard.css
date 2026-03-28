@@ -1,0 +1,494 @@
+/* Contas a Pagar Dashboard */
+.contas-pagar-dashboard {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Header com filtros */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-adicionar {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.btn-adicionar:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.filtros-data {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-data {
+  padding: 10px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  min-width: 120px;
+}
+
+.input-data:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-relatorio {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.btn-relatorio:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* Grid de totalizadores */
+.totalizadores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+/* Cards de totalizadores */
+.card-totalizador {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border-left: 4px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-totalizador::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.card-totalizador:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Cores específicas para cada card */
+.card-totalizador.vencidas {
+  border-left-color: #dc2626;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+}
+
+.card-totalizador.vence-hoje {
+  border-left-color: #f59e0b;
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  color: white;
+}
+
+.card-totalizador.vence-amanha {
+  border-left-color: #6b7280;
+  background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+  color: white;
+}
+
+.card-totalizador.recebidas {
+  border-left-color: #16a34a;
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  color: white;
+}
+
+.card-totalizador.total {
+  border-left-color: #374151;
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  color: white;
+}
+
+.card-totalizador.todas-pendentes {
+  border-left-color: #dc2626;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.card-header .icone {
+  font-size: 20px;
+  opacity: 0.8;
+}
+
+.card-valor {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .header-left {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .filtros-data {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .totalizadores-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .card-totalizador {
+    padding: 15px;
+  }
+
+  .card-valor {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contas-pagar-dashboard {
+    padding: 15px;
+  }
+
+  .btn-adicionar {
+    width: 100%;
+    text-align: center;
+  }
+
+  .card-valor {
+    font-size: 18px;
+  }
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.export-btn {
+  background: #ffffff;
+  border: 2px solid #e1e5e9;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 18px;
+}
+
+.export-btn:hover {
+  border-color: #2196F3;
+  color: #2196F3;
+}
+
+/* Stats Cards */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border-left: 4px solid #e1e5e9;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border-radius: 50%;
+  transform: translate(30px, -30px);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(33, 150, 243, 0.1);
+}
+
+.card-title {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.card-subtitle {
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Cores específicas dos cards */
+.stat-card.vencidas {
+  border-left-color: #e74c3c;
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.stat-card.vencidas .card-icon {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.stat-card.vencidas .card-value {
+  color: #e74c3c;
+}
+
+.stat-card.vence-hoje {
+  border-left-color: #f39c12;
+  background: linear-gradient(135deg, rgba(243, 156, 18, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.stat-card.vence-hoje .card-icon {
+  background: rgba(243, 156, 18, 0.1);
+  color: #f39c12;
+}
+
+.stat-card.vence-hoje .card-value {
+  color: #f39c12;
+}
+
+.stat-card.vence-amanha {
+  border-left-color: #3498db;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.stat-card.vence-amanha .card-icon {
+  background: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+}
+
+.stat-card.vence-amanha .card-value {
+  color: #3498db;
+}
+
+.stat-card.recebidas {
+  border-left-color: #27ae60;
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.stat-card.recebidas .card-icon {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27ae60;
+}
+
+.stat-card.recebidas .card-value {
+  color: #27ae60;
+}
+
+.stat-card.total {
+  border-left-color: #34495e;
+  background: linear-gradient(135deg, rgba(52, 73, 94, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.stat-card.total .card-icon {
+  background: rgba(52, 73, 94, 0.1);
+  color: #34495e;
+}
+
+.stat-card.total .card-value {
+  color: #34495e;
+}
+
+.stat-card.todas-pendentes {
+  border-left-color: #9b59b6;
+  background: linear-gradient(135deg, rgba(155, 89, 182, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.stat-card.todas-pendentes .card-icon {
+  background: rgba(155, 89, 182, 0.1);
+  color: #9b59b6;
+}
+
+.stat-card.todas-pendentes .card-value {
+  color: #9b59b6;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  text-align: center;
+}
+
+.content-placeholder {
+  color: #6c757d;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.content-placeholder p {
+  margin: 8px 0;
+}
+
+.content-placeholder p:first-child {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .stats-cards {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .contas-pagar-dashboard {
+    padding: 15px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .date-filters {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .date-inputs {
+    flex-direction: column;
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .card-value {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-conta-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .date-input {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .card-value {
+    font-size: 20px;
+  }
+}

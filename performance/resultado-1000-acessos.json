@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-03-19T01:43:41.001Z",
+  "targetUrl": "http://localhost:3001/",
+  "plannedRequests": 1000,
+  "plannedDurationMs": 60000,
+  "actualDurationMs": 59966,
+  "completedRequests": 1000,
+  "success": 1000,
+  "failed": 0,
+  "successRatePercent": 100,
+  "throughput": {
+    "requestsPerSecond": 16.68,
+    "requestsPerMinute": 1000.57,
+    "bytesPerSecond": 41573.56,
+    "totalBytes": 2493000
+  },
+  "latencyMs": {
+    "min": 1.81,
+    "avg": 6.03,
+    "p50": 4.28,
+    "p90": 11.05,
+    "p95": 13.16,
+    "p99": 21.79,
+    "max": 45.98
+  },
+  "statusCounts": {
+    "200": 1000
+  },
+  "errorCounts": {}
+}
