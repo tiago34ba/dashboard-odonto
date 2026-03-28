@@ -1,50 +1,137 @@
-# Getting Started with Create React App
+# Dashboard Odonto (Frontend) + Odonto (Backend)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Guia oficial de instalacao do projeto odontologico completo, com frontend React e backend Laravel.
 
-## Available Scripts
+## Visao Geral
 
-In the project directory, you can run:
+- Frontend: `dashboard-odonto` (React + TypeScript)
+- Backend: `odonto` (Laravel 12 + PHP 8.2+)
+- Comunicacao local: frontend em `http://localhost:3000` e backend em `http://127.0.0.1:8000`
 
-### `npm start`
+O frontend possui proxy para `/api` em `src/setupProxy.js`, apontando para `http://127.0.0.1:8000`.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Pre-requisitos
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Node.js 18+ e npm
+- PHP 8.2+
+- Composer 2+
+- MySQL 8+ (ou banco configurado no backend)
+- Git
 
-### `npm test`
+## 1. Clonar os repositorios
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Se voce ainda nao tem os dois projetos localmente:
 
-### `npm run build`
+```bash
+git clone https://github.com/tiago34ba/dashboard-odonto.git
+git clone https://github.com/tiago34ba/odonto.git
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 2. Configurar e subir o Backend (Laravel)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Windows (PowerShell)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```powershell
+cd ..\odonto
+composer install
 
-### `npm run eject`
+# Se nao existir .env, crie com base no .env.example (quando houver)
+if (!(Test-Path .env) -and (Test-Path .env.example)) { Copy-Item .env.example .env }
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+php artisan key:generate
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Edite o arquivo `.env` do backend e configure o banco, por exemplo:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=odonto_db
+DB_USERNAME=root
+DB_PASSWORD=sua_senha
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Depois rode:
 
-## Learn More
+```powershell
+php artisan migrate
+php artisan serve --host=127.0.0.1 --port=8000
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Linux/macOS
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+cd ../odonto
+composer install
 
-## Project Standards
+if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi
 
-- High-level standard for Scheduling Report module: [RELATORIO_AGENDAMENTOS_PADRAO_ALTO_NIVEL.md](RELATORIO_AGENDAMENTOS_PADRAO_ALTO_NIVEL.md)
+php artisan key:generate
+php artisan migrate
+php artisan serve --host=127.0.0.1 --port=8000
+```
+
+## 3. Configurar e subir o Frontend (React)
+
+### Windows (PowerShell)
+
+```powershell
+cd ..\dashboard-odonto
+npm install
+
+# Cria .env.local com base no template
+Copy-Item env.example .env.local -Force
+
+npm start
+```
+
+### Linux/macOS
+
+```bash
+cd ../dashboard-odonto
+npm install
+cp env.example .env.local
+npm start
+```
+
+## 4. Ajustar variaveis do Frontend
+
+No arquivo `.env.local` do frontend, ajuste principalmente:
+
+```env
+REACT_APP_API_BASE_URL=http://127.0.0.1:8000/api
+REACT_APP_API_TIMEOUT=10000
+REACT_APP_ENABLE_DEBUG=true
+```
+
+Observacao:
+- Se a aplicacao usar chamadas para `/api`, o proxy do CRA ja redireciona para `127.0.0.1:8000`.
+
+## 5. Verificacao rapida
+
+1. Backend no ar em `http://127.0.0.1:8000`
+2. Frontend no ar em `http://localhost:3000`
+3. Acessar o dashboard e validar carregamento de dados
+
+## Scripts uteis do Frontend
+
+No diretorio `dashboard-odonto`:
+
+```bash
+npm start      # modo desenvolvimento
+npm test       # testes
+npm run build  # build de producao
+```
+
+## Problemas comuns
+
+- Erro de CORS: confirme backend em `127.0.0.1:8000` e chamadas via `/api` ou `REACT_APP_API_BASE_URL` correto.
+- Falha de conexao com banco: revise credenciais no `.env` do backend e se o banco existe.
+- Dependencias quebradas: rode `composer install` (backend) e `npm install` (frontend) novamente.
+
+## Documentacao complementar
+
+- Padrao de relatorios: `RELATORIO_AGENDAMENTOS_PADRAO_ALTO_NIVEL.md`
+- Regras de negocio financeiro: `CONTAS_PAGAR_REGRAS_NEGOCIO.md`
+- Organizacao do sistema: `ORGANIZACAO_SISTEMA.md`
