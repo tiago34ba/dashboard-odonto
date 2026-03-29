@@ -257,14 +257,14 @@ const TestePix: React.FC<TestePixProps> = ({ valorPlano, planoSelecionado }) => 
     adicionarLog('📱 Simulando envio de notificação...');
     
     const notificacao = {
-      telefone: '71996285453',
+      telefone: '71990000000',
       mensagem: `✅ PIX TESTE RECEBIDO\n\nValor: R$ 90.00\nPlano: Profissional\nTransação: TESTE_${Date.now()}\n\nPagamento aprovado com sucesso! 🎉`,
       tipo: 'teste',
       timestamp: new Date().toISOString()
     };
 
     setResultado({ notificacao });
-    adicionarLog('📲 Notificação simulada enviada para: 71996285453');
+    adicionarLog('📲 Notificação simulada enviada para: 71990000000');
     adicionarLog('✅ Teste de notificação concluído');
   };
 
@@ -309,7 +309,7 @@ const TestePix: React.FC<TestePixProps> = ({ valorPlano, planoSelecionado }) => 
         <p><strong>Banco:</strong> Caixa Econômica (104)</p>
         <p><strong>Agência:</strong> 4803</p>
         <p><strong>Conta:</strong> 000860463765-4</p>
-        <p><strong>Chave PIX:</strong> 71996285453</p>
+        <p><strong>Chave PIX:</strong> 71990000000</p>
         <p><strong>Modo:</strong> Mock/Desenvolvimento (pagamentos aprovados após 10 segundos)</p>
         <p><strong>Notificações:</strong> Simuladas via console</p>
         <p><strong>Persistência:</strong> LocalStorage</p>
