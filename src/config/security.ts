@@ -10,16 +10,16 @@ export const SECURITY_CONFIG = {
     ALLOWED_ORIGINS: process.env.REACT_APP_ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
   },
 
-  // Configurações de Criptografia - DESABILITADO
+  // Configuracoes de criptografia no cliente sao opcionais e nao substituem seguranca backend.
   ENCRYPTION: {
-    KEY: process.env.REACT_APP_ENCRYPTION_KEY || 'default-key-change-in-production',
+    KEY: process.env.REACT_APP_ENCRYPTION_KEY || '',
     ALGORITHM: 'AES',
     SENSITIVE_FIELDS: [
       'cpf_cnpj', 'cpfCnpj', 'cpf_responsavel', 'cpfResponsavel',
       'telefone', 'celular', 'telefone2', 'email', 'rua', 'numero',
       'complemento', 'bairro', 'cidade', 'cep'
     ],
-    ENABLED: false // Criptografia desabilitada
+    ENABLED: process.env.REACT_APP_ENABLE_CLIENT_ENCRYPTION === 'true'
   },
 
   // Configurações de Validação
@@ -98,6 +98,14 @@ export const SECURITY_CONFIG = {
 export const isProduction = (): boolean => {
   return process.env.NODE_ENV === 'production';
 };
+
+const validateSecurityConfig = (): void => {
+  if (isProduction() && SECURITY_CONFIG.ENCRYPTION.ENABLED && !SECURITY_CONFIG.ENCRYPTION.KEY) {
+    throw new Error('REACT_APP_ENCRYPTION_KEY must be configured when client encryption is enabled in production.');
+  }
+};
+
+validateSecurityConfig();
 
 // Função para verificar se estamos em ambiente de desenvolvimento
 export const isDevelopment = (): boolean => {

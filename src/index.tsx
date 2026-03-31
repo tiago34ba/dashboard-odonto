@@ -3,13 +3,19 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import * as Sentry from '@sentry/react';
+import { initSentry } from './monitoring/sentry';
+
+initSentry();
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <Sentry.ErrorBoundary fallback={<p>Ocorreu um erro inesperado. Tente recarregar a pagina.</p>}>
+      <App />
+    </Sentry.ErrorBoundary>
   </React.StrictMode>
 );
 
@@ -19,10 +25,14 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
-          console.log('SW registrado com sucesso:', registration);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('SW registrado com sucesso:', registration);
+          }
         })
         .catch((registrationError) => {
-          console.log('SW falha no registro:', registrationError);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('SW falha no registro:', registrationError);
+          }
         });
     });
   } else {

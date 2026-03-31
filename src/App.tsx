@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation, useNavigationType } from "react-router-dom";
+import * as Sentry from "@sentry/react";
 import Sidebar from "./components/layout/Sidebar/Sidebar";
 import Header from "./components/layout/Header/Header";
 import { ConsentBanner } from "./components/ui/LGPD/ConsentBanner";
@@ -19,7 +20,7 @@ const PlanosPage = React.lazy(() => import("./pages/Planos/PlanosPage"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard/DashboardCards"));
 const PatientsPage = React.lazy(() => import("./pages/Modulos/clientes/PatientsPage/PatientsPage"));
 const UsersPage = React.lazy(() => import("./pages/Modulos/Usuarios/UsersPage/UsersPage"));
-const FuncionariosPage = React.lazy(() => import("./pages/Modulos/funcionarios/FuncionariosPage/FuncionariosPage"));
+const FuncionariosPage = React.lazy(() => import("./pages/Modulos/funcionarios/EmployeePage/EmployeePage"));
 const AgendamentosPage = React.lazy(() => import("./pages/Modulos/agendamentos/AgendamentosPage/AgendamentosPage"));
 const RelatorioAgendamentos = React.lazy(() => import("./pages/Modulos/agendamentos/RelatorioAgendamentos/RelatorioAgendamentos"));
 const RelatorioProcedimentos = React.lazy(() => import("./pages/Modulos/agendamentos/RelatorioProcedimentos/RelatorioProcedimentos"));
@@ -51,23 +52,42 @@ const RelatorioSinteticoRecebimentosPage = React.lazy(() => import("./pages/Modu
 const RelatorioBalancoAnualPage = React.lazy(() => import("./pages/Modulos/Relatorios/RelatorioBalancoAnualPage"));
 const RelatorioInadimplentesPage = React.lazy(() => import("./pages/Modulos/Relatorios/RelatorioInadimplentesPage"));
 
+// Portal do Paciente
+const PortalPage = React.lazy(() => import("./pages/Portal/PortalPage"));
+const PortalLoginPage = React.lazy(() => import("./pages/Portal/PortalLoginPage"));
+const PortalRegistroPage = React.lazy(() => import("./pages/Portal/PortalRegistroPage"));
+const PortalAgendarPage = React.lazy(() => import("./pages/Portal/PortalAgendarPage"));
+const PortalMeusAgendamentosPage = React.lazy(() => import("./pages/Portal/PortalMeusAgendamentosPage"));
+const AdminLoginPage = React.lazy(() => import("./pages/Admin/AdminLoginPage"));
+const AdminPortalPage = React.lazy(() => import("./pages/Admin/AdminPortalPage"));
+
+const RouteMonitor: React.FC = () => {
+  const location = useLocation();
+  const navigationType = useNavigationType();
+
+  React.useEffect(() => {
+    Sentry.addBreadcrumb({
+      category: "navigation",
+      message: `${navigationType} ${location.pathname}${location.search}`,
+      level: "info",
+    });
+  }, [location.pathname, location.search, navigationType]);
+
+  return null;
+};
+
 const App: React.FC = () => {
   const { notifications, hideNotification } = useNotification();
 
-  const handleConsentAccept = () => {
-    console.log('Consentimento LGPD aceito');
-  };
+  const handleConsentAccept = () => {};
 
-  const handleConsentReject = () => {
-    console.log('Consentimento LGPD rejeitado');
-  };
+  const handleConsentReject = () => {};
 
-  const handleConsentCustomize = () => {
-    console.log('Consentimento LGPD personalizado');
-  };
+  const handleConsentCustomize = () => {};
 
   return (
     <Router>
+      <RouteMonitor />
       <div className="app">
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
@@ -82,6 +102,24 @@ const App: React.FC = () => {
             {/* Páginas de Autenticação (sem sidebar/header) */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<RegisterPage />} />
+            
+                        {/* Portal do Paciente (sem sidebar/header) */}
+                        <Route path="/portal" element={<PortalPage />} />
+                        <Route path="/portal/login" element={<PortalLoginPage />} />
+                        <Route path="/portal/registro" element={<PortalRegistroPage />} />
+                        <Route path="/portal/agendar" element={<PortalAgendarPage />} />
+                        <Route path="/portal/meus-agendamentos" element={<PortalMeusAgendamentosPage />} />
+
+            {/* Portal SaaS Admin (menu lateral proprio) */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute redirectTo="/admin/login" allowedUserTypes={["saas_admin"]}>
+                  <AdminPortalPage />
+                </ProtectedRoute>
+              }
+            />
             
             {/* Demais páginas com sidebar e header */}
             <Route path="/dashboard/*" element={

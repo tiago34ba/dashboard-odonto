@@ -1,0 +1,66 @@
+name: Frontend CI and Smoke
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Test and Build
+    runs-on: ubuntu-latest
+
+    env:
+      CI: true
+      REACT_APP_ENVIRONMENT: ci
+      REACT_APP_RELEASE: ${{ github.sha }}
+      REACT_APP_ENABLE_SENTRY: "false"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --watchAll=false
+
+      - name: Build application
+        run: npm run build
+
+      - name: Dependency audit (high and critical)
+        run: npm audit --audit-level=high
+
+  post_deploy_smoke:
+    name: Post-deploy smoke
+    needs: ci
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate smoke base URL variable
+        run: |
+          if [ -z "${{ vars.FRONTEND_PUBLIC_URL }}" ]; then
+            echo "FRONTEND_PUBLIC_URL repository variable is required for post-deploy smoke."
+            exit 1
+          fi
+
+      - name: Check login route
+        run: curl --fail --silent --show-error "${{ vars.FRONTEND_PUBLIC_URL }}/login" > /dev/null
+
+      - name: Check landing page
+        run: curl --fail --silent --show-error "${{ vars.FRONTEND_PUBLIC_URL }}/" > /dev/null

@@ -297,7 +297,7 @@ const emptyForm: FormUser = {
   ativo: true,
 };
 
-const niveisAcesso = ["Secretaria", "Auxiliar Dentista", "Dentista", "Financeiro", "Faxineiro", "Administrador"];
+const niveisAcesso = ["Secretaria", "Auxiliar Dentista", "Dentista", "Paciente", "Financeiro", "Faxineiro", "Administrador"];
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<UserRow[]>([]);

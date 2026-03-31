@@ -16,10 +16,7 @@ export class PixService {
   private static instance: PixService;
 
   private getAuthHeaders(): HeadersInit {
-    const token =
-      sessionStorage.getItem('auth_token') ||
-      localStorage.getItem('auth_token') ||
-      localStorage.getItem('userToken');
+    const token = sessionStorage.getItem('auth_token');
 
     return token
       ? {
@@ -122,7 +119,9 @@ export class PixService {
    * Gera PIX usando API mock para desenvolvimento
    */
   private async gerarPixMock(dados: any): Promise<PagamentoPix> {
-    console.log('🔄 Gerando PIX Mock para:', dados);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Gerando PIX Mock para:', dados);
+    }
 
     // Simular delay da API
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -146,7 +145,9 @@ export class PixService {
     // Salvar no localStorage para simular persistência
     this.salvarPagamento(pagamento);
 
-    console.log('✅ PIX gerado com sucesso:', pagamento);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ PIX gerado com sucesso:', pagamento);
+    }
     return pagamento;
   }
 
@@ -209,7 +210,9 @@ export class PixService {
    */
   private async enviarNotificacaoAprovacao(pagamento: PagamentoPix): Promise<void> {
     try {
-      console.log('📱 Enviando notificação de pagamento aprovado...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📱 Enviando notificação de pagamento aprovado...');
+      }
 
       // Simular envio de notificação
       const notificacao = {
@@ -220,7 +223,9 @@ export class PixService {
       };
 
       // Em produção, aqui enviaria SMS/WhatsApp via API
-      console.log('📲 Notificação enviada:', notificacao);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📲 Notificação enviada:', notificacao);
+      }
 
       // Simular sucesso
       await new Promise(resolve => setTimeout(resolve, 1000));

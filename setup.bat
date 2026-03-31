@@ -30,7 +30,8 @@ if %errorlevel% neq 0 (
 echo [3/5] Configurando variaveis de ambiente...
 if not exist .env (
     echo REACT_APP_API_URL=http://localhost:8000/api > .env
-    echo REACT_APP_ENCRYPTION_KEY=default-key-change-in-production >> .env
+    echo REACT_APP_ENABLE_CLIENT_ENCRYPTION=false >> .env
+    echo REACT_APP_ENCRYPTION_KEY= >> .env
     echo Arquivo .env criado.
 )
 
@@ -62,6 +63,6 @@ echo.
 echo Configuracoes importantes:
 echo - API URL: http://localhost:8000/api
 echo - Porta do React: 3000
-echo - Criptografia: Habilitada
+echo - Criptografia client-side: Desabilitada por padrao
 echo.
 pause

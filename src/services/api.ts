@@ -1,5 +1,6 @@
 // Serviço de API para integração com o backend Laravel
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { captureApiError } from '../monitoring/sentry';
 
 // Configuração base da API
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
@@ -96,7 +97,7 @@ class ApiService {
   private token: string | null = null;
 
   private getStoredToken(): string | null {
-    return sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+    return sessionStorage.getItem('auth_token');
   }
 
   constructor() {
@@ -125,6 +126,13 @@ class ApiService {
     this.api.interceptors.response.use(
       (response: AxiosResponse) => response,
       (error) => {
+        captureApiError(error, {
+          client: 'api-service',
+          path: error?.config?.url,
+          method: error?.config?.method,
+          status: error?.response?.status,
+        });
+
         if (error.response?.status === 401) {
           this.logout();
         }
