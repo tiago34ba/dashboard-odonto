@@ -289,20 +289,33 @@ const LoginPage: React.FC = () => {
       const token = response?.data?.token;
       const user = response?.data?.user;
       const grupoAcesso = user?.grupo_acesso_nome;
+      const tipoUsuario = (user?.tipo || '').toString().toLowerCase();
+      const grupoAcessoNome = (grupoAcesso || user?.grupoAcesso?.nome || '').toString().toLowerCase();
+      const isPaciente = tipoUsuario === 'paciente' || grupoAcessoNome.includes('paciente');
 
       if (!token || !user) {
         throw new Error('Resposta de login invalida');
       }
 
-      if (!grupoAcesso) {
+      if (!isPaciente && !grupoAcesso) {
         throw new Error('Usuario sem nivel de acesso vinculado');
       }
 
       sessionStorage.setItem('auth_token', token);
       localStorage.removeItem('auth_token');
-      localStorage.setItem('userToken', token);
+      localStorage.removeItem('userToken');
+      sessionStorage.setItem('userData', JSON.stringify(user));
       localStorage.setItem('userData', JSON.stringify(user));
 
+      if (isPaciente) {
+        sessionStorage.setItem('patient_token', token);
+        sessionStorage.setItem('patient_user', JSON.stringify(user));
+        navigate('/portal/agendar');
+        return;
+      }
+
+      sessionStorage.removeItem('patient_token');
+      sessionStorage.removeItem('patient_user');
       navigate('/dashboard');
     } catch (err) {
       const errorMessage =

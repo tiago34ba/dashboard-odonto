@@ -153,6 +153,20 @@
   box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
 }
 
+.consulta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+  color: #2a2a2a;
+}
+
+.consulta-obs {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e7e7e7;
+  color: #444;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
   .consulta-page {

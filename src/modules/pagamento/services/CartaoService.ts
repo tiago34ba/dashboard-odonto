@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { NotificationService } from '../../../services/NotificationService';
+import { SECURITY_CONFIG } from '../../../config/security';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
@@ -112,11 +113,20 @@ class CartaoService {
   private readonly baseURL = `${API_BASE_URL}/payments/card`;
   private readonly isTestMode = process.env.REACT_APP_PAYMENT_MOCK === 'true';
 
+  private debugLog(message: string, ...data: unknown[]) {
+    if (SECURITY_CONFIG.LOGGING.ENABLE_DEBUG) {
+      console.log(message, ...data);
+    }
+  }
+
+  private debugError(message: string, error: unknown) {
+    if (SECURITY_CONFIG.LOGGING.ENABLE_DEBUG) {
+      console.error(message, error);
+    }
+  }
+
   private getAuthHeaders() {
-    const token =
-      sessionStorage.getItem('auth_token') ||
-      localStorage.getItem('auth_token') ||
-      localStorage.getItem('userToken');
+    const token = sessionStorage.getItem('auth_token');
 
     return token
       ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
@@ -124,7 +134,7 @@ class CartaoService {
   }
 
   constructor() {
-    console.log(`🔧 CartaoService inicializado em modo: ${this.isTestMode ? 'TESTE' : 'PRODUÇÃO'}`);
+    this.debugLog(`🔧 CartaoService inicializado em modo: ${this.isTestMode ? 'TESTE' : 'PRODUÇÃO'}`);
   }
 
   /**
@@ -133,11 +143,11 @@ class CartaoService {
   identificarBandeira(numeroCartao: string): BandeiraCartao | null {
     const numero = numeroCartao.replace(/\s/g, '');
     
-    console.log('🔍 Tentando identificar bandeira para:', numero, 'Tamanho:', numero.length);
+    this.debugLog('🔍 Tentando identificar bandeira para:', numero, 'Tamanho:', numero.length);
     
     // Não tentar identificar se houver menos de 4 dígitos
     if (numero.length < 4) {
-      console.log('⚠️ Número muito curto para identificação');
+      this.debugLog('⚠️ Número muito curto para identificação');
       return null;
     }
     
@@ -146,27 +156,27 @@ class CartaoService {
       const numeroInicial = numero.substring(0, 6); // Primeiros 6 dígitos
       
       if (bandeira.id === 'visa' && numero.startsWith('4')) {
-        console.log('✅ Bandeira detectada:', bandeira.nome);
+        this.debugLog('✅ Bandeira detectada:', bandeira.nome);
         return bandeira;
       } else if (bandeira.id === 'master' && /^5[1-5]/.test(numero)) {
-        console.log('✅ Bandeira detectada:', bandeira.nome);
+        this.debugLog('✅ Bandeira detectada:', bandeira.nome);
         return bandeira;
       } else if (bandeira.id === 'amex' && /^3[47]/.test(numero)) {
-        console.log('✅ Bandeira detectada:', bandeira.nome);
+        this.debugLog('✅ Bandeira detectada:', bandeira.nome);
         return bandeira;
       } else if (bandeira.id === 'elo' && /^(636368|438935|504175|451416|636297|5067|4576|4011)/.test(numeroInicial)) {
-        console.log('✅ Bandeira detectada:', bandeira.nome);
+        this.debugLog('✅ Bandeira detectada:', bandeira.nome);
         return bandeira;
       } else if (bandeira.id === 'hipercard' && /^(606282|3841)/.test(numeroInicial)) {
-        console.log('✅ Bandeira detectada:', bandeira.nome);
+        this.debugLog('✅ Bandeira detectada:', bandeira.nome);
         return bandeira;
       } else if (bandeira.id === 'diners' && /^3[0689]/.test(numero)) {
-        console.log('✅ Bandeira detectada:', bandeira.nome);
+        this.debugLog('✅ Bandeira detectada:', bandeira.nome);
         return bandeira;
       }
     }
     
-    console.log('❌ Nenhuma bandeira detectada para:', numero);
+    this.debugLog('❌ Nenhuma bandeira detectada para:', numero);
     return null;
   }
 
@@ -205,7 +215,7 @@ class CartaoService {
    */
   async obterOpcoesParcelamento(valor: number, bandeiraId: string): Promise<OpcoesParcelamento[]> {
     try {
-      console.log(`💳 Obtendo opções de parcelamento para ${bandeiraId}: R$ ${valor}`);
+      this.debugLog(`💳 Obtendo opções de parcelamento para ${bandeiraId}: R$ ${valor}`);
       
       if (this.isTestMode) {
         // Dados mocados para teste
@@ -241,7 +251,7 @@ class CartaoService {
       }));
 
     } catch (error) {
-      console.error('❌ Erro ao obter opções de parcelamento:', error);
+      this.debugError('❌ Erro ao obter opções de parcelamento:', error);
       throw new Error('Erro ao carregar opções de parcelamento');
     }
   }
@@ -257,7 +267,7 @@ class CartaoService {
     bandeiraId: string
   ): Promise<PagamentoCartao> {
     try {
-      console.log(`💳 Processando pagamento: R$ ${valor} em ${parcelas}x com ${bandeiraId}`);
+      this.debugLog(`💳 Processando pagamento: R$ ${valor} em ${parcelas}x com ${bandeiraId}`);
 
       if (this.isTestMode) {
         return this.processarPagamentoMock(dadosCartao, valor, parcelas, planoId, bandeiraId);
@@ -297,7 +307,7 @@ class CartaoService {
       return this.mapearRespostaApi(response.data, planoId, dadosCartao);
 
     } catch (error: any) {
-      console.error('❌ Erro ao processar pagamento:', error);
+      this.debugError('❌ Erro ao processar pagamento:', error);
       
       if (error.response) {
         const errorMessage = error.response.data?.message || 'Erro no processamento do pagamento';
@@ -319,7 +329,7 @@ class CartaoService {
     planoId: string,
     bandeiraId: string
   ): Promise<PagamentoCartao> {
-    console.log('🧪 Simulando pagamento em modo teste...');
+    this.debugLog('🧪 Simulando pagamento em modo teste...');
     
     // Simular delay da API
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -431,7 +441,7 @@ class CartaoService {
       return statusMap[response.data.status] || StatusPagamentoCartao.PENDENTE;
 
     } catch (error) {
-      console.error('❌ Erro ao consultar status:', error);
+      this.debugError('❌ Erro ao consultar status:', error);
       throw new Error('Erro ao consultar status do pagamento');
     }
   }

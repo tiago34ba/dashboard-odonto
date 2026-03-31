@@ -288,7 +288,7 @@ const Header: React.FC = () => {
 
   const userData = useMemo(() => {
     try {
-      const raw = localStorage.getItem("userData");
+      const raw = sessionStorage.getItem("userData") || localStorage.getItem("userData");
       return raw ? JSON.parse(raw) : {};
     } catch {
       return {};
@@ -363,6 +363,7 @@ const Header: React.FC = () => {
     }
 
     sessionStorage.removeItem("auth_token");
+    sessionStorage.removeItem("userData");
     localStorage.removeItem("auth_token");
     localStorage.removeItem("userToken");
     localStorage.removeItem("userData");

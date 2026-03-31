@@ -1,73 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import ModuleCard from '../../components/ModuleCard/ModuleCard';
-
-interface ModuleCounter {
-  total: number;
-  endpoint: string;
-  loading?: boolean;
-  error?: string;
-}
-
-interface ModuleCounters {
-  [moduleName: string]: ModuleCounter;
-}
-
-// Hook simplificado inline
-const useModuleCounters = (refreshInterval?: number) => {
-  const [counters, setCounters] = React.useState<ModuleCounters>({});
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = React.useState<Date | null>(null);
-
-  React.useEffect(() => {
-    const fetchCounters = async () => {
-      try {
-        setLoading(true);
-        
-        // Simulando dados dos módulos com contadores
-        const moduleData: ModuleCounters = {
-          'Pacientes': { total: 1250, endpoint: '/pessoas/pacientes/PatientsPage' },
-          'Usuários': { total: 25, endpoint: '/pessoas/usuarios' },
-          'Funcionários': { total: 15, endpoint: '/pessoas/funcionarios' },
-          'Agendamentos': { total: 450, endpoint: '/agendamentos' },
-          'Procedimentos': { total: 180, endpoint: '/cadastros/procedimentos' },
-          'Convênios': { total: 8, endpoint: '/cadastros/convenios' },
-          'Contas a Pagar': { total: 75, endpoint: '/financeiro/contas-pagar' },
-          'Contas a Receber': { total: 125, endpoint: '/financeiro/contas-receber' },
-          'Fornecedores': { total: 35, endpoint: '/cadastros/fornecedores' },
-          'Comissões': { total: 45, endpoint: '/financeiro/comissoes' },
-          'Tratamentos': { total: 234, endpoint: '/tratamentos' },
-          'Orçamentos': { total: 92, endpoint: '/orcamentos' }
-        };
-
-        await new Promise(resolve => setTimeout(resolve, 300));
-        setCounters(moduleData);
-        setLastUpdated(new Date());
-        setError(null);
-      } catch (err) {
-        setError('Erro ao carregar contadores dos módulos');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCounters();
-    
-    if (refreshInterval && refreshInterval > 0) {
-      const interval = setInterval(fetchCounters, refreshInterval);
-      return () => clearInterval(interval);
-    }
-  }, [refreshInterval]);
-
-  return { 
-    counters, 
-    loading, 
-    error, 
-    lastUpdated, 
-    refreshCounters: () => {} 
-  };
-};
+import { ModuleCounter, useModuleCounters } from '../../hooks/useModuleCounters';
 
 // Animações
 const fadeIn = keyframes`
@@ -188,9 +122,7 @@ const RealTimeModuleDashboard: React.FC = () => {
   const { counters, loading, error, lastUpdated, refreshCounters } = useModuleCounters(30000); // Atualiza a cada 30 segundos
 
   const handleModuleClick = (moduleName: string, endpoint: string) => {
-    console.log(`Navegando para ${moduleName}:`, endpoint);
-    // Aqui você pode implementar navegação usando React Router
-    // navigate(endpoint);
+    window.location.href = endpoint;
   };
 
   const formatLastUpdated = (timestamp: Date | null) => {

@@ -1,0 +1,1708 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FiAlertCircle,
+  FiBarChart2,
+  FiCheckCircle,
+  FiChevronDown,
+  FiChevronRight,
+  FiCreditCard,
+  FiDollarSign,
+  FiFileText,
+  FiGrid,
+  FiLayers,
+  FiSettings,
+  FiUsers,
+  FiXCircle,
+} from "react-icons/fi";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import api from "../../components/api/api";
+import "./AdminPortalPage.css";
+
+type MenuItem = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  children?: Array<{ id: string; label: string }>;
+};
+
+type DashboardMetrics = {
+  patientsTotal: number;
+  receitaMensal: number;
+  saldoMes: number;
+  agendamentosHoje: number;
+};
+
+type FinanceiroResumo = {
+  totalAPagar: number;
+  totalAReceber: number;
+  saldoAtual: number;
+  projecao: number;
+};
+
+type ChartPoint = {
+  dia: string;
+  total: number;
+};
+
+type MensalidadeStatus = "em_dia" | "atrasada" | "inadimplente" | "suspensa";
+type InadimplenciaRisk = "baixo" | "medio" | "alto";
+
+type MonthlyClinicRow = {
+  clinica: string;
+  planoId: string;
+  planoLabel: string;
+  valorMensal: number;
+  totalUsuarios: number;
+  usuariosAtivos: number;
+  proximoVencimento: string;
+  status: MensalidadeStatus;
+};
+
+type MensalidadesApiResponse = {
+  success: boolean;
+  data: Array<{
+    clinica: string;
+    plano_id: string;
+    plano_nome: string;
+    valor_mensal: number;
+    total_usuarios: number;
+    usuarios_ativos: number;
+    proximo_vencimento: string;
+    status: MensalidadeStatus;
+  }>;
+  pagination?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
+type InadimplenciaApiResponse = {
+  success: boolean;
+  data: Array<{
+    clinica: string;
+    plano_id: string;
+    plano_nome: string;
+    valor_mensal: number;
+    proximo_vencimento: string;
+    status: "atrasada" | "inadimplente";
+    dias_em_atraso: number;
+    nivel_risco: InadimplenciaRisk;
+    valor_em_aberto: number;
+    total_usuarios: number;
+    usuarios_ativos: number;
+  }>;
+  summary?: {
+    total_clinicas: number;
+    total_atrasadas: number;
+    total_inadimplentes: number;
+    valor_total_em_aberto: number;
+  };
+  pagination?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
+type InadimplenciaRow = {
+  clinica: string;
+  planoId: string;
+  planoLabel: string;
+  valorMensal: number;
+  proximoVencimento: string;
+  status: "atrasada" | "inadimplente";
+  diasEmAtraso: number;
+  nivelRisco: InadimplenciaRisk;
+  valorEmAberto: number;
+  totalUsuarios: number;
+  usuariosAtivos: number;
+};
+
+type ClinicasApiResponse = {
+  success: boolean;
+  data: Array<{
+    clinica: string;
+    responsavel: string;
+    email: string;
+    telefone: string;
+    plano_id: string;
+    plano_nome: string;
+    status: MensalidadeStatus;
+    valor_mensal: number;
+    usuarios_ativos: number;
+    total_usuarios: number;
+    ultimo_login_em: string | null;
+    cadastrado_em: string | null;
+  }>;
+  summary?: {
+    total_clinicas: number;
+    total_ativas: number;
+    total_com_risco: number;
+    total_suspensas: number;
+  };
+  pagination?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
+type ClinicRow = {
+  clinica: string;
+  responsavel: string;
+  email: string;
+  telefone: string;
+  planoId: string;
+  planoLabel: string;
+  status: MensalidadeStatus;
+  valorMensal: number;
+  usuariosAtivos: number;
+  totalUsuarios: number;
+  ultimoLoginEm: string;
+  cadastradoEm: string;
+};
+
+type SolicitacaoStatus = "pendente" | "aguardando_pagamento" | "aprovada" | "rejeitada";
+
+type SolicitacaoRow = {
+  id: number;
+  nomeClinica: string;
+  responsavel: string;
+  email: string;
+  telefone: string;
+  cnpj: string;
+  cidade: string;
+  estado: string;
+  planoId: string;
+  planoNome: string;
+  valorMensal: number;
+  status: SolicitacaoStatus;
+  pagamentoConfirmado: boolean;
+  dataPagamento: string;
+  observacoes: string;
+  motivoRejeicao: string;
+  aprovadoEm: string;
+  rejeitadoEm: string;
+  solicitadoEm: string;
+};
+
+type SolicitacoesApiResponse = {
+  success: boolean;
+  summary: {
+    total: number;
+    total_pendentes: number;
+    total_aguardando: number;
+    total_aprovadas: number;
+    total_rejeitadas: number;
+    aprovadas_hoje: number;
+  };
+  data: Array<{
+    id: number;
+    nome_clinica: string;
+    responsavel: string;
+    email: string;
+    telefone: string;
+    cnpj: string;
+    cidade: string;
+    estado: string;
+    plano_id: string;
+    plano_nome: string;
+    valor_mensal: number;
+    status: SolicitacaoStatus;
+    pagamento_confirmado: boolean;
+    data_pagamento: string | null;
+    observacoes: string | null;
+    motivo_rejeicao: string | null;
+    aprovado_em: string | null;
+    rejeitado_em: string | null;
+    solicitado_em: string;
+  }>;
+  pagination: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+};
+
+type SaaSPlan = {
+  id: string;
+  label: string;
+  price: number;
+  period: string;
+  description: string;
+  features: Array<{
+    text: string;
+    included: boolean;
+  }>;
+  limits: {
+    usuarios: number | string;
+    lojas: number;
+    armazenamentoGb: number;
+  };
+};
+
+const WEEK_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const DAY_LABELS: Record<string, string> = {
+  Mon: "Seg",
+  Tue: "Ter",
+  Wed: "Qua",
+  Thu: "Qui",
+  Fri: "Sex",
+  Sat: "Sab",
+  Sun: "Dom",
+};
+
+const SAAS_PLANS: SaaSPlan[] = [
+  {
+    id: "basico",
+    label: "Basico",
+    price: 70,
+    period: "Mes",
+    description: "Plano de entrada para clinicas pequenas.",
+    features: [
+      { text: "Ate 100 pacientes", included: true },
+      { text: "Dashboard basico", included: true },
+      { text: "Gestao de Pacientes", included: true },
+      { text: "Agendamentos basicos", included: true },
+      { text: "Cadastro de Procedimentos", included: true },
+      { text: "Relatorios basicos", included: true },
+      { text: "Suporte seg a sex 07:00-18:00 e sab 07:00-12:00", included: true },
+      { text: "Gestao de Funcionarios", included: false },
+      { text: "Gestao Financeira", included: false },
+      { text: "Convenios", included: false },
+      { text: "Odontogramas", included: false },
+      { text: "Anamnese", included: false },
+    ],
+    limits: {
+      usuarios: 1,
+      lojas: 1,
+      armazenamentoGb: 20,
+    },
+  },
+  {
+    id: "profissional",
+    label: "Profissional",
+    price: 90,
+    period: "Mes",
+    description: "Plano para clinicas em crescimento.",
+    features: [
+      { text: "Pacientes ilimitados", included: true },
+      { text: "Dashboard completo", included: true },
+      { text: "Gestao de Pacientes", included: true },
+      { text: "Gestao de Funcionarios", included: true },
+      { text: "Agendamentos avancados", included: true },
+      { text: "Gestao Financeira", included: true },
+      { text: "Cadastro de Procedimentos", included: true },
+      { text: "Convenios", included: true },
+      { text: "Relatorios avancados", included: true },
+      { text: "Suporte seg a sex 07:00-18:00 e sab 07:00-12:00", included: true },
+      { text: "Odontogramas", included: false },
+      { text: "Anamnese", included: false },
+    ],
+    limits: {
+      usuarios: 8,
+      lojas: 2,
+      armazenamentoGb: 80,
+    },
+  },
+  {
+    id: "premium",
+    label: "Premium",
+    price: 160,
+    period: "Mes",
+    description: "Plano para operacao multiunidade.",
+    features: [
+      { text: "Pacientes ilimitados", included: true },
+      { text: "Dashboard completo", included: true },
+      { text: "Gestao de Pacientes", included: true },
+      { text: "Gestao de Funcionarios", included: true },
+      { text: "Agendamentos completos", included: true },
+      { text: "Gestao Financeira", included: true },
+      { text: "Cadastro de Procedimentos", included: true },
+      { text: "Convenios", included: true },
+      { text: "Odontogramas", included: true },
+      { text: "Anamnese completa", included: true },
+      { text: "Tratamentos", included: true },
+      { text: "Orcamentos", included: true },
+      { text: "Todos os relatorios", included: true },
+      { text: "Suporte seg a sex 07:00-18:00 e sab 07:00-12:00", included: true },
+    ],
+    limits: {
+      usuarios: "Ilimitados",
+      lojas: 5,
+      armazenamentoGb: 200,
+    },
+  },
+];
+
+const menuItems: MenuItem[] = [
+  { id: "painel", label: "Painel", icon: <FiGrid /> },
+  {
+    id: "assinaturas",
+    label: "Assinaturas",
+    icon: <FiCreditCard />,
+    children: [
+      { id: "planos", label: "Planos" },
+      { id: "mensalidades", label: "Mensalidades" },
+      { id: "inadimplencia", label: "Inadimplencia" },
+    ],
+  },
+  {
+    id: "clientes",
+    label: "Clientes",
+    icon: <FiUsers />,
+    children: [
+      { id: "clinicas", label: "Clinicas" },
+      { id: "solicitacoes", label: "Solicitacoes" },
+      {
+        id: "clientes",
+        label: "Clientes",
+        icon: <FiUsers />,
+        children: [
+          { id: "clinicas", label: "Clinicas" },
+          { id: "solicitacoes", label: "Solicitacoes" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "financeiro",
+    label: "Financeiro",
+    icon: <FiDollarSign />,
+    children: [
+      { id: "fluxo", label: "Fluxo de Caixa" },
+      { id: "repasses", label: "Repasses" },
+    ],
+  },
+  { id: "configuracoes", label: "Configuracoes", icon: <FiSettings /> },
+];
+
+const currency = (value: number) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 2,
+  }).format(value || 0);
+
+const shortDate = (value: string) => {
+  if (!value) {
+    return "--";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "--";
+  }
+
+  return new Intl.DateTimeFormat("pt-BR").format(date);
+};
+
+const shortDateTime = (value: string) => {
+  if (!value) {
+    return "--";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "--";
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+};
+
+const statusLabel: Record<MensalidadeStatus, string> = {
+  em_dia: "Em dia",
+  atrasada: "Atrasada",
+  inadimplente: "Inadimplente",
+  suspensa: "Suspensa",
+};
+
+const riskLabel: Record<InadimplenciaRisk, string> = {
+  baixo: "Baixo",
+  medio: "Medio",
+  alto: "Alto",
+};
+
+const AdminPortalPage: React.FC = () => {
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<string>("painel");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    patientsTotal: 0,
+    receitaMensal: 0,
+    saldoMes: 0,
+    agendamentosHoje: 0,
+  });
+
+  const [financeiroResumo, setFinanceiroResumo] = useState<FinanceiroResumo>({
+    totalAPagar: 0,
+    totalAReceber: 0,
+    saldoAtual: 0,
+    projecao: 0,
+  });
+
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const [mensalidades, setMensalidades] = useState<MonthlyClinicRow[]>([]);
+  const [mensalidadesLoading, setMensalidadesLoading] = useState<boolean>(false);
+  const [mensalidadeSearch, setMensalidadeSearch] = useState<string>("");
+  const [mensalidadeStatus, setMensalidadeStatus] = useState<string>("");
+  const [mensalidadePlano, setMensalidadePlano] = useState<string>("");
+  const [mensalidadePage, setMensalidadePage] = useState<number>(1);
+  const [mensalidadeLastPage, setMensalidadeLastPage] = useState<number>(1);
+  const [mensalidadeTotal, setMensalidadeTotal] = useState<number>(0);
+
+  const [inadimplencias, setInadimplencias] = useState<InadimplenciaRow[]>([]);
+  const [inadimplenciaLoading, setInadimplenciaLoading] = useState<boolean>(false);
+  const [inadimplenciaSearch, setInadimplenciaSearch] = useState<string>("");
+  const [inadimplenciaPlano, setInadimplenciaPlano] = useState<string>("");
+  const [inadimplenciaStatus, setInadimplenciaStatus] = useState<string>("");
+  const [inadimplenciaPage, setInadimplenciaPage] = useState<number>(1);
+  const [inadimplenciaLastPage, setInadimplenciaLastPage] = useState<number>(1);
+  const [inadimplenciaTotal, setInadimplenciaTotal] = useState<number>(0);
+  const [inadimplenciaSummary, setInadimplenciaSummary] = useState({
+    totalClinicas: 0,
+    totalAtrasadas: 0,
+    totalInadimplentes: 0,
+    valorTotalEmAberto: 0,
+  });
+
+  const [clinicas, setClinicas] = useState<ClinicRow[]>([]);
+  const [clinicasLoading, setClinicasLoading] = useState<boolean>(false);
+  const [clinicasSearch, setClinicasSearch] = useState<string>("");
+  const [clinicasPlano, setClinicasPlano] = useState<string>("");
+  const [clinicasStatus, setClinicasStatus] = useState<string>("");
+  const [clinicasPage, setClinicasPage] = useState<number>(1);
+  const [clinicasLastPage, setClinicasLastPage] = useState<number>(1);
+  const [clinicasTotal, setClinicasTotal] = useState<number>(0);
+  const [clinicasSummary, setClinicasSummary] = useState({
+    totalClinicas: 0,
+    totalAtivas: 0,
+    totalComRisco: 0,
+    totalSuspensas: 0,
+  });
+
+  // ── Solicitações ──────────────────────────────────────────────
+  const [solicitacoes, setSolicitacoes] = useState<SolicitacaoRow[]>([]);
+  const [solicitacoesLoading, setSolicitacoesLoading] = useState(false);
+  const [solicitacoesSearch, setSolicitacoesSearch] = useState("");
+  const [solicitacoesStatus, setSolicitacoesStatus] = useState("");
+  const [solicitacoesPlano, setSolicitacoesPlano] = useState("");
+  const [solicitacoesPage, setSolicitacoesPage] = useState(1);
+  const [solicitacoesLastPage, setSolicitacoesLastPage] = useState(1);
+  const [solicitacoesTotal, setSolicitacoesTotal] = useState(0);
+  const [solicitacoesSummary, setSolicitacoesSummary] = useState({
+    total: 0,
+    totalPendentes: 0,
+    totalAguardando: 0,
+    totalAprovadas: 0,
+    totalRejeitadas: 0,
+    aprovadasHoje: 0,
+  });
+  const [solicitacaoAcao, setSolicitacaoAcao] = useState<{
+    id: number;
+    tipo: "aprovar" | "rejeitar" | "pagamento";
+    nome: string;
+  } | null>(null);
+  const [motivoRejeicao, setMotivoRejeicao] = useState("");
+  const [acaoLoading, setAcaoLoading] = useState(false);
+  const [acaoMsg, setAcaoMsg] = useState("");
+
+  const fetchMensalidades = async (page = 1) => {
+    setMensalidadesLoading(true);
+
+    try {
+      const response = await api.get<MensalidadesApiResponse>("/saas/mensalidades", {
+        params: {
+          page,
+          per_page: 10,
+          search: mensalidadeSearch || undefined,
+          status: mensalidadeStatus || undefined,
+          plano_id: mensalidadePlano || undefined,
+          sync: true,
+        },
+      });
+
+      const rows = Array.isArray(response?.data?.data)
+        ? response.data.data.map((item) => ({
+            clinica: item.clinica,
+            planoId: item.plano_id,
+            planoLabel: item.plano_nome,
+            valorMensal: Number(item.valor_mensal ?? 0),
+            totalUsuarios: Number(item.total_usuarios ?? 0),
+            usuariosAtivos: Number(item.usuarios_ativos ?? 0),
+            proximoVencimento: item.proximo_vencimento,
+            status: item.status,
+          }))
+        : [];
+
+      setMensalidades(rows);
+      setMensalidadePage(Number(response?.data?.pagination?.current_page ?? 1));
+      setMensalidadeLastPage(Number(response?.data?.pagination?.last_page ?? 1));
+      setMensalidadeTotal(Number(response?.data?.pagination?.total ?? rows.length));
+    } catch {
+      setMensalidades([]);
+      setMensalidadePage(1);
+      setMensalidadeLastPage(1);
+      setMensalidadeTotal(0);
+    } finally {
+      setMensalidadesLoading(false);
+    }
+  };
+
+  const fetchInadimplencias = async (page = 1) => {
+    setInadimplenciaLoading(true);
+
+    try {
+      const response = await api.get<InadimplenciaApiResponse>("/saas/inadimplencias", {
+        params: {
+          page,
+          per_page: 10,
+          search: inadimplenciaSearch || undefined,
+          plano_id: inadimplenciaPlano || undefined,
+          status: inadimplenciaStatus || undefined,
+          sync: true,
+        },
+      });
+
+      const rows = Array.isArray(response?.data?.data)
+        ? response.data.data.map((item) => ({
+            clinica: item.clinica,
+            planoId: item.plano_id,
+            planoLabel: item.plano_nome,
+            valorMensal: Number(item.valor_mensal ?? 0),
+            proximoVencimento: item.proximo_vencimento,
+            status: item.status,
+            diasEmAtraso: Number(item.dias_em_atraso ?? 0),
+            nivelRisco: item.nivel_risco,
+            valorEmAberto: Number(item.valor_em_aberto ?? 0),
+            totalUsuarios: Number(item.total_usuarios ?? 0),
+            usuariosAtivos: Number(item.usuarios_ativos ?? 0),
+          }))
+        : [];
+
+      setInadimplencias(rows);
+      setInadimplenciaSummary({
+        totalClinicas: Number(response?.data?.summary?.total_clinicas ?? rows.length),
+        totalAtrasadas: Number(response?.data?.summary?.total_atrasadas ?? 0),
+        totalInadimplentes: Number(response?.data?.summary?.total_inadimplentes ?? 0),
+        valorTotalEmAberto: Number(response?.data?.summary?.valor_total_em_aberto ?? 0),
+      });
+      setInadimplenciaPage(Number(response?.data?.pagination?.current_page ?? 1));
+      setInadimplenciaLastPage(Number(response?.data?.pagination?.last_page ?? 1));
+      setInadimplenciaTotal(Number(response?.data?.pagination?.total ?? rows.length));
+    } catch {
+      setInadimplencias([]);
+      setInadimplenciaSummary({
+        totalClinicas: 0,
+        totalAtrasadas: 0,
+        totalInadimplentes: 0,
+        valorTotalEmAberto: 0,
+      });
+      setInadimplenciaPage(1);
+      setInadimplenciaLastPage(1);
+      setInadimplenciaTotal(0);
+    } finally {
+      setInadimplenciaLoading(false);
+    }
+  };
+
+  };
+
+  const fetchSolicitacoes = useCallback(async (page = 1) => {
+    setSolicitacoesLoading(true);
+    try {
+      const response = await api.get<SolicitacoesApiResponse>("/saas/solicitacoes", {
+        params: {
+          page,
+          per_page: 10,
+          search: solicitacoesSearch || undefined,
+          status: solicitacoesStatus || undefined,
+          plano_id: solicitacoesPlano || undefined,
+        },
+      });
+
+      const rows: SolicitacaoRow[] = Array.isArray(response?.data?.data)
+        ? response.data.data.map((item) => ({
+            id: item.id,
+            nomeClinica: item.nome_clinica,
+            responsavel: item.responsavel,
+            email: item.email,
+            telefone: item.telefone || "--",
+            cnpj: item.cnpj || "--",
+            cidade: item.cidade || "--",
+            estado: item.estado || "--",
+            planoId: item.plano_id,
+            planoNome: item.plano_nome,
+            valorMensal: Number(item.valor_mensal ?? 0),
+            status: item.status,
+            pagamentoConfirmado: Boolean(item.pagamento_confirmado),
+            dataPagamento: item.data_pagamento || "",
+            observacoes: item.observacoes || "",
+            motivoRejeicao: item.motivo_rejeicao || "",
+            aprovadoEm: item.aprovado_em || "",
+            rejeitadoEm: item.rejeitado_em || "",
+            solicitadoEm: item.solicitado_em || "",
+          }))
+        : [];
+
+      setSolicitacoes(rows);
+      const s = response?.data?.summary;
+      setSolicitacoesSummary({
+        total: Number(s?.total ?? 0),
+        totalPendentes: Number(s?.total_pendentes ?? 0),
+        totalAguardando: Number(s?.total_aguardando ?? 0),
+        totalAprovadas: Number(s?.total_aprovadas ?? 0),
+        totalRejeitadas: Number(s?.total_rejeitadas ?? 0),
+        aprovadasHoje: Number(s?.aprovadas_hoje ?? 0),
+      });
+      setSolicitacoesPage(Number(response?.data?.pagination?.current_page ?? 1));
+      setSolicitacoesLastPage(Number(response?.data?.pagination?.last_page ?? 1));
+      setSolicitacoesTotal(Number(response?.data?.pagination?.total ?? rows.length));
+    } catch {
+      setSolicitacoes([]);
+      setSolicitacoesPage(1);
+      setSolicitacoesLastPage(1);
+      setSolicitacoesTotal(0);
+    } finally {
+      setSolicitacoesLoading(false);
+    }
+  }, [solicitacoesSearch, solicitacoesStatus, solicitacoesPlano]);
+
+  const executarAcao = async () => {
+    if (!solicitacaoAcao) return;
+    setAcaoLoading(true);
+    setAcaoMsg("");
+    try {
+      if (solicitacaoAcao.tipo === "aprovar") {
+        await api.patch(`/saas/solicitacoes/${solicitacaoAcao.id}/aprovar`);
+        setAcaoMsg(`Clinica "${solicitacaoAcao.nome}" aprovada com sucesso.`);
+      } else if (solicitacaoAcao.tipo === "rejeitar") {
+        if (!motivoRejeicao.trim()) { setAcaoMsg("Informe o motivo da rejeicao."); setAcaoLoading(false); return; }
+        await api.patch(`/saas/solicitacoes/${solicitacaoAcao.id}/rejeitar`, { motivo: motivoRejeicao });
+        setAcaoMsg(`Solicitacao de "${solicitacaoAcao.nome}" rejeitada.`);
+      } else {
+        await api.patch(`/saas/solicitacoes/${solicitacaoAcao.id}/confirmar-pagamento`);
+        setAcaoMsg(`Pagamento de "${solicitacaoAcao.nome}" confirmado.`);
+      }
+      setSolicitacaoAcao(null);
+      setMotivoRejeicao("");
+      fetchSolicitacoes(solicitacoesPage);
+    } catch (err: any) {
+      setAcaoMsg(err?.response?.data?.message || "Erro ao executar acao.");
+    } finally {
+      setAcaoLoading(false);
+    }
+  };
+
+  const fetchClinicas = async (page = 1) => {
+    setClinicasLoading(true);
+
+    try {
+      const response = await api.get<ClinicasApiResponse>("/saas/clientes/clinicas", {
+        params: {
+          page,
+          per_page: 10,
+          search: clinicasSearch || undefined,
+          plano_id: clinicasPlano || undefined,
+          status: clinicasStatus || undefined,
+          sync: true,
+        },
+      });
+
+      const rows = Array.isArray(response?.data?.data)
+        ? response.data.data.map((item) => ({
+            clinica: item.clinica,
+            responsavel: item.responsavel || "--",
+            email: item.email || "--",
+            telefone: item.telefone || "--",
+            planoId: item.plano_id,
+            planoLabel: item.plano_nome,
+            status: item.status,
+            valorMensal: Number(item.valor_mensal ?? 0),
+            usuariosAtivos: Number(item.usuarios_ativos ?? 0),
+            totalUsuarios: Number(item.total_usuarios ?? 0),
+            ultimoLoginEm: item.ultimo_login_em || "",
+            cadastradoEm: item.cadastrado_em || "",
+          }))
+        : [];
+
+      setClinicas(rows);
+      setClinicasSummary({
+        totalClinicas: Number(response?.data?.summary?.total_clinicas ?? rows.length),
+        totalAtivas: Number(response?.data?.summary?.total_ativas ?? 0),
+        totalComRisco: Number(response?.data?.summary?.total_com_risco ?? 0),
+        totalSuspensas: Number(response?.data?.summary?.total_suspensas ?? 0),
+      });
+      setClinicasPage(Number(response?.data?.pagination?.current_page ?? 1));
+      setClinicasLastPage(Number(response?.data?.pagination?.last_page ?? 1));
+      setClinicasTotal(Number(response?.data?.pagination?.total ?? rows.length));
+    } catch {
+      setClinicas([]);
+      setClinicasSummary({
+        totalClinicas: 0,
+        totalAtivas: 0,
+        totalComRisco: 0,
+        totalSuspensas: 0,
+      });
+      setClinicasPage(1);
+      setClinicasLastPage(1);
+      setClinicasTotal(0);
+    } finally {
+      setClinicasLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const [cardsRes, financeiroRes, appointmentsRes] = await Promise.all([
+          api.get("/dashboard/cards-summary"),
+          api.get("/financeiro/dashboard"),
+          api.get("/dashboard/appointments-stats"),
+        ]);
+
+        const cardsMetrics = cardsRes?.data?.data?.metrics ?? {};
+        setMetrics({
+          patientsTotal: Number(cardsMetrics.patients_total ?? 0),
+          receitaMensal: Number(cardsMetrics.receita_mensal ?? 0),
+          saldoMes: Number(cardsMetrics.saldo_mes ?? 0),
+          agendamentosHoje: Number(cardsMetrics.agendamentos_hoje ?? 0),
+        });
+
+        const resumo = financeiroRes?.data?.data?.resumo ?? {};
+        setFinanceiroResumo({
+          totalAPagar: Number(resumo.total_a_pagar ?? 0),
+          totalAReceber: Number(resumo.total_a_receber ?? 0),
+          saldoAtual: Number(resumo.saldo_atual ?? 0),
+          projecao: Number(resumo.projecao ?? 0),
+        });
+
+        const byDay = appointmentsRes?.data?.appointments_statistics?.this_week?.by_day;
+        if (Array.isArray(byDay) && byDay.length > 0) {
+          const normalized = byDay
+            .map((item: any) => {
+              const englishDay = String(item.day ?? "").slice(0, 3);
+              return {
+                dia: DAY_LABELS[englishDay] ?? englishDay,
+                total: Number(item.total ?? 0),
+                order: WEEK_ORDER.indexOf(englishDay),
+              };
+            })
+            .sort((a: any, b: any) => a.order - b.order)
+            .map((item: any) => ({ dia: item.dia, total: item.total }));
+
+          setChartData(normalized);
+        } else {
+          setChartData([
+            { dia: "Seg", total: 0 },
+            { dia: "Ter", total: 0 },
+            { dia: "Qua", total: 0 },
+            { dia: "Qui", total: 0 },
+            { dia: "Sex", total: 0 },
+            { dia: "Sab", total: 0 },
+            { dia: "Dom", total: 0 },
+          ]);
+        }
+      } catch {
+        setError("Nao foi possivel carregar os dados do portal SaaS.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    fetchMensalidades(1);
+  }, [mensalidadeSearch, mensalidadeStatus, mensalidadePlano]);
+
+  useEffect(() => {
+    if (activeItem !== "inadimplencia") {
+      return;
+    }
+
+    fetchInadimplencias(1);
+  }, [activeItem, inadimplenciaSearch, inadimplenciaPlano, inadimplenciaStatus]);
+
+  useEffect(() => {
+    if (activeItem !== "clinicas") {
+      return;
+    }
+
+    fetchClinicas(1);
+  }, [activeItem, clinicasSearch, clinicasPlano, clinicasStatus]);
+
+  useEffect(() => {
+    if (activeItem !== "solicitacoes") return;
+    fetchSolicitacoes(1);
+  }, [activeItem, solicitacoesSearch, solicitacoesStatus, solicitacoesPlano, fetchSolicitacoes]);
+
+  const cards = useMemo(
+    () => [
+      {
+        id: "clientes-ativos",
+        title: "Clientes Ativos",
+        value: String(metrics.patientsTotal),
+        subtitle: "Base Odonto ativa",
+        icon: <FiUsers />,
+        tone: "violet",
+      },
+      {
+        id: "receita-mensal",
+        title: "Receita Mensal",
+        value: currency(metrics.receitaMensal),
+        subtitle: "Regra de negocio financeiro",
+        icon: <FiBarChart2 />,
+        tone: "amber",
+      },
+      {
+        id: "saldo",
+        title: "Saldo",
+        value: currency(financeiroResumo.saldoAtual || metrics.saldoMes),
+        subtitle: "Saldo consolidado",
+        icon: <FiDollarSign />,
+        tone: "green",
+      },
+      {
+        id: "a-receber",
+        title: "Mensalidades a Receber",
+        value: currency(financeiroResumo.totalAReceber),
+        subtitle: `A pagar: ${currency(financeiroResumo.totalAPagar)}`,
+        icon: <FiFileText />,
+        tone: "pink",
+      },
+    ],
+    [financeiroResumo.saldoAtual, financeiroResumo.totalAPagar, financeiroResumo.totalAReceber, metrics.patientsTotal, metrics.receitaMensal, metrics.saldoMes]
+  );
+
+  const isPlanosView = activeItem === "planos";
+  const isMensalidadesView = activeItem === "mensalidades";
+  const isInadimplenciaView = activeItem === "inadimplencia";
+  const isClinicasView = activeItem === "clinicas";
+  const isSolicitacoesView = activeItem === "solicitacoes";
+
+  const handleMenuClick = (item: MenuItem) => {
+    if (item.children && item.children.length > 0) {
+      setExpandedMenu((prev) => (prev === item.id ? null : item.id));
+      return;
+    }
+
+    setActiveItem(item.id);
+    setExpandedMenu(null);
+  };
+
+  return (
+    <div className="saas-admin-shell">
+      <aside className="saas-admin-sidebar">
+        <div className="saas-admin-brand">
+          <span className="saas-admin-brand-logo">
+            <FiLayers />
+          </span>
+          <div>
+            <strong>Odonto SaaS</strong>
+            <small>Admin Portal</small>
+          </div>
+        </div>
+
+        <nav className="saas-admin-nav">
+          {menuItems.map((item) => {
+            const isOpen = expandedMenu === item.id;
+            const isActive = activeItem === item.id;
+
+            return (
+              <div key={item.id} className="saas-admin-nav-group">
+                <button
+                  type="button"
+                  className={`saas-admin-nav-item ${isActive ? "active" : ""}`}
+                  onClick={() => handleMenuClick(item)}
+                >
+                  <span className="saas-admin-nav-left">
+                    <span className="saas-admin-nav-icon">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </span>
+                  {item.children ? (isOpen ? <FiChevronDown /> : <FiChevronRight />) : null}
+                </button>
+
+                {item.children && isOpen ? (
+                  <div className="saas-admin-submenu">
+                    {item.children.map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        className={`saas-admin-submenu-item ${activeItem === child.id ? "active" : ""}`}
+                        onClick={() => setActiveItem(child.id)}
+                      >
+                        {child.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <main className="saas-admin-main">
+        <header className="saas-admin-topbar">
+          <div>
+            <h1>
+              {isPlanosView
+                ? "Planos SaaS"
+                : isMensalidadesView
+                  ? "Mensalidades por Clinica"
+                  : isInadimplenciaView
+                    ? "Controle de Inadimplencia"
+                    : isClinicasView
+                      ? "Clientes - Clinicas"
+                      : "Painel Administrativo SaaS"}
+            </h1>
+            <p>
+              {isPlanosView
+                ? "Valores oficiais do Odonto aplicados ao menu de Planos"
+                : isMensalidadesView
+                  ? "Controle de plano e status mensal por clinica"
+                  : isInadimplenciaView
+                    ? "Monitoramento de clinicas com atraso e inadimplencia"
+                    : isClinicasView
+                      ? "Base de clientes com informacoes padrao de operacao odontologica"
+                      : "Gestao de mensalidades com regras do Odonto"}
+            </p>
+                      <h1>
+                        {isPlanosView
+                          ? "Planos SaaS"
+                          : isMensalidadesView
+                            ? "Mensalidades por Clinica"
+                            : isInadimplenciaView
+                              ? "Controle de Inadimplencia"
+                              : isClinicasView
+                                ? "Clientes - Clinicas"
+                                : isSolicitacoesView
+                                  ? "Solicitacoes de Acesso"
+                                  : "Painel Administrativo SaaS"}
+                      </h1>
+                      <p>
+                        {isPlanosView
+                          ? "Valores oficiais do Odonto aplicados ao menu de Planos"
+                          : isMensalidadesView
+                            ? "Controle de plano e status mensal por clinica"
+                            : isInadimplenciaView
+                              ? "Monitoramento de clinicas com atraso e inadimplencia"
+                              : isClinicasView
+                                ? "Base de clientes com informacoes padrao de operacao odontologica"
+                                : isSolicitacoesView
+                                  ? "Novas clinicas solicitando acesso ao sistema apos pagamento"
+                                  : "Gestao de mensalidades com regras do Odonto"}
+                      </p>
+          </div>
+          <div className="saas-admin-topbar-right">
+            <span className="saas-admin-lang">Portuguese(Brazil)</span>
+            <span className="saas-admin-user">Oi, Super Admin</span>
+          </div>
+        </header>
+
+        {error ? <div className="saas-admin-error">{error}</div> : null}
+
+        {isPlanosView ? (
+          <section className="saas-planos-grid">
+            {SAAS_PLANS.map((plan) => (
+              <article key={plan.id} className="saas-plano-card">
+                <span className="saas-plano-badge">{plan.label}</span>
+
+                <div className="saas-plano-price-block">
+                  <strong>{currency(plan.price)}</strong>
+                  <small>/ {plan.period}</small>
+                </div>
+
+                <p className="saas-plano-description">{plan.description}</p>
+                <h4 className="saas-plano-features-title">O que este plano contempla</h4>
+
+                <ul className="saas-plano-features">
+                  {plan.features.map((feature) => (
+                    <li
+                      key={`${plan.id}-${feature.text}`}
+                      className={feature.included ? "included" : "excluded"}
+                    >
+                      {feature.included ? <FiCheckCircle /> : <FiXCircle />}
+                      <span>{feature.text}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="saas-plano-limits">
+                  <div>
+                    <strong>{plan.limits.usuarios}</strong>
+                    <span>Usuarios</span>
+                  </div>
+                  <div>
+                    <strong>{plan.limits.lojas}</strong>
+                    <span>Clinicas</span>
+                  </div>
+                  <div>
+                    <strong>{plan.limits.armazenamentoGb} GB</strong>
+                    <span>Armazenamento</span>
+                  </div>
+                </div>
+
+                <div className="saas-plano-footer">
+                  <span>{currency(plan.price * 12)} / Ano</span>
+                </div>
+              </article>
+            ))}
+          </section>
+        ) : isMensalidadesView ? (
+          <section className="saas-mensalidades-wrap">
+            <div className="saas-mensalidades-head">
+              <h2>Lista de Clinicas</h2>
+              <small>
+                Regra: plano por usuarios ativos e status por vencimento mensal por clinica.
+              </small>
+            </div>
+
+            <div className="saas-mensalidades-filters">
+              <input
+                type="text"
+                placeholder="Buscar clinica"
+                value={mensalidadeSearch}
+                onChange={(e) => setMensalidadeSearch(e.target.value)}
+              />
+
+              <select value={mensalidadePlano} onChange={(e) => setMensalidadePlano(e.target.value)}>
+                <option value="">Todos os planos</option>
+                <option value="basico">Basico</option>
+                <option value="profissional">Profissional</option>
+                <option value="premium">Premium</option>
+              </select>
+
+              <select value={mensalidadeStatus} onChange={(e) => setMensalidadeStatus(e.target.value)}>
+                <option value="">Todos os status</option>
+                <option value="em_dia">Em dia</option>
+                <option value="atrasada">Atrasada</option>
+                <option value="inadimplente">Inadimplente</option>
+                <option value="suspensa">Suspensa</option>
+              </select>
+
+              <button
+                type="button"
+                className="saas-refresh-btn"
+                onClick={() => fetchMensalidades(mensalidadePage)}
+              >
+                Atualizar
+              </button>
+            </div>
+
+            <div className="saas-mensalidades-table-wrap">
+              <table className="saas-mensalidades-table">
+                <thead>
+                  <tr>
+                    <th>Clinica</th>
+                    <th>Plano</th>
+                    <th>Usuarios</th>
+                    <th>Valor Mensal</th>
+                    <th>Prox. Vencimento</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mensalidadesLoading ? (
+                    <tr>
+                      <td colSpan={6}>Carregando mensalidades...</td>
+                    </tr>
+                  ) : mensalidades.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>Nenhuma clinica encontrada para controle de mensalidade.</td>
+                    </tr>
+                  ) : (
+                    mensalidades.map((item) => (
+                      <tr key={item.clinica}>
+                        <td>{item.clinica}</td>
+                        <td>
+                          <span className={`saas-plan-chip ${item.planoId}`}>{item.planoLabel}</span>
+                        </td>
+                        <td>
+                          {item.usuariosAtivos} ativos / {item.totalUsuarios} total
+                        </td>
+                        <td>{currency(item.valorMensal)}</td>
+                        <td>{shortDate(item.proximoVencimento)}</td>
+                        <td>
+                          <span className={`saas-status-chip ${item.status}`}>{statusLabel[item.status]}</span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="saas-mensalidades-footer">
+              <small>Total de clinicas: {mensalidadeTotal}</small>
+              <div className="saas-mensalidades-pagination">
+                <button
+                  type="button"
+                  disabled={mensalidadePage <= 1 || mensalidadesLoading}
+                  onClick={() => fetchMensalidades(mensalidadePage - 1)}
+                >
+                  Anterior
+                </button>
+                <span>
+                  Pagina {mensalidadePage} de {mensalidadeLastPage}
+                </span>
+                <button
+                  type="button"
+                  disabled={mensalidadePage >= mensalidadeLastPage || mensalidadesLoading}
+                  onClick={() => fetchMensalidades(mensalidadePage + 1)}
+                >
+                  Proxima
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : isInadimplenciaView ? (
+          <section className="saas-mensalidades-wrap">
+            <div className="saas-mensalidades-head">
+              <h2>Lista de Inadimplencia</h2>
+              <small>
+                Regra: clinica entra na lista quando status for atrasada ou inadimplente.
+              </small>
+            </div>
+
+            <div className="saas-inadimplencia-summary-grid">
+              <article className="saas-inadimplencia-summary-card">
+                <strong>{inadimplenciaSummary.totalClinicas}</strong>
+                <span>Clinicas em risco</span>
+              </article>
+              <article className="saas-inadimplencia-summary-card warning">
+                <strong>{inadimplenciaSummary.totalAtrasadas}</strong>
+                <span>Atrasadas</span>
+              </article>
+              <article className="saas-inadimplencia-summary-card danger">
+                <strong>{inadimplenciaSummary.totalInadimplentes}</strong>
+                <span>Inadimplentes</span>
+              </article>
+              <article className="saas-inadimplencia-summary-card value">
+                <strong>{currency(inadimplenciaSummary.valorTotalEmAberto)}</strong>
+                <span>Valor estimado em aberto</span>
+              </article>
+            </div>
+
+            <div className="saas-mensalidades-filters">
+              <input
+                type="text"
+                placeholder="Buscar clinica"
+                value={inadimplenciaSearch}
+                onChange={(e) => setInadimplenciaSearch(e.target.value)}
+              />
+
+              <select value={inadimplenciaPlano} onChange={(e) => setInadimplenciaPlano(e.target.value)}>
+                <option value="">Todos os planos</option>
+                <option value="basico">Basico</option>
+                <option value="profissional">Profissional</option>
+                <option value="premium">Premium</option>
+              </select>
+
+              <select value={inadimplenciaStatus} onChange={(e) => setInadimplenciaStatus(e.target.value)}>
+                <option value="">Todos os status</option>
+                <option value="atrasada">Atrasada</option>
+                <option value="inadimplente">Inadimplente</option>
+              </select>
+
+              <button
+                type="button"
+                className="saas-refresh-btn"
+                onClick={() => fetchInadimplencias(inadimplenciaPage)}
+              >
+                Atualizar
+              </button>
+            </div>
+
+            <div className="saas-mensalidades-table-wrap">
+              <table className="saas-mensalidades-table">
+                <thead>
+                  <tr>
+                    <th>Clinica</th>
+                    <th>Plano</th>
+                    <th>Vencimento</th>
+                    <th>Dias em atraso</th>
+                    <th>Risco</th>
+                    <th>Valor em aberto</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inadimplenciaLoading ? (
+                    <tr>
+                      <td colSpan={7}>Carregando inadimplencia...</td>
+                    </tr>
+                  ) : inadimplencias.length === 0 ? (
+                    <tr>
+                      <td colSpan={7}>Nenhuma clinica com atraso encontrada.</td>
+                    </tr>
+                  ) : (
+                    inadimplencias.map((item) => (
+                      <tr key={item.clinica}>
+                        <td>{item.clinica}</td>
+                        <td>
+                          <span className={`saas-plan-chip ${item.planoId}`}>{item.planoLabel}</span>
+                        </td>
+                        <td>{shortDate(item.proximoVencimento)}</td>
+                        <td>{item.diasEmAtraso}</td>
+                        <td>
+                          <span className={`saas-risk-chip ${item.nivelRisco}`}>{riskLabel[item.nivelRisco]}</span>
+                        </td>
+                        <td>{currency(item.valorEmAberto)}</td>
+                        <td>
+                          <span className={`saas-status-chip ${item.status}`}>{statusLabel[item.status]}</span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="saas-mensalidades-footer">
+              <small>Total de clinicas: {inadimplenciaTotal}</small>
+              <div className="saas-mensalidades-pagination">
+                <button
+                  type="button"
+                  disabled={inadimplenciaPage <= 1 || inadimplenciaLoading}
+                  onClick={() => fetchInadimplencias(inadimplenciaPage - 1)}
+                >
+                  Anterior
+                </button>
+                <span>
+                  Pagina {inadimplenciaPage} de {inadimplenciaLastPage}
+                </span>
+                <button
+                  type="button"
+                  disabled={inadimplenciaPage >= inadimplenciaLastPage || inadimplenciaLoading}
+                  onClick={() => fetchInadimplencias(inadimplenciaPage + 1)}
+                >
+                  Proxima
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : isInadimplenciaView ? (
+                    <section className="saas-mensalidades-wrap">
+
+                      {/* Summary */}
+                      <div className="saas-inadimplencia-summary-grid">
+                        <article className="saas-inadimplencia-summary-card">
+                          <strong>{solicitacoesSummary.total}</strong>
+                          <span>Total de solicitacoes</span>
+                        </article>
+                        <article className="saas-inadimplencia-summary-card warning">
+                          <strong>{solicitacoesSummary.totalPendentes}</strong>
+                          <span>Pendentes</span>
+                        </article>
+                        <article className="saas-inadimplencia-summary-card">
+                          <strong>{solicitacoesSummary.totalAguardando}</strong>
+                          <span>Aguardando pagamento</span>
+                        </article>
+                        <article className="saas-inadimplencia-summary-card value">
+                          <strong>{solicitacoesSummary.totalAprovadas}</strong>
+                          <span>Aprovadas ({solicitacoesSummary.aprovadasHoje} hoje)</span>
+                        </article>
+                        <article className="saas-inadimplencia-summary-card danger">
+                          <strong>{solicitacoesSummary.totalRejeitadas}</strong>
+                          <span>Rejeitadas</span>
+                        </article>
+                      </div>
+
+                      {/* Mensagem de ação */}
+                      {acaoMsg ? (
+                        <div className="saas-acao-msg">{acaoMsg}</div>
+                      ) : null}
+
+                      {/* Modal de confirmação de ação */}
+                      {solicitacaoAcao ? (
+                        <div className="saas-modal-overlay">
+                          <div className="saas-modal">
+                            <h3>
+                              {solicitacaoAcao.tipo === "aprovar"
+                                ? `Aprovar "${solicitacaoAcao.nome}"?`
+                                : solicitacaoAcao.tipo === "rejeitar"
+                                  ? `Rejeitar "${solicitacaoAcao.nome}"`
+                                  : `Confirmar pagamento de "${solicitacaoAcao.nome}"`}
+                            </h3>
+                            {solicitacaoAcao.tipo === "rejeitar" ? (
+                              <textarea
+                                className="saas-modal-textarea"
+                                placeholder="Informe o motivo da rejeicao (obrigatorio)"
+                                value={motivoRejeicao}
+                                onChange={(e) => setMotivoRejeicao(e.target.value)}
+                                rows={3}
+                              />
+                            ) : null}
+                            <div className="saas-modal-actions">
+                              <button
+                                type="button"
+                                className="saas-modal-cancel"
+                                onClick={() => { setSolicitacaoAcao(null); setMotivoRejeicao(""); setAcaoMsg(""); }}
+                                disabled={acaoLoading}
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                type="button"
+                                className={`saas-modal-confirm ${solicitacaoAcao.tipo}`}
+                                onClick={executarAcao}
+                                disabled={acaoLoading}
+                              >
+                                {acaoLoading ? "Aguarde..." : solicitacaoAcao.tipo === "aprovar" ? "Confirmar Aprovacao" : solicitacaoAcao.tipo === "rejeitar" ? "Confirmar Rejeicao" : "Confirmar Pagamento"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Filtros */}
+                      <div className="saas-mensalidades-filters">
+                        <input
+                          type="text"
+                          placeholder="Buscar por clinica, responsavel ou email"
+                          value={solicitacoesSearch}
+                          onChange={(e) => setSolicitacoesSearch(e.target.value)}
+                        />
+                        <select value={solicitacoesStatus} onChange={(e) => setSolicitacoesStatus(e.target.value)}>
+                          <option value="">Todos os status</option>
+                          <option value="pendente">Pendente</option>
+                          <option value="aguardando_pagamento">Aguardando pagamento</option>
+                          <option value="aprovada">Aprovada</option>
+                          <option value="rejeitada">Rejeitada</option>
+                        </select>
+                        <select value={solicitacoesPlano} onChange={(e) => setSolicitacoesPlano(e.target.value)}>
+                          <option value="">Todos os planos</option>
+                          <option value="basico">Basico</option>
+                          <option value="profissional">Profissional</option>
+                          <option value="premium">Premium</option>
+                        </select>
+                        <button type="button" className="saas-refresh-btn" onClick={() => fetchSolicitacoes(solicitacoesPage)}>
+                          Atualizar
+                        </button>
+                      </div>
+
+                      {/* Tabela */}
+                      <div className="saas-mensalidades-table-wrap">
+                        <table className="saas-mensalidades-table saas-solicitacoes-table">
+                          <thead>
+                            <tr>
+                              <th>Clinica</th>
+                              <th>Responsavel</th>
+                              <th>Contato</th>
+                              <th>Plano</th>
+                              <th>Pagamento</th>
+                              <th>Status</th>
+                              <th>Solicitado em</th>
+                              <th>Acoes</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {solicitacoesLoading ? (
+                              <tr><td colSpan={8}>Carregando solicitacoes...</td></tr>
+                            ) : solicitacoes.length === 0 ? (
+                              <tr><td colSpan={8}>Nenhuma solicitacao encontrada.</td></tr>
+                            ) : (
+                              solicitacoes.map((item) => (
+                                <tr key={item.id}>
+                                  <td>
+                                    <div className="saas-clinica-contact">
+                                      <strong>{item.nomeClinica}</strong>
+                                      {item.cnpj !== "--" ? <small>CNPJ: {item.cnpj}</small> : null}
+                                      {item.cidade !== "--" ? <small>{item.cidade}/{item.estado}</small> : null}
+                                    </div>
+                                  </td>
+                                  <td>{item.responsavel}</td>
+                                  <td>
+                                    <div className="saas-clinica-contact">
+                                      <span>{item.email}</span>
+                                      <small>{item.telefone}</small>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <div className="saas-clinica-plan-block">
+                                      <span className={`saas-plan-chip ${item.planoId}`}>{item.planoNome}</span>
+                                      <small>{currency(item.valorMensal)}/mes</small>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    {item.pagamentoConfirmado
+                                      ? <span className="saas-sol-pago"><FiCheckCircle /> Confirmado</span>
+                                      : <span className="saas-sol-pendente-pag"><FiAlertCircle /> Pendente</span>}
+                                  </td>
+                                  <td>
+                                    <span className={`saas-sol-status-chip ${item.status}`}>
+                                      {item.status === "pendente" ? "Pendente"
+                                        : item.status === "aguardando_pagamento" ? "Aguardando Pgto"
+                                        : item.status === "aprovada" ? "Aprovada"
+                                        : "Rejeitada"}
+                                    </span>
+                                    {item.motivoRejeicao ? <small className="saas-sol-motivo">{item.motivoRejeicao}</small> : null}
+                                  </td>
+                                  <td>{shortDate(item.solicitadoEm)}</td>
+                                  <td>
+                                    <div className="saas-sol-actions">
+                                      {(item.status === "pendente" || item.status === "aguardando_pagamento") ? (
+                                        <>
+                                          {!item.pagamentoConfirmado ? (
+                                            <button
+                                              type="button"
+                                              className="saas-sol-btn pagar"
+                                              title="Confirmar pagamento"
+                                              onClick={() => { setAcaoMsg(""); setSolicitacaoAcao({ id: item.id, tipo: "pagamento", nome: item.nomeClinica }); }}
+                                            >
+                                              Confirmar Pgto
+                                            </button>
+                                          ) : null}
+                                          <button
+                                            type="button"
+                                            className="saas-sol-btn aprovar"
+                                            title="Aprovar acesso"
+                                            onClick={() => { setAcaoMsg(""); setSolicitacaoAcao({ id: item.id, tipo: "aprovar", nome: item.nomeClinica }); }}
+                                          >
+                                            Aprovar
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="saas-sol-btn rejeitar"
+                                            title="Rejeitar solicitacao"
+                                            onClick={() => { setAcaoMsg(""); setMotivoRejeicao(""); setSolicitacaoAcao({ id: item.id, tipo: "rejeitar", nome: item.nomeClinica }); }}
+                                          >
+                                            Rejeitar
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <span className="saas-sol-finalizada">
+                                          {item.status === "aprovada"
+                                            ? `Aprovada ${shortDate(item.aprovadoEm)}`
+                                            : `Rejeitada ${shortDate(item.rejeitadoEm)}`}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="saas-mensalidades-footer">
+                        <small>Total: {solicitacoesTotal} solicitacoes</small>
+                        <div className="saas-mensalidades-pagination">
+                          <button type="button" disabled={solicitacoesPage <= 1 || solicitacoesLoading} onClick={() => { setSolicitacoesPage(p => p - 1); fetchSolicitacoes(solicitacoesPage - 1); }}>Anterior</button>
+                          <span>Pagina {solicitacoesPage} de {solicitacoesLastPage}</span>
+                          <button type="button" disabled={solicitacoesPage >= solicitacoesLastPage || solicitacoesLoading} onClick={() => { setSolicitacoesPage(p => p + 1); fetchSolicitacoes(solicitacoesPage + 1); }}>Proxima</button>
+                        </div>
+                      </div>
+                    </section>
+                  ) : isClinicasView ? (
+                    <section className="saas-mensalidades-wrap">
+            <div className="saas-mensalidades-head">
+              <h2>Lista de Clinicas</h2>
+              <small>
+                Campos padrao de mercado: responsavel, contato, plano, status de mensalidade e uso.
+              </small>
+            </div>
+
+            <div className="saas-inadimplencia-summary-grid">
+              <article className="saas-inadimplencia-summary-card">
+                <strong>{clinicasSummary.totalClinicas}</strong>
+                <span>Total de clinicas</span>
+              </article>
+              <article className="saas-inadimplencia-summary-card value">
+                <strong>{clinicasSummary.totalAtivas}</strong>
+                <span>Em dia</span>
+              </article>
+              <article className="saas-inadimplencia-summary-card warning">
+                <strong>{clinicasSummary.totalComRisco}</strong>
+                <span>Com risco financeiro</span>
+              </article>
+              <article className="saas-inadimplencia-summary-card danger">
+                <strong>{clinicasSummary.totalSuspensas}</strong>
+                <span>Suspensas</span>
+              </article>
+            </div>
+
+            <div className="saas-mensalidades-filters">
+              <input
+                type="text"
+                placeholder="Buscar por clinica, responsavel ou email"
+                value={clinicasSearch}
+                onChange={(e) => setClinicasSearch(e.target.value)}
+              />
+
+              <select value={clinicasPlano} onChange={(e) => setClinicasPlano(e.target.value)}>
+                <option value="">Todos os planos</option>
+                <option value="basico">Basico</option>
+                <option value="profissional">Profissional</option>
+                <option value="premium">Premium</option>
+              </select>
+
+              <select value={clinicasStatus} onChange={(e) => setClinicasStatus(e.target.value)}>
+                <option value="">Todos os status</option>
+                <option value="em_dia">Em dia</option>
+                <option value="atrasada">Atrasada</option>
+                <option value="inadimplente">Inadimplente</option>
+                <option value="suspensa">Suspensa</option>
+              </select>
+
+              <button
+                type="button"
+                className="saas-refresh-btn"
+                onClick={() => fetchClinicas(clinicasPage)}
+              >
+                Atualizar
+              </button>
+            </div>
+
+            <div className="saas-mensalidades-table-wrap">
+              <table className="saas-mensalidades-table saas-clinicas-table">
+                <thead>
+                  <tr>
+                    <th>Clinica</th>
+                    <th>Responsavel</th>
+                    <th>Contato</th>
+                    <th>Plano</th>
+                    <th>Status</th>
+                    <th>Usuarios</th>
+                    <th>Cadastro</th>
+                    <th>Ultimo acesso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clinicasLoading ? (
+                    <tr>
+                      <td colSpan={8}>Carregando lista de clinicas...</td>
+                    </tr>
+                  ) : clinicas.length === 0 ? (
+                    <tr>
+                      <td colSpan={8}>Nenhuma clinica encontrada.</td>
+                    </tr>
+                  ) : (
+                    clinicas.map((item) => (
+                      <tr key={item.clinica}>
+                        <td>{item.clinica}</td>
+                        <td>{item.responsavel}</td>
+                        <td>
+                          <div className="saas-clinica-contact">
+                            <span>{item.email}</span>
+                            <small>{item.telefone}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="saas-clinica-plan-block">
+                            <span className={`saas-plan-chip ${item.planoId}`}>{item.planoLabel}</span>
+                            <small>{currency(item.valorMensal)}/mes</small>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`saas-status-chip ${item.status}`}>{statusLabel[item.status]}</span>
+                        </td>
+                        <td>
+                          {item.usuariosAtivos} ativos / {item.totalUsuarios} total
+                        </td>
+                        <td>{shortDate(item.cadastradoEm)}</td>
+                        <td>{shortDateTime(item.ultimoLoginEm)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="saas-mensalidades-footer">
+              <small>Total de clinicas: {clinicasTotal}</small>
+              <div className="saas-mensalidades-pagination">
+                <button
+                  type="button"
+                  disabled={clinicasPage <= 1 || clinicasLoading}
+                  onClick={() => fetchClinicas(clinicasPage - 1)}
+                >
+                  Anterior
+                </button>
+                <span>
+                  Pagina {clinicasPage} de {clinicasLastPage}
+                </span>
+                <button
+                  type="button"
+                  disabled={clinicasPage >= clinicasLastPage || clinicasLoading}
+                  onClick={() => fetchClinicas(clinicasPage + 1)}
+                >
+                  Proxima
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <>
+            <section className="saas-admin-cards">
+              {cards.map((card) => (
+                <article key={card.id} className={`saas-card ${card.tone}`}>
+                  <div className="saas-card-icon">{card.icon}</div>
+                  <div className="saas-card-body">
+                    <h3>{card.title}</h3>
+                    <strong>{loading ? "..." : card.value}</strong>
+                    <p>{card.subtitle}</p>
+                  </div>
+                </article>
+              ))}
+            </section>
+
+            <section className="saas-admin-chart-panel">
+              <div className="saas-admin-panel-head">
+                <h2>Agendamentos da Semana</h2>
+                <small>Grafico abaixo dos cards</small>
+              </div>
+
+              <div className="saas-admin-chart-wrap">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ececf3" />
+                    <XAxis dataKey="dia" tick={{ fill: "#6b7280", fontSize: 12 }} />
+                    <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} allowDecimals={false} />
+                    <Tooltip />
+                    <Line
+                      type="monotone"
+                      dataKey="total"
+                      stroke="#5b53d6"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: "#5b53d6" }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+          </>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default AdminPortalPage;

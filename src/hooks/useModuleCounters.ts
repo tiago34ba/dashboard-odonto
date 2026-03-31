@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import api from '../components/api/api';
+import { SECURITY_CONFIG } from '../config/security';
 
 export interface ModuleCounter {
   total: number;
@@ -11,6 +13,11 @@ export interface ModuleCounters {
   [moduleName: string]: ModuleCounter;
 }
 
+interface ModuleCountersResponse {
+  module_counters?: ModuleCounters;
+  last_updated?: string;
+}
+
 export const useModuleCounters = (refreshInterval?: number) => {
   const [counters, setCounters] = useState<ModuleCounters>({});
   const [loading, setLoading] = useState(true);
@@ -20,80 +27,18 @@ export const useModuleCounters = (refreshInterval?: number) => {
   const fetchCounters = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // Simulando dados dos módulos com contadores
-      const moduleData: ModuleCounters = {
-        'Pacientes': {
-          total: 1250,
-          endpoint: '/pessoas/pacientes/PatientsPage',
-          loading: false
-        },
-        'Usuários': {
-          total: 25,
-          endpoint: '/pessoas/usuarios',
-          loading: false
-        },
-        'Funcionários': {
-          total: 15,
-          endpoint: '/pessoas/funcionarios',
-          loading: false
-        },
-        'Agendamentos': {
-          total: 450,
-          endpoint: '/agendamentos',
-          loading: false
-        },
-        'Procedimentos': {
-          total: 180,
-          endpoint: '/cadastros/procedimentos',
-          loading: false
-        },
-        'Convênios': {
-          total: 8,
-          endpoint: '/cadastros/convenios',
-          loading: false
-        },
-        'Contas a Pagar': {
-          total: 75,
-          endpoint: '/financeiro/contas-pagar',
-          loading: false
-        },
-        'Contas a Receber': {
-          total: 125,
-          endpoint: '/financeiro/contas-receber',
-          loading: false
-        },
-        'Fornecedores': {
-          total: 35,
-          endpoint: '/cadastros/fornecedores',
-          loading: false
-        },
-        'Comissões': {
-          total: 45,
-          endpoint: '/financeiro/comissoes',
-          loading: false
-        },
-        'Tratamentos': {
-          total: 234,
-          endpoint: '/tratamentos',
-          loading: false
-        },
-        'Orçamentos': {
-          total: 92,
-          endpoint: '/orcamentos',
-          loading: false
-        }
-      };
 
-      // Simulando delay de rede
-      await new Promise(resolve => setTimeout(resolve, 300));
+      const response = await api.get<ModuleCountersResponse>('/dashboard/module-counters');
+      const moduleData = response.data?.module_counters ?? {};
 
       setCounters(moduleData);
-      setLastUpdated(new Date());
+      setLastUpdated(response.data?.last_updated ? new Date(response.data.last_updated) : new Date());
       setError(null);
     } catch (err) {
       setError('Erro ao carregar contadores dos módulos');
-      console.error('Erro ao carregar contadores:', err);
+      if (SECURITY_CONFIG.LOGGING.ENABLE_DEBUG) {
+        console.error('Erro ao carregar contadores:', err);
+      }
     } finally {
       setLoading(false);
     }

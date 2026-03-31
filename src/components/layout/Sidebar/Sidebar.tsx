@@ -41,7 +41,7 @@ const hasAnyAccessGroup = (user: StoredUser | null, requiredAccessGroups?: strin
 
 const parseUserData = (): StoredUser | null => {
   try {
-    const raw = localStorage.getItem("userData");
+    const raw = sessionStorage.getItem("userData") || localStorage.getItem("userData");
     if (!raw) return null;
     return JSON.parse(raw);
   } catch {
