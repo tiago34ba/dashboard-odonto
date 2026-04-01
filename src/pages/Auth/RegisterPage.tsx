@@ -309,6 +309,7 @@ const PasswordStrength = styled.div<{ strength: number }>`
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const registerEndpoint = `${process.env.REACT_APP_API_URL || '/api'}/register`;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -352,6 +353,21 @@ const RegisterPage: React.FC = () => {
     if (/[a-z]/.test(password)) strength += 25;
     if (/[0-9]/.test(password)) strength += 25;
     return strength;
+  };
+
+  const resolveRegisterErrorMessage = (error: unknown): string => {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return 'Sem conexão com a internet. Verifique sua rede e tente novamente.';
+    }
+
+    if (error instanceof Error) {
+      if (error.name === 'TypeError' || /failed to fetch/i.test(error.message)) {
+        return 'Não foi possível conectar ao servidor de cadastro. Confirme se a API está online e tente novamente.';
+      }
+      return error.message;
+    }
+
+    return 'Erro ao criar conta. Tente novamente em instantes.';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -399,7 +415,7 @@ const RegisterPage: React.FC = () => {
         senha: formData.password
       };
 
-      const response = await fetch('http://127.0.0.1:8000/api/register', {
+      const response = await fetch(registerEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -409,8 +425,28 @@ const RegisterPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao criar conta');
+        let errorMessage = 'Erro ao criar conta';
+
+        try {
+          const errorData = await response.json();
+          if (errorData?.message) {
+            errorMessage = String(errorData.message);
+          } else if (errorData?.errors) {
+            const firstField = Object.keys(errorData.errors)[0];
+            const firstError = Array.isArray(errorData.errors[firstField])
+              ? errorData.errors[firstField][0]
+              : null;
+            if (firstError) {
+              errorMessage = String(firstError);
+            }
+          }
+        } catch {
+          if (response.status >= 500) {
+            errorMessage = 'Instabilidade no servidor de cadastro. Tente novamente em instantes.';
+          }
+        }
+
+        throw new Error(errorMessage);
       }
 
       setSuccess('Conta criada com sucesso! Redirecionando para login...');
@@ -419,7 +455,7 @@ const RegisterPage: React.FC = () => {
       }, 2000);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao criar conta');
+      setError(resolveRegisterErrorMessage(err));
     } finally {
       setLoading(false);
     }
