@@ -200,7 +200,7 @@ const riskLabel: Record<InadimplenciaRisk, string> = {
   alto: "Alto",
 };
 
-const PORTAL_SAAS_DEFAULT_ERROR = "Nao foi possivel carregar os dados do portal SaaS.";
+const PORTAL_SAAS_DEFAULT_ERROR = "Nao foi possivel atualizar os dados do painel SaaS agora.";
 const PORTAL_SAAS_PARTIAL_DATA_WARNING = "Alguns indicadores do painel SaaS nao puderam ser atualizados agora.";
 const PORTAL_SAAS_CACHE_DATA_WARNING = "Instabilidade no servidor do portal SaaS. Exibindo os ultimos dados sincronizados.";
 const PORTAL_SAAS_DASHBOARD_CACHE_KEY = "saas_admin_dashboard_cache";
@@ -228,14 +228,32 @@ const getPortalSaasErrorMessage = (error: any) => {
   }
 
   if (status === 401 || status === 403) {
-    return "Sua sessao expirou ou nao tem permissao para acessar o portal SaaS.";
+    return "Sua sessao expirou ou voce nao tem permissao para acessar o portal SaaS.";
   }
 
   if (status >= 500) {
-    return "Instabilidade no servidor do portal SaaS. Tente novamente em instantes.";
+    return "Instabilidade temporaria no servidor do portal SaaS. Tente novamente em alguns instantes.";
   }
 
   return backendMessage || PORTAL_SAAS_DEFAULT_ERROR;
+};
+
+const getPortalSaasErrorHint = (error: any) => {
+  const status = Number(error?.response?.status || 0);
+
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return "Quando a conexao voltar, clique em Tentar novamente para recarregar o painel.";
+  }
+
+  if (status === 401 || status === 403) {
+    return "Faca login novamente com um usuario administrador SaaS para continuar.";
+  }
+
+  if (status >= 500 || status === 408 || status === 429) {
+    return "Voce pode tentar novamente agora ou aguardar alguns segundos antes de uma nova tentativa.";
+  }
+
+  return "Use o botao abaixo para tentar carregar os dados novamente.";
 };
 
 const saveDashboardCache = (metrics: DashboardMetrics, financeiroResumo: FinanceiroResumo) => {
@@ -522,6 +540,7 @@ const AdminPortalPage: React.FC = () => {
   const [activeItem, setActiveItem] = useState<string>("painel");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [errorHint, setErrorHint] = useState<string>("");
 
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     patientsTotal: 0,
@@ -632,6 +651,7 @@ const AdminPortalPage: React.FC = () => {
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError("");
+    setErrorHint("");
 
     try {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -681,6 +701,7 @@ const AdminPortalPage: React.FC = () => {
 
           if (cardsLoaded || financeiroLoaded) {
             setError(PORTAL_SAAS_PARTIAL_DATA_WARNING);
+            setErrorHint("Use o botao Tentar novamente para atualizar os indicadores que faltam.");
             return;
           }
 
@@ -696,10 +717,12 @@ const AdminPortalPage: React.FC = () => {
             setMetrics(cached.metrics);
             setFinanceiroResumo(cached.financeiroResumo);
             setError(PORTAL_SAAS_CACHE_DATA_WARNING);
+            setErrorHint("Os dados em tela sao do ultimo sincronismo salvo no navegador.");
             return;
           }
 
           setError(getPortalSaasErrorMessage(firstError));
+          setErrorHint(getPortalSaasErrorHint(firstError));
           return;
         } catch (error: any) {
           const shouldRetry = attempt < 3 && isTransientError(error);
@@ -713,10 +736,12 @@ const AdminPortalPage: React.FC = () => {
             setMetrics(cached.metrics);
             setFinanceiroResumo(cached.financeiroResumo);
             setError(PORTAL_SAAS_CACHE_DATA_WARNING);
+            setErrorHint("Os dados em tela sao do ultimo sincronismo salvo no navegador.");
             return;
           }
 
           setError(getPortalSaasErrorMessage(error));
+          setErrorHint(getPortalSaasErrorHint(error));
           return;
         }
       }
@@ -728,6 +753,7 @@ const AdminPortalPage: React.FC = () => {
   useEffect(() => {
     if (!isPainelView) {
       setError("");
+      setErrorHint("");
       return;
     }
 
@@ -1241,9 +1267,10 @@ const AdminPortalPage: React.FC = () => {
               <strong>
                 {error === PORTAL_SAAS_PARTIAL_DATA_WARNING || error === PORTAL_SAAS_CACHE_DATA_WARNING
                   ? "Atualizacao parcial do painel SaaS"
-                  : "Falha ao carregar painel SaaS"}
+                  : "Nao foi possivel carregar o painel SaaS"}
               </strong>
               <p>{error}</p>
+              {errorHint ? <p>{errorHint}</p> : null}
             </div>
             <button type="button" className="saas-admin-error-retry" onClick={fetchDashboardData}>
               Tentar novamente
