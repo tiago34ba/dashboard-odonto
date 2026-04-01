@@ -309,7 +309,11 @@ const PasswordStrength = styled.div<{ strength: number }>`
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const registerEndpoint = `${process.env.REACT_APP_API_URL || '/api'}/register`;
+  const registerBaseUrl =
+    process.env.REACT_APP_API_URL ||
+    process.env.REACT_APP_API_BASE_URL ||
+    '/api';
+  const registerEndpoint = `${registerBaseUrl}/register`;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({

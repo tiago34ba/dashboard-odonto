@@ -3,7 +3,10 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { captureApiError } from '../monitoring/sentry';
 
 // Configuração base da API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  process.env.REACT_APP_API_BASE_URL ||
+  '/api';
 
 // Interface para resposta da API
 export interface ApiResponse<T = any> {

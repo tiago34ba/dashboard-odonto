@@ -7,7 +7,7 @@ const PIX_CONFIG = {
   CONTA: process.env.REACT_APP_PIX_CONTA || '',
   BANCO_NOME: process.env.REACT_APP_PIX_BANCO_NOME || '',
   BANCO_CODIGO: process.env.REACT_APP_PIX_BANCO_CODIGO || '',
-  BACKEND_API_URL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
+  BACKEND_API_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || '/api',
   MOCK_API_URL: process.env.REACT_APP_PIX_MOCK_API_URL || 'http://localhost:3001/api/pix',
   IS_PRODUCTION: process.env.REACT_APP_IS_PRODUCTION === 'true'
 };
