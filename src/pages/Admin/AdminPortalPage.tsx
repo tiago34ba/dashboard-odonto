@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FiBarChart2,
   FiCheckCircle,
@@ -6,6 +6,8 @@ import {
   FiChevronRight,
   FiDollarSign,
   FiEdit2,
+  FiEye,
+  FiEyeOff,
   FiFileText,
   FiGrid,
   FiLayers,
@@ -128,6 +130,42 @@ type PlanFormState = {
   descricao: string;
 };
 
+type LandingEditorSectionId =
+  | "barra_superior"
+  | "pagina_personalizada"
+  | "home"
+  | "recursos"
+  | "descobrir"
+  | "screenshots"
+  | "plano_precos"
+  | "faq"
+  | "testemunhos"
+  | "entre_nos";
+
+type LandingEditorSectionConfig = {
+  titulo: string;
+  subtitulo: string;
+  visivel: boolean;
+  textoBotao: string;
+  linkBotao: string;
+};
+
+type LandingPageConfigState = {
+  logoUrl: string;
+  descricaoSite: string;
+  itensMenu: string[];
+  titulo: string;
+  subtitulo: string;
+  textoBotaoPrincipal: string;
+  linkBotaoPrincipal: string;
+  telefoneWhatsapp: string;
+  mostrarDepoimentos: boolean;
+  mostrarPlanos: boolean;
+  secoes: Record<LandingEditorSectionId, LandingEditorSectionConfig>;
+};
+
+type LandingAutosaveStatus = "idle" | "saving" | "saved" | "error";
+
 const currency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -160,6 +198,92 @@ const riskLabel: Record<InadimplenciaRisk, string> = {
   baixo: "Baixo",
   medio: "Medio",
   alto: "Alto",
+};
+
+const PORTAL_SAAS_DEFAULT_ERROR = "Nao foi possivel carregar os dados do portal SaaS.";
+const PORTAL_SAAS_PARTIAL_DATA_WARNING = "Alguns indicadores do painel SaaS nao puderam ser atualizados agora.";
+const PORTAL_SAAS_CACHE_DATA_WARNING = "Instabilidade no servidor do portal SaaS. Exibindo os ultimos dados sincronizados.";
+const PORTAL_SAAS_DASHBOARD_CACHE_KEY = "saas_admin_dashboard_cache";
+
+type DashboardCacheState = {
+  metrics: DashboardMetrics;
+  financeiroResumo: FinanceiroResumo;
+  savedAt: string;
+};
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isTransientError = (error: any) => {
+  const status = Number(error?.response?.status || 0);
+  if (!status) return true;
+  return [408, 429, 500, 502, 503, 504].includes(status);
+};
+
+const getPortalSaasErrorMessage = (error: any) => {
+  const status = Number(error?.response?.status || 0);
+  const backendMessage = error?.response?.data?.message;
+
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return "Sem conexao com a internet. Verifique a rede e tente novamente.";
+  }
+
+  if (status === 401 || status === 403) {
+    return "Sua sessao expirou ou nao tem permissao para acessar o portal SaaS.";
+  }
+
+  if (status >= 500) {
+    return "Instabilidade no servidor do portal SaaS. Tente novamente em instantes.";
+  }
+
+  return backendMessage || PORTAL_SAAS_DEFAULT_ERROR;
+};
+
+const saveDashboardCache = (metrics: DashboardMetrics, financeiroResumo: FinanceiroResumo) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const payload: DashboardCacheState = {
+      metrics,
+      financeiroResumo,
+      savedAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(PORTAL_SAAS_DASHBOARD_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // No-op: cache is a best-effort fallback.
+  }
+};
+
+const loadDashboardCache = (): DashboardCacheState | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(PORTAL_SAAS_DASHBOARD_CACHE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    return {
+      metrics: {
+        patientsTotal: Number(parsed?.metrics?.patientsTotal ?? 0),
+        receitaMensal: Number(parsed?.metrics?.receitaMensal ?? 0),
+        saldoMes: Number(parsed?.metrics?.saldoMes ?? 0),
+        agendamentosHoje: Number(parsed?.metrics?.agendamentosHoje ?? 0),
+      },
+      financeiroResumo: {
+        totalAPagar: Number(parsed?.financeiroResumo?.totalAPagar ?? 0),
+        totalAReceber: Number(parsed?.financeiroResumo?.totalAReceber ?? 0),
+        saldoAtual: Number(parsed?.financeiroResumo?.saldoAtual ?? 0),
+      },
+      savedAt: String(parsed?.savedAt ?? ""),
+    };
+  } catch {
+    return null;
+  }
 };
 
 const SAAS_PLANS: SaaSPlan[] = [
@@ -210,6 +334,151 @@ const SAAS_PLANS: SaaSPlan[] = [
   },
 ];
 
+const LANDING_PAGE_STORAGE_KEY = "saas_admin_landing_page_config";
+
+const LANDING_EDITOR_SECTIONS: Array<{ id: LandingEditorSectionId; label: string }> = [
+  { id: "barra_superior", label: "Barra Superior" },
+  { id: "pagina_personalizada", label: "Pagina Personalizada" },
+  { id: "home", label: "Home" },
+  { id: "recursos", label: "Recursos" },
+  { id: "descobrir", label: "Descobrir" },
+  { id: "screenshots", label: "Aplicativos Movel" },
+  { id: "plano_precos", label: "Plano de Precos" },
+  { id: "faq", label: "FAQ" },
+  { id: "testemunhos", label: "Testemunhos" },
+  { id: "entre_nos", label: "Contato" },
+];
+
+const LANDING_TOGGLEABLE_MENU_SECTION_IDS = new Set<LandingEditorSectionId>([
+  "home",
+  "recursos",
+  "descobrir",
+  "screenshots",
+  "plano_precos",
+  "faq",
+  "testemunhos",
+  "entre_nos",
+]);
+
+const normalizeMenuLabel = (label: string, index: number): string => {
+  if (index === 5 && label.toLowerCase() === "screenshots") {
+    return "Aplicativos Movel";
+  }
+  if (index === 9 && label.toLowerCase() === "entre nos") {
+    return "Contato";
+  }
+  return label;
+};
+
+const normalizeLandingPlanLink = (value: string): string => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) {
+    return "#planos";
+  }
+
+  return normalized === "/planos" || normalized === "planos" ? "#planos" : value;
+};
+
+const defaultLandingEditorSection = (titulo: string, subtitulo: string): LandingEditorSectionConfig => ({
+  titulo,
+  subtitulo,
+  visivel: true,
+  textoBotao: "",
+  linkBotao: "",
+});
+
+const defaultLandingPageConfig: LandingPageConfigState = {
+  logoUrl: "",
+  descricaoSite: "Sistema completo para modernizar a gestao da sua clinica odontologica.",
+  itensMenu: LANDING_EDITOR_SECTIONS.map((section) => section.label),
+  titulo: "Seu sorriso em boas maos",
+  subtitulo: "Atendimento odontologico humanizado com tecnologia e agilidade para sua clinica.",
+  textoBotaoPrincipal: "Agendar avaliacao",
+  linkBotaoPrincipal: "https://wa.me/5500000000000",
+  telefoneWhatsapp: "(00) 00000-0000",
+  mostrarDepoimentos: true,
+  mostrarPlanos: true,
+  secoes: {
+    barra_superior: defaultLandingEditorSection("SSait Odonto", "Barra superior e menu principal"),
+    pagina_personalizada: defaultLandingEditorSection("Pagina inicial personalizada", "Gerencie os blocos da landing page"),
+    home: {
+      ...defaultLandingEditorSection("O Sistema Odontologico Mais Completo", "Destaque o principal valor da sua clinica"),
+      textoBotao: "Comece Gratis - Cadastre-se",
+    },
+    recursos: defaultLandingEditorSection("Funcionalidades Principais", "Recursos para gestao completa da clinica"),
+    descobrir: defaultLandingEditorSection("Nossos Diferenciais", "Mostre por que escolher sua plataforma"),
+    screenshots: defaultLandingEditorSection("Aplicativo Mobile", "Apresente telas e experiencia no app"),
+    plano_precos: {
+      ...defaultLandingEditorSection("Planos e Precos", "Leve seus visitantes para os planos"),
+      textoBotao: "Ver planos",
+      linkBotao: "#planos",
+    },
+    faq: defaultLandingEditorSection("Perguntas Frequentes", "Respostas rapidas para duvidas comuns"),
+    testemunhos: defaultLandingEditorSection("Testemunhos", "Prova social com depoimentos de clientes"),
+    entre_nos: defaultLandingEditorSection("Entre em Contato", "Canal direto com sua equipe"),
+  },
+};
+
+const parseLandingPageConfig = (): LandingPageConfigState => {
+  if (typeof window === "undefined") {
+    return defaultLandingPageConfig;
+  }
+
+  const raw = window.localStorage.getItem(LANDING_PAGE_STORAGE_KEY);
+  if (!raw) {
+    return defaultLandingPageConfig;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    const parsedSections = parsed?.secoes || {};
+
+    const mappedSections = LANDING_EDITOR_SECTIONS.reduce<Record<LandingEditorSectionId, LandingEditorSectionConfig>>(
+      (acc, section) => {
+        const defaultSection = defaultLandingPageConfig.secoes[section.id];
+        const inputSection = parsedSections?.[section.id] || {};
+        const nextLink = String(inputSection?.linkBotao ?? defaultSection.linkBotao);
+        acc[section.id] = {
+          titulo: String(inputSection?.titulo ?? defaultSection.titulo),
+          subtitulo: String(inputSection?.subtitulo ?? defaultSection.subtitulo),
+          visivel: Boolean(inputSection?.visivel ?? defaultSection.visivel),
+          textoBotao: String(inputSection?.textoBotao ?? defaultSection.textoBotao),
+          linkBotao: section.id === "plano_precos" ? normalizeLandingPlanLink(nextLink) : nextLink,
+        };
+        return acc;
+      },
+      {} as Record<LandingEditorSectionId, LandingEditorSectionConfig>
+    );
+
+    const parsedMenuItems = Array.isArray(parsed?.itensMenu)
+      ? parsed.itensMenu
+          .map((item: any, index: number) => normalizeMenuLabel(String(item || "").trim(), index))
+          .filter(Boolean)
+      : [];
+
+    const itensMenu = LANDING_EDITOR_SECTIONS.map((section, index) => {
+      const menuItem = parsedMenuItems[index] || defaultLandingPageConfig.itensMenu[index] || section.label;
+      return normalizeMenuLabel(menuItem, index);
+    });
+
+    return {
+      logoUrl: String(parsed?.logoUrl ?? defaultLandingPageConfig.logoUrl),
+      descricaoSite: String(parsed?.descricaoSite ?? defaultLandingPageConfig.descricaoSite),
+      itensMenu,
+      titulo: String(parsed?.titulo ?? defaultLandingPageConfig.titulo),
+      subtitulo: String(parsed?.subtitulo ?? defaultLandingPageConfig.subtitulo),
+      textoBotaoPrincipal: String(parsed?.textoBotaoPrincipal ?? defaultLandingPageConfig.textoBotaoPrincipal),
+      linkBotaoPrincipal: String(parsed?.linkBotaoPrincipal ?? defaultLandingPageConfig.linkBotaoPrincipal),
+      telefoneWhatsapp: String(parsed?.telefoneWhatsapp ?? defaultLandingPageConfig.telefoneWhatsapp),
+      mostrarDepoimentos: Boolean(parsed?.mostrarDepoimentos ?? defaultLandingPageConfig.mostrarDepoimentos),
+      mostrarPlanos: Boolean(parsed?.mostrarPlanos ?? defaultLandingPageConfig.mostrarPlanos),
+      secoes: mappedSections,
+    };
+  } catch {
+    return defaultLandingPageConfig;
+  }
+};
+
 const buildPlanForm = (plan: SaaSPlan): PlanFormState => ({
   nome: plan.label,
   valorPlano: Number(plan.price || 0),
@@ -226,6 +495,7 @@ const buildPlanForm = (plan: SaaSPlan): PlanFormState => ({
 
 const menuItems: MenuItem[] = [
   { id: "painel", label: "Painel" },
+  { id: "pagina_entrada", label: "Pagina de entrada" },
   {
     id: "assinaturas",
     label: "Assinaturas",
@@ -243,9 +513,11 @@ const menuItems: MenuItem[] = [
       { id: "solicitacoes", label: "Solicitacoes" },
     ],
   },
+  { id: "configuracoes", label: "Configuracoes" },
 ];
 
 const AdminPortalPage: React.FC = () => {
+  const hasLandingConfigHydrated = useRef(false);
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<string>("painel");
   const [loading, setLoading] = useState<boolean>(true);
@@ -338,46 +610,129 @@ const AdminPortalPage: React.FC = () => {
   const [planoSelecionado, setPlanoSelecionado] = useState<SaaSPlan | null>(null);
   const [planModalOpen, setPlanModalOpen] = useState(false);
   const [planForm, setPlanForm] = useState<PlanFormState>(() => buildPlanForm(SAAS_PLANS[0]));
+  const [landingPageConfig, setLandingPageConfig] = useState<LandingPageConfigState>(parseLandingPageConfig);
+  const [activeLandingEditorSection, setActiveLandingEditorSection] = useState<LandingEditorSectionId>(
+    "pagina_personalizada"
+  );
+  const [landingPageSavedMsg, setLandingPageSavedMsg] = useState("");
+  const [landingAutosaveStatus, setLandingAutosaveStatus] = useState<LandingAutosaveStatus>("idle");
+  const [menuDraftName, setMenuDraftName] = useState("");
+  const [editingMenuIndex, setEditingMenuIndex] = useState<number | null>(null);
+  const [editingMenuName, setEditingMenuName] = useState("");
 
   const isPlanosView = activeItem === "planos";
+  const isPainelView = activeItem === "painel";
   const isMensalidadesView = activeItem === "mensalidades";
   const isInadimplenciaView = activeItem === "inadimplencia";
   const isClinicasView = activeItem === "clinicas";
   const isSolicitacoesView = activeItem === "solicitacoes";
+  const isLandingPageView = activeItem === "pagina_entrada";
+  const isConfiguracoesView = activeItem === "configuracoes";
+
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+          const [cardsRes, financeiroRes] = await Promise.allSettled([
+            api.get("/dashboard/cards-summary"),
+            api.get("/financeiro/dashboard"),
+          ]);
+
+          const cardsLoaded = cardsRes.status === "fulfilled";
+          const financeiroLoaded = financeiroRes.status === "fulfilled";
+
+          if (cardsLoaded) {
+            const cardsMetrics = cardsRes.value?.data?.data?.metrics ?? {};
+            const nextMetrics = {
+              patientsTotal: Number(cardsMetrics.patients_total ?? 0),
+              receitaMensal: Number(cardsMetrics.receita_mensal ?? 0),
+              saldoMes: Number(cardsMetrics.saldo_mes ?? 0),
+              agendamentosHoje: Number(cardsMetrics.agendamentos_hoje ?? 0),
+            };
+            setMetrics(nextMetrics);
+
+            if (financeiroLoaded) {
+              const resumo = financeiroRes.value?.data?.data?.resumo ?? {};
+              const nextFinanceiroResumo = {
+                totalAPagar: Number(resumo.total_a_pagar ?? 0),
+                totalAReceber: Number(resumo.total_a_receber ?? 0),
+                saldoAtual: Number(resumo.saldo_atual ?? 0),
+              };
+              setFinanceiroResumo(nextFinanceiroResumo);
+              saveDashboardCache(nextMetrics, nextFinanceiroResumo);
+            }
+          }
+
+          if (financeiroLoaded && !cardsLoaded) {
+            const resumo = financeiroRes.value?.data?.data?.resumo ?? {};
+            setFinanceiroResumo({
+              totalAPagar: Number(resumo.total_a_pagar ?? 0),
+              totalAReceber: Number(resumo.total_a_receber ?? 0),
+              saldoAtual: Number(resumo.saldo_atual ?? 0),
+            });
+          }
+
+          if (cardsLoaded && financeiroLoaded) {
+            return;
+          }
+
+          if (cardsLoaded || financeiroLoaded) {
+            setError(PORTAL_SAAS_PARTIAL_DATA_WARNING);
+            return;
+          }
+
+          const firstError = cardsRes.status === "rejected" ? cardsRes.reason : financeiroRes.reason;
+          const shouldRetry = attempt < 3 && isTransientError(firstError);
+          if (shouldRetry) {
+            await wait(attempt * 700);
+            continue;
+          }
+
+          const cached = loadDashboardCache();
+          if (cached) {
+            setMetrics(cached.metrics);
+            setFinanceiroResumo(cached.financeiroResumo);
+            setError(PORTAL_SAAS_CACHE_DATA_WARNING);
+            return;
+          }
+
+          setError(getPortalSaasErrorMessage(firstError));
+          return;
+        } catch (error: any) {
+          const shouldRetry = attempt < 3 && isTransientError(error);
+          if (shouldRetry) {
+            await wait(attempt * 700);
+            continue;
+          }
+
+          const cached = loadDashboardCache();
+          if (cached) {
+            setMetrics(cached.metrics);
+            setFinanceiroResumo(cached.financeiroResumo);
+            setError(PORTAL_SAAS_CACHE_DATA_WARNING);
+            return;
+          }
+
+          setError(getPortalSaasErrorMessage(error));
+          return;
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
+    if (!isPainelView) {
       setError("");
-      try {
-        const [cardsRes, financeiroRes] = await Promise.all([
-          api.get("/dashboard/cards-summary"),
-          api.get("/financeiro/dashboard"),
-        ]);
-
-        const cardsMetrics = cardsRes?.data?.data?.metrics ?? {};
-        setMetrics({
-          patientsTotal: Number(cardsMetrics.patients_total ?? 0),
-          receitaMensal: Number(cardsMetrics.receita_mensal ?? 0),
-          saldoMes: Number(cardsMetrics.saldo_mes ?? 0),
-          agendamentosHoje: Number(cardsMetrics.agendamentos_hoje ?? 0),
-        });
-
-        const resumo = financeiroRes?.data?.data?.resumo ?? {};
-        setFinanceiroResumo({
-          totalAPagar: Number(resumo.total_a_pagar ?? 0),
-          totalAReceber: Number(resumo.total_a_receber ?? 0),
-          saldoAtual: Number(resumo.saldo_atual ?? 0),
-        });
-      } catch {
-        setError("Nao foi possivel carregar os dados do portal SaaS.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      return;
+    }
 
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData, isPainelView]);
 
   const fetchMensalidades = useCallback(
     async (page = 1) => {
@@ -644,6 +999,161 @@ const AdminPortalPage: React.FC = () => {
     closePlanModal();
   };
 
+  const persistLandingPageConfig = useCallback((config: LandingPageConfigState) => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    try {
+      window.localStorage.setItem(LANDING_PAGE_STORAGE_KEY, JSON.stringify(config));
+      window.dispatchEvent(new CustomEvent("saas-landing-config-updated"));
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLandingPageView) {
+      return;
+    }
+
+    if (!hasLandingConfigHydrated.current) {
+      hasLandingConfigHydrated.current = true;
+      return;
+    }
+
+    setLandingAutosaveStatus("saving");
+
+    const timer = window.setTimeout(() => {
+      const hasSaved = persistLandingPageConfig(landingPageConfig);
+      setLandingAutosaveStatus(hasSaved ? "saved" : "error");
+
+      if (hasSaved) {
+        window.setTimeout(() => {
+          setLandingAutosaveStatus((current) => (current === "saved" ? "idle" : current));
+        }, 1800);
+      }
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [isLandingPageView, landingPageConfig, persistLandingPageConfig]);
+
+  const handleSaveLandingPageConfig = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const hasSaved = persistLandingPageConfig(landingPageConfig);
+
+    if (!hasSaved) {
+      setLandingAutosaveStatus("error");
+      setLandingPageSavedMsg("Falha ao salvar as configuracoes. Tente novamente.");
+      window.setTimeout(() => setLandingPageSavedMsg(""), 2500);
+      return;
+    }
+
+    setLandingAutosaveStatus("saved");
+    setLandingPageSavedMsg("Configuracoes da pagina de entrada salvas com sucesso.");
+    window.setTimeout(() => setLandingPageSavedMsg(""), 2500);
+  };
+
+  const landingAutosaveStatusText =
+    landingAutosaveStatus === "saving"
+      ? "Salvando automaticamente..."
+      : landingAutosaveStatus === "saved"
+        ? "Salvo automaticamente"
+        : landingAutosaveStatus === "error"
+          ? "Falha no autosave. Use Salvar configuracoes."
+          : "";
+
+  const activeLandingSectionConfig = landingPageConfig.secoes[activeLandingEditorSection];
+  const isContatoSection = activeLandingEditorSection === "entre_nos";
+
+  const updateLandingSectionField = (
+    section: LandingEditorSectionId,
+    key: keyof LandingEditorSectionConfig,
+    value: string | boolean
+  ) => {
+    setLandingPageConfig((prev) => ({
+      ...prev,
+      secoes: {
+        ...prev.secoes,
+        [section]: {
+          ...prev.secoes[section],
+          [key]: value,
+        },
+      },
+    }));
+  };
+
+  const updateLandingMenuItems = (updater: (items: string[]) => string[]) => {
+    setLandingPageConfig((prev) => {
+      const currentItems = Array.isArray(prev.itensMenu) ? [...prev.itensMenu] : [];
+      const nextItems = updater(currentItems).map((item) => String(item || "").trim()).filter(Boolean);
+
+      return {
+        ...prev,
+        itensMenu: nextItems,
+      };
+    });
+  };
+
+  const handleAddLandingMenuItem = () => {
+    const nextName = menuDraftName.trim();
+    if (!nextName) {
+      return;
+    }
+
+    updateLandingMenuItems((items) => [...items, nextName]);
+    setMenuDraftName("");
+  };
+
+  const handleStartEditLandingMenuItem = (index: number) => {
+    const current = landingPageConfig.itensMenu[index] || "";
+    setEditingMenuIndex(index);
+    setEditingMenuName(current);
+  };
+
+  const handleSaveEditLandingMenuItem = () => {
+    if (editingMenuIndex === null) {
+      return;
+    }
+
+    const nextName = editingMenuName.trim();
+    if (!nextName) {
+      return;
+    }
+
+    updateLandingMenuItems((items) => items.map((item, idx) => (idx === editingMenuIndex ? nextName : item)));
+    setEditingMenuIndex(null);
+    setEditingMenuName("");
+  };
+
+  const handleDeleteLandingMenuItem = (index: number) => {
+    updateLandingMenuItems((items) => items.filter((_, idx) => idx !== index));
+
+    if (editingMenuIndex === index) {
+      setEditingMenuIndex(null);
+      setEditingMenuName("");
+    }
+  };
+
+  const getLandingMenuSectionId = (index: number): LandingEditorSectionId | null => {
+    const sectionId = LANDING_EDITOR_SECTIONS[index]?.id;
+    if (!sectionId || !LANDING_TOGGLEABLE_MENU_SECTION_IDS.has(sectionId)) {
+      return null;
+    }
+
+    return sectionId;
+  };
+
+  const handleToggleLandingMenuItemVisibility = (index: number) => {
+    const sectionId = getLandingMenuSectionId(index);
+    if (!sectionId) {
+      return;
+    }
+
+    updateLandingSectionField(sectionId, "visivel", !landingPageConfig.secoes[sectionId].visivel);
+  };
+
   return (
     <div className="saas-admin-shell">
       <aside className="saas-admin-sidebar">
@@ -704,6 +1214,10 @@ const AdminPortalPage: React.FC = () => {
             <h1>
               {isPlanosView
                 ? "Planos disponiveis"
+                : isLandingPageView
+                  ? "Configuracao da Pagina de entrada"
+                  : isConfiguracoesView
+                    ? "Configuracoes do Portal SaaS"
                 : isMensalidadesView
                   ? "Mensalidades das Clinicas"
                   : isInadimplenciaView
@@ -721,9 +1235,461 @@ const AdminPortalPage: React.FC = () => {
           </div>
         </header>
 
-        {error ? <div className="saas-admin-error">{error}</div> : null}
+        {isPainelView && error ? (
+          <div className="saas-admin-error" role="alert">
+            <div>
+              <strong>
+                {error === PORTAL_SAAS_PARTIAL_DATA_WARNING || error === PORTAL_SAAS_CACHE_DATA_WARNING
+                  ? "Atualizacao parcial do painel SaaS"
+                  : "Falha ao carregar painel SaaS"}
+              </strong>
+              <p>{error}</p>
+            </div>
+            <button type="button" className="saas-admin-error-retry" onClick={fetchDashboardData}>
+              Tentar novamente
+            </button>
+          </div>
+        ) : null}
 
-        {isPlanosView ? (
+        {isLandingPageView ? (
+          <section className="saas-landing-config-wrap">
+            <div className="saas-mensalidades-head">
+              <h2>Pagina de entrada do site</h2>
+              <small>Configure os textos principais e a exibicao de secoes no site.</small>
+            </div>
+
+            {landingPageSavedMsg ? <div className="saas-acao-msg">{landingPageSavedMsg}</div> : null}
+
+            <form className="saas-landing-config-form" onSubmit={handleSaveLandingPageConfig}>
+              <div className="saas-landing-layout">
+                <aside className="saas-landing-sections-nav">
+                  {LANDING_EDITOR_SECTIONS.map((section) => (
+                    <button
+                      key={section.id}
+                      type="button"
+                      className={`saas-landing-sections-nav-item ${
+                        activeLandingEditorSection === section.id ? "active" : ""
+                      }`}
+                      onClick={() => setActiveLandingEditorSection(section.id)}
+                    >
+                      <span>{section.label}</span>
+                      <FiChevronRight />
+                    </button>
+                  ))}
+                </aside>
+
+                <div className="saas-landing-section-content">
+                  <div className="saas-landing-section-head">
+                    <h3>{LANDING_EDITOR_SECTIONS.find((section) => section.id === activeLandingEditorSection)?.label}</h3>
+                    <small>
+                      {isContatoSection
+                        ? "Organize os dados de atendimento desta secao. As alteracoes refletem automaticamente no site."
+                        : "Edite os dados desta area e salve para refletir no site."}
+                    </small>
+                  </div>
+
+                  {activeLandingEditorSection === "barra_superior" ? (
+                    <>
+                      <div className="saas-plan-form-grid two">
+                        <label>
+                          <span>Nome/Marca no menu</span>
+                          <input
+                            type="text"
+                            value={landingPageConfig.secoes.barra_superior.titulo}
+                            onChange={(e) => updateLandingSectionField("barra_superior", "titulo", e.target.value)}
+                          />
+                        </label>
+
+                        <label>
+                          <span>Descricao do site</span>
+                          <input
+                            type="text"
+                            value={landingPageConfig.descricaoSite}
+                            onChange={(e) =>
+                              setLandingPageConfig((prev) => ({
+                                ...prev,
+                                descricaoSite: e.target.value,
+                              }))
+                            }
+                          />
+                        </label>
+                      </div>
+
+                      <label>
+                        <span>URL do logotipo (opcional)</span>
+                        <input
+                          type="url"
+                          value={landingPageConfig.logoUrl}
+                          onChange={(e) =>
+                            setLandingPageConfig((prev) => ({
+                              ...prev,
+                              logoUrl: e.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+
+                      <div className="saas-landing-menu-panel">
+                        <div className="saas-landing-menu-head">
+                          <strong>Barra de Menu</strong>
+                          <div className="saas-landing-menu-add-inline">
+                            <input
+                              type="text"
+                              placeholder="Novo item"
+                              value={menuDraftName}
+                              onChange={(e) => setMenuDraftName(e.target.value)}
+                            />
+                            <button type="button" className="saas-refresh-btn" onClick={handleAddLandingMenuItem}>
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="saas-mensalidades-table-wrap">
+                          <table className="saas-mensalidades-table saas-landing-menu-table">
+                            <thead>
+                              <tr>
+                                <th>Nao</th>
+                                <th>Nome</th>
+                                <th>Acao</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {landingPageConfig.itensMenu.length === 0 ? (
+                                <tr>
+                                  <td colSpan={3}>Nenhum item cadastrado na barra de menu.</td>
+                                </tr>
+                              ) : (
+                                landingPageConfig.itensMenu.map((item, index) => {
+                                  const isEditing = editingMenuIndex === index;
+                                  const linkedSectionId = getLandingMenuSectionId(index);
+                                  const canToggleVisibility = Boolean(linkedSectionId);
+                                  const isMenuEnabled = linkedSectionId
+                                    ? landingPageConfig.secoes[linkedSectionId].visivel
+                                    : true;
+                                  return (
+                                    <tr key={`landing-menu-${index}`}>
+                                      <td>{index + 1}</td>
+                                      <td>
+                                        {isEditing ? (
+                                          <input
+                                            type="text"
+                                            value={editingMenuName}
+                                            onChange={(e) => setEditingMenuName(e.target.value)}
+                                            className="saas-landing-menu-inline-input"
+                                          />
+                                        ) : (
+                                          item
+                                        )}
+                                      </td>
+                                      <td>
+                                        <div className="saas-landing-menu-actions">
+                                          {isEditing ? (
+                                            <>
+                                              <button
+                                                type="button"
+                                                className="saas-sol-btn aprovar"
+                                                onClick={handleSaveEditLandingMenuItem}
+                                              >
+                                                Salvar
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="saas-sol-btn"
+                                                onClick={() => {
+                                                  setEditingMenuIndex(null);
+                                                  setEditingMenuName("");
+                                                }}
+                                              >
+                                                Cancelar
+                                              </button>
+                                            </>
+                                          ) : (
+                                            <>
+                                              {canToggleVisibility ? (
+                                                <button
+                                                  type="button"
+                                                  className={`saas-sol-btn saas-landing-menu-icon-btn ${isMenuEnabled ? "rejeitar" : "aprovar"}`}
+                                                  onClick={() => handleToggleLandingMenuItemVisibility(index)}
+                                                  title={isMenuEnabled ? "Desabilitar item" : "Habilitar item"}
+                                                  aria-label={isMenuEnabled ? "Desabilitar item" : "Habilitar item"}
+                                                >
+                                                  {isMenuEnabled ? <FiEyeOff /> : <FiEye />}
+                                                </button>
+                                              ) : (
+                                                <span className="saas-landing-menu-fixed-label">Fixo</span>
+                                              )}
+                                              <button
+                                                type="button"
+                                                className="saas-sol-btn pagar saas-landing-menu-icon-btn"
+                                                onClick={() => handleStartEditLandingMenuItem(index)}
+                                                title="Editar item"
+                                                aria-label="Editar item"
+                                              >
+                                                <FiEdit2 />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="saas-sol-btn rejeitar saas-landing-menu-icon-btn"
+                                                onClick={() => handleDeleteLandingMenuItem(index)}
+                                                title="Excluir item"
+                                                aria-label="Excluir item"
+                                              >
+                                                <FiXCircle />
+                                              </button>
+                                            </>
+                                          )}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="saas-landing-field-group">
+                        <strong>{isContatoSection ? "Dados de contato" : "Dados da secao"}</strong>
+                        <div className="saas-plan-form-grid two">
+                          <label>
+                            <span>Titulo da secao</span>
+                            <input
+                              type="text"
+                              value={activeLandingSectionConfig.titulo}
+                              onChange={(e) =>
+                                updateLandingSectionField(activeLandingEditorSection, "titulo", e.target.value)
+                              }
+                              placeholder={isContatoSection ? "Ex.: Entre em contato" : "Titulo da secao"}
+                            />
+                          </label>
+
+                          <label className="saas-plan-switch-inline">
+                            <span>Exibir secao no site</span>
+                            <input
+                              type="checkbox"
+                              checked={activeLandingSectionConfig.visivel}
+                              onChange={(e) =>
+                                updateLandingSectionField(activeLandingEditorSection, "visivel", e.target.checked)
+                              }
+                            />
+                          </label>
+                        </div>
+
+                        <label className="saas-plan-description-field">
+                          <span>Subtitulo/descricao</span>
+                          <textarea
+                            rows={3}
+                            value={activeLandingSectionConfig.subtitulo}
+                            onChange={(e) =>
+                              updateLandingSectionField(activeLandingEditorSection, "subtitulo", e.target.value)
+                            }
+                            placeholder={
+                              isContatoSection
+                                ? "Ex.: Canal direto com sua equipe para duvidas e suporte."
+                                : "Descreva rapidamente esta secao"
+                            }
+                          />
+                        </label>
+                      </div>
+
+                      <div className="saas-landing-field-group compact">
+                        <strong>Botao da secao (opcional)</strong>
+                        <div className="saas-plan-form-grid two">
+                          <label>
+                            <span>Texto do botao</span>
+                            <input
+                              type="text"
+                              value={activeLandingSectionConfig.textoBotao}
+                              onChange={(e) =>
+                                updateLandingSectionField(activeLandingEditorSection, "textoBotao", e.target.value)
+                              }
+                              placeholder={isContatoSection ? "Ex.: Falar no WhatsApp" : "Texto do botao"}
+                            />
+                          </label>
+
+                          <label>
+                            <span>Link do botao</span>
+                            <input
+                              type="url"
+                              value={activeLandingSectionConfig.linkBotao}
+                              onChange={(e) =>
+                                updateLandingSectionField(activeLandingEditorSection, "linkBotao", e.target.value)
+                              }
+                              placeholder="https://..."
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <details className="saas-landing-global-settings" open={activeLandingEditorSection === "home"}>
+                <summary>Configuracoes gerais da Home</summary>
+                <div className="saas-landing-global-settings-content">
+                  <div className="saas-plan-form-grid two">
+                    <label>
+                      <span>Texto do botao principal</span>
+                      <input
+                        type="text"
+                        value={landingPageConfig.textoBotaoPrincipal}
+                        onChange={(e) =>
+                          setLandingPageConfig((prev) => ({
+                            ...prev,
+                            textoBotaoPrincipal: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      <span>Link do botao principal</span>
+                      <input
+                        type="url"
+                        value={landingPageConfig.linkBotaoPrincipal}
+                        onChange={(e) =>
+                          setLandingPageConfig((prev) => ({
+                            ...prev,
+                            linkBotaoPrincipal: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <label className="saas-plan-description-field">
+                    <span>Subtitulo principal (Home)</span>
+                    <textarea
+                      rows={3}
+                      value={landingPageConfig.subtitulo}
+                      onChange={(e) =>
+                        setLandingPageConfig((prev) => ({
+                          ...prev,
+                          subtitulo: e.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+
+                  <div className="saas-plan-switches">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={landingPageConfig.mostrarDepoimentos}
+                        onChange={(e) =>
+                          setLandingPageConfig((prev) => ({
+                            ...prev,
+                            mostrarDepoimentos: e.target.checked,
+                          }))
+                        }
+                      />
+                      <span>Mostrar secao de depoimentos</span>
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={landingPageConfig.mostrarPlanos}
+                        onChange={(e) =>
+                          setLandingPageConfig((prev) => ({
+                            ...prev,
+                            mostrarPlanos: e.target.checked,
+                          }))
+                        }
+                      />
+                      <span>Mostrar secao de planos</span>
+                    </label>
+                  </div>
+                </div>
+              </details>
+
+              <div className="saas-landing-preview">
+                <h3>Pre-visualizacao rapida</h3>
+                <strong>{landingPageConfig.secoes.home.titulo || landingPageConfig.titulo || "Titulo do site"}</strong>
+                <p>{landingPageConfig.secoes.home.subtitulo || landingPageConfig.subtitulo || "Subtitulo do site"}</p>
+                <div className="saas-landing-preview-cta">
+                  <span>
+                    {landingPageConfig.secoes.home.textoBotao || landingPageConfig.textoBotaoPrincipal || "Texto do botao"}
+                  </span>
+                  <small>
+                    {landingPageConfig.secoes.home.linkBotao || landingPageConfig.linkBotaoPrincipal || "Link de destino"}
+                  </small>
+                </div>
+              </div>
+
+              <div className="saas-landing-save-row">
+                {landingAutosaveStatus !== "idle" ? (
+                  <div
+                    className={`saas-landing-save-status ${landingAutosaveStatus}`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span className="saas-landing-save-status-dot" />
+                    <span>{landingAutosaveStatusText}</span>
+                  </div>
+                ) : (
+                  <div />
+                )}
+
+                <div className="saas-plan-modal-actions">
+                  <button
+                    type="button"
+                    className="saas-modal-cancel"
+                    onClick={() => setLandingPageConfig(defaultLandingPageConfig)}
+                  >
+                    Restaurar padrao
+                  </button>
+                  <button type="submit" className="saas-modal-confirm pagamento">
+                    Salvar configuracoes
+                  </button>
+                </div>
+              </div>
+            </form>
+          </section>
+        ) : isConfiguracoesView ? (
+          <section className="saas-settings-wrap">
+            <div className="saas-mensalidades-head">
+              <h2>Configuracoes gerais</h2>
+              <small>Centralize aqui os ajustes operacionais e visuais do Portal SaaS.</small>
+            </div>
+
+            <div className="saas-settings-grid">
+              <article className="saas-settings-card">
+                <h3>Painel de entrada</h3>
+                <p>
+                  Edite menu, secoes, botoes e conteudos da landing publica do SaaS em um unico lugar.
+                </p>
+                <button
+                  type="button"
+                  className="saas-refresh-btn"
+                  onClick={() => setActiveItem("pagina_entrada")}
+                >
+                  Abrir pagina de entrada
+                </button>
+              </article>
+
+              <article className="saas-settings-card">
+                <h3>Planos e assinaturas</h3>
+                <p>Gerencie planos, recursos comerciais e cobrancas recorrentes do portal.</p>
+                <button type="button" className="saas-refresh-btn" onClick={() => setActiveItem("planos")}>
+                  Abrir planos
+                </button>
+              </article>
+
+              <article className="saas-settings-card">
+                <h3>Clientes</h3>
+                <p>Consulte clinicas cadastradas e acompanhe solicitacoes pendentes de acesso ao sistema.</p>
+                <button type="button" className="saas-refresh-btn" onClick={() => setActiveItem("clinicas")}>
+                  Abrir clientes
+                </button>
+              </article>
+            </div>
+          </section>
+        ) : isPlanosView ? (
           <>
             <section className="saas-planos-grid">
               {SAAS_PLANS.map((plan) => (

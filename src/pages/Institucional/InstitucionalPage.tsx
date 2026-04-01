@@ -20,8 +20,239 @@ import {
   FaUserMd,
   FaClipboardList,
   FaCreditCard,
-  FaTools
+  FaTools,
+  FaCheck,
+  FaBuilding,
+  FaCrown
 } from "react-icons/fa";
+
+type LandingEditorSectionId =
+  | "barra_superior"
+  | "pagina_personalizada"
+  | "home"
+  | "recursos"
+  | "descobrir"
+  | "screenshots"
+  | "plano_precos"
+  | "faq"
+  | "testemunhos"
+  | "entre_nos";
+
+type PublicLandingSectionConfig = {
+  titulo: string;
+  subtitulo: string;
+  visivel: boolean;
+  textoBotao: string;
+  linkBotao: string;
+};
+
+type PublicLandingConfig = {
+  logoUrl: string;
+  descricaoSite: string;
+  itensMenu: string[];
+  titulo: string;
+  subtitulo: string;
+  textoBotaoPrincipal: string;
+  linkBotaoPrincipal: string;
+  telefoneWhatsapp: string;
+  mostrarDepoimentos: boolean;
+  mostrarPlanos: boolean;
+  secoes: Record<LandingEditorSectionId, PublicLandingSectionConfig>;
+};
+
+const LANDING_PAGE_STORAGE_KEY = "saas_admin_landing_page_config";
+
+const PUBLIC_MENU_FALLBACK = [
+  "Barra Superior",
+  "Pagina Personalizada",
+  "Home",
+  "Recursos",
+  "Descobrir",
+  "Aplicativos Movel",
+  "Plano de Precos",
+  "FAQ",
+  "Testemunhos",
+  "Contato",
+];
+
+const normalizePublicMenuLabel = (label: string, index: number): string => {
+  if (index === 5 && label.toLowerCase() === "screenshots") {
+    return "Aplicativos Movel";
+  }
+  if (index === 9 && label.toLowerCase() === "entre nos") {
+    return "Contato";
+  }
+  return label;
+};
+
+const createPublicSection = (titulo: string, subtitulo: string): PublicLandingSectionConfig => ({
+  titulo,
+  subtitulo,
+  visivel: true,
+  textoBotao: "",
+  linkBotao: "",
+});
+
+const normalizePlanoLink = (value: string): string => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) {
+    return "#planos";
+  }
+
+  return normalized === "/planos" || normalized === "planos" ? "#planos" : value;
+};
+
+const defaultPublicLandingConfig: PublicLandingConfig = {
+  logoUrl: "",
+  descricaoSite: "Sistema completo para modernizar a gestao da sua clinica odontologica.",
+  itensMenu: PUBLIC_MENU_FALLBACK,
+  titulo: "O Sistema Odontologico Mais Completo",
+  subtitulo:
+    "Revolucione a gestao do seu consultorio com nossa plataforma moderna, intuitiva e repleta de funcionalidades que facilitam seu dia a dia.",
+  textoBotaoPrincipal: "Comece Gratis - Cadastre-se",
+  linkBotaoPrincipal: "/registro",
+  telefoneWhatsapp: "(11) 99999-9999",
+  mostrarDepoimentos: true,
+  mostrarPlanos: true,
+  secoes: {
+    barra_superior: createPublicSection("SSait Odonto", "Barra superior e menu principal"),
+    pagina_personalizada: createPublicSection("Pagina inicial personalizada", "Gerencie os blocos da landing page"),
+    home: createPublicSection("O Sistema Odontologico Mais Completo", "Destaque o principal valor da sua clinica"),
+    recursos: createPublicSection("Funcionalidades Principais", "Tudo que voce precisa para gerir seu consultorio"),
+    descobrir: createPublicSection("Nossos Diferenciais", "Um bom software nao se resume apenas em funcionalidades"),
+    screenshots: createPublicSection("Aplicativo Mobile", "Gerencie seu consultorio de qualquer lugar"),
+    plano_precos: {
+      ...createPublicSection("Planos e Precos", "Compare planos e escolha o melhor para sua clinica"),
+      linkBotao: "#planos",
+    },
+    faq: createPublicSection("Perguntas Frequentes", "Respostas diretas para as duvidas mais comuns"),
+    testemunhos: createPublicSection("Testemunhos", "Veja o que clientes dizem sobre nossa plataforma"),
+    entre_nos: createPublicSection("Entre em Contato", "Nossa equipe esta pronta para ajudar voce"),
+  },
+};
+
+const LANDING_PRICING_PLANS = [
+  {
+    name: "Basico",
+    price: "R$ 70",
+    icon: <FaUsers />,
+    color: "#17a2b8",
+    featured: false,
+    features: [
+      { text: "Ate 100 pacientes", included: true },
+      { text: "Dashboard basico", included: true },
+      { text: "Gestao de Pacientes", included: true },
+      { text: "Agendamentos basicos", included: true },
+      { text: "Cadastro de Procedimentos", included: true },
+      { text: "Relatorios basicos", included: true },
+      { text: "Suporte segunda a sexta 07:00-18:00, sabado 07:00-12:00", included: true },
+      { text: "Gestao de Funcionarios", included: false },
+      { text: "Gestao Financeira", included: false },
+      { text: "Convenios", included: false },
+      { text: "Odontogramas", included: false },
+      { text: "Anamnese", included: false },
+    ],
+  },
+  {
+    name: "Profissional",
+    price: "R$ 90",
+    icon: <FaBuilding />,
+    color: "#007bff",
+    featured: true,
+    features: [
+      { text: "Pacientes ilimitados", included: true },
+      { text: "Dashboard completo", included: true },
+      { text: "Gestao de Pacientes", included: true },
+      { text: "Gestao de Funcionarios", included: true },
+      { text: "Agendamentos avancados", included: true },
+      { text: "Gestao Financeira", included: true },
+      { text: "Cadastro de Procedimentos", included: true },
+      { text: "Convenios", included: true },
+      { text: "Relatorios avancados", included: true },
+      { text: "Suporte segunda a sexta 07:00-18:00, sabado 07:00-12:00", included: true },
+      { text: "Odontogramas", included: false },
+      { text: "Anamnese", included: false },
+    ],
+  },
+  {
+    name: "Premium",
+    price: "R$ 160",
+    icon: <FaCrown />,
+    color: "#ffc107",
+    featured: false,
+    features: [
+      { text: "Pacientes ilimitados", included: true },
+      { text: "Dashboard completo", included: true },
+      { text: "Gestao de Pacientes", included: true },
+      { text: "Gestao de Funcionarios", included: true },
+      { text: "Agendamentos completos", included: true },
+      { text: "Gestao Financeira", included: true },
+      { text: "Cadastro de Procedimentos", included: true },
+      { text: "Convenios", included: true },
+      { text: "Odontogramas", included: true },
+      { text: "Anamnese completa", included: true },
+      { text: "Tratamentos", included: true },
+      { text: "Orcamentos", included: true },
+      { text: "Todos os relatorios", included: true },
+      { text: "Suporte segunda a sexta 07:00-18:00, sabado 07:00-12:00", included: true },
+    ],
+  },
+];
+
+const parsePublicLandingConfig = (): PublicLandingConfig => {
+  if (typeof window === "undefined") {
+    return defaultPublicLandingConfig;
+  }
+
+  const raw = window.localStorage.getItem(LANDING_PAGE_STORAGE_KEY);
+  if (!raw) {
+    return defaultPublicLandingConfig;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    const sections = (parsed?.secoes || {}) as Record<string, any>;
+
+    const mappedSections = (Object.keys(defaultPublicLandingConfig.secoes) as LandingEditorSectionId[]).reduce(
+      (acc, id) => {
+        const base = defaultPublicLandingConfig.secoes[id];
+        const incoming = sections?.[id] || {};
+        const nextLink = String(incoming?.linkBotao ?? base.linkBotao);
+        acc[id] = {
+          titulo: String(incoming?.titulo ?? base.titulo),
+          subtitulo: String(incoming?.subtitulo ?? base.subtitulo),
+          visivel: Boolean(incoming?.visivel ?? base.visivel),
+          textoBotao: String(incoming?.textoBotao ?? base.textoBotao),
+          linkBotao: id === "plano_precos" ? normalizePlanoLink(nextLink) : nextLink,
+        };
+        return acc;
+      },
+      {} as Record<LandingEditorSectionId, PublicLandingSectionConfig>
+    );
+
+    const incomingMenu = Array.isArray(parsed?.itensMenu)
+      ? parsed.itensMenu
+          .map((item: any, index: number) => normalizePublicMenuLabel(String(item || "").trim(), index))
+          .filter(Boolean)
+      : [];
+
+    return {
+      logoUrl: String(parsed?.logoUrl ?? defaultPublicLandingConfig.logoUrl),
+      descricaoSite: String(parsed?.descricaoSite ?? defaultPublicLandingConfig.descricaoSite),
+      itensMenu: PUBLIC_MENU_FALLBACK.map((item, index) => normalizePublicMenuLabel(incomingMenu[index] || item, index)),
+      titulo: String(parsed?.titulo ?? defaultPublicLandingConfig.titulo),
+      subtitulo: String(parsed?.subtitulo ?? defaultPublicLandingConfig.subtitulo),
+      textoBotaoPrincipal: String(parsed?.textoBotaoPrincipal ?? defaultPublicLandingConfig.textoBotaoPrincipal),
+      linkBotaoPrincipal: String(parsed?.linkBotaoPrincipal ?? defaultPublicLandingConfig.linkBotaoPrincipal),
+      telefoneWhatsapp: String(parsed?.telefoneWhatsapp ?? defaultPublicLandingConfig.telefoneWhatsapp),
+      mostrarDepoimentos: Boolean(parsed?.mostrarDepoimentos ?? defaultPublicLandingConfig.mostrarDepoimentos),
+      mostrarPlanos: Boolean(parsed?.mostrarPlanos ?? defaultPublicLandingConfig.mostrarPlanos),
+      secoes: mappedSections,
+    };
+  } catch {
+    return defaultPublicLandingConfig;
+  }
+};
 
 const PageWrapper = styled.div`
   background-color: #f8f9fa;
@@ -50,6 +281,14 @@ const Logo = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+
+  img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #ffffff;
+  }
 `;
 
 const NavMenu = styled.div`
@@ -448,7 +687,26 @@ const InstitucionalPage: React.FC = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [recursosDropdownOpen, setRecursosDropdownOpen] = React.useState(false);
+  const [landingConfig, setLandingConfig] = React.useState<PublicLandingConfig>(parsePublicLandingConfig);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const syncConfig = () => setLandingConfig(parsePublicLandingConfig());
+
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === LANDING_PAGE_STORAGE_KEY) {
+        syncConfig();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("saas-landing-config-updated", syncConfig as EventListener);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("saas-landing-config-updated", syncConfig as EventListener);
+    };
+  }, []);
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -469,7 +727,7 @@ const InstitucionalPage: React.FC = () => {
   };
 
   const handleGoToPlanos = () => {
-    navigate('/planos');
+    scrollToSection('planos');
   };
 
   const handleGoToLogin = () => {
@@ -478,6 +736,88 @@ const InstitucionalPage: React.FC = () => {
 
   const handleGoToRegister = () => {
     navigate('/registro');
+  };
+
+  const menuLabel = (index: number, fallback: string) => {
+    return landingConfig.itensMenu[index] || fallback;
+  };
+
+  const sectionConfig = (
+    id: LandingEditorSectionId,
+    fallbackTitle: string,
+    fallbackSubtitle: string
+  ): PublicLandingSectionConfig => {
+    const found = landingConfig.secoes[id];
+    if (!found) {
+      return createPublicSection(fallbackTitle, fallbackSubtitle);
+    }
+    return {
+      ...found,
+      titulo: found.titulo || fallbackTitle,
+      subtitulo: found.subtitulo || fallbackSubtitle,
+    };
+  };
+
+  const homeSection = sectionConfig("home", landingConfig.titulo, landingConfig.subtitulo);
+  const recursosSection = sectionConfig(
+    "recursos",
+    "Funcionalidades Principais",
+    "Tudo que voce precisa para gerir seu consultorio de forma eficiente e moderna"
+  );
+  const screenshotsSection = sectionConfig(
+    "screenshots",
+    "Aplicativo Mobile",
+    "Gerencie seu consultorio de qualquer lugar com nosso aplicativo completo"
+  );
+  const descobrirSection = sectionConfig(
+    "descobrir",
+    "Nossos Diferenciais",
+    "Um bom software nao se resume apenas em funcionalidades"
+  );
+  const faqSection = sectionConfig(
+    "faq",
+    "Perguntas Frequentes",
+    "Respostas rapidas para as duvidas mais comuns"
+  );
+  const testemunhosSection = sectionConfig(
+    "testemunhos",
+    "Testemunhos",
+    "O que clientes falam sobre a plataforma"
+  );
+  const entreNosSection = sectionConfig(
+    "entre_nos",
+    "Entre em Contato",
+    "Nossa equipe esta pronta para ajudar voce a revolucionar seu consultorio"
+  );
+
+  const openConfiguredLink = (link: string, fallback: () => void) => {
+    const url = String(link || "").trim();
+    if (!url) {
+      fallback();
+      return;
+    }
+
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    if (url === "/planos" || url === "planos") {
+      handleGoToPlanos();
+      return;
+    }
+
+    if (url.startsWith("/")) {
+      navigate(url);
+      return;
+    }
+
+    if (url.startsWith("#")) {
+      scrollToSection(url.slice(1));
+      return;
+    }
+
+    fallback();
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -534,60 +874,92 @@ const InstitucionalPage: React.FC = () => {
       {/* Navigation Bar */}
       <NavBar>
         <Logo>
-          <FaHeart />
-          SSait Odonto
+          {landingConfig.logoUrl ? (
+            <img src={landingConfig.logoUrl} alt="Logo do site" />
+          ) : (
+            <FaHeart />
+          )}
+          {landingConfig.secoes.barra_superior.titulo || "SSait Odonto"}
         </Logo>
         
         <NavMenu>
-          <NavLink onClick={() => scrollToSection('home')}>Home</NavLink>
-          
-          <DropdownContainer ref={dropdownRef}>
-            <DropdownButton 
-              onClick={toggleRecursosDropdown}
-              data-open={recursosDropdownOpen}
+          {homeSection.visivel ? (
+            <NavLink onClick={() => scrollToSection('home')}>{menuLabel(2, 'Home')}</NavLink>
+          ) : null}
+
+          {recursosSection.visivel ? (
+            <DropdownContainer ref={dropdownRef}>
+              <DropdownButton 
+                onClick={toggleRecursosDropdown}
+                data-open={recursosDropdownOpen}
+              >
+                {menuLabel(3, 'Recursos')} <FaChevronDown />
+              </DropdownButton>
+              <DropdownMenu isOpen={recursosDropdownOpen}>
+                <DropdownItem onClick={() => handleRecursoClick('Agendamentos')}>
+                  <FaCalendarAlt />
+                  Sistema de Agendamentos
+                </DropdownItem>
+                <DropdownItem onClick={() => handleRecursoClick('Pacientes')}>
+                  <FaUsers />
+                  Gestão de Pacientes
+                </DropdownItem>
+                <DropdownItem onClick={() => handleRecursoClick('Funcionarios')}>
+                  <FaUserMd />
+                  Gestão de Funcionários
+                </DropdownItem>
+                <DropdownItem onClick={() => handleRecursoClick('Procedimentos')}>
+                  <FaTools />
+                  Cadastro de Procedimentos
+                </DropdownItem>
+                <DropdownItem onClick={() => handleRecursoClick('Convenios')}>
+                  <FaHandshake />
+                  Gestão de Convênios
+                </DropdownItem>
+                <DropdownItem onClick={() => handleRecursoClick('Anamnese')}>
+                  <FaClipboardList />
+                  Sistema de Anamnese
+                </DropdownItem>
+                <DropdownItem onClick={() => handleRecursoClick('Relatorios')}>
+                  <FaChartLine />
+                  Relatórios Avançados
+                </DropdownItem>
+                <DropdownItem onClick={() => handleRecursoClick('Pagamentos')}>
+                  <FaCreditCard />
+                  Formas de Pagamento
+                </DropdownItem>
+              </DropdownMenu>
+            </DropdownContainer>
+          ) : null}
+
+          {landingConfig.mostrarPlanos && landingConfig.secoes.plano_precos.visivel ? (
+            <NavLink
+              onClick={() =>
+                openConfiguredLink(
+                  landingConfig.secoes.plano_precos.linkBotao,
+                  handleGoToPlanos
+                )
+              }
             >
-              Recursos <FaChevronDown />
-            </DropdownButton>
-            <DropdownMenu isOpen={recursosDropdownOpen}>
-              <DropdownItem onClick={() => handleRecursoClick('Agendamentos')}>
-                <FaCalendarAlt />
-                Sistema de Agendamentos
-              </DropdownItem>
-              <DropdownItem onClick={() => handleRecursoClick('Pacientes')}>
-                <FaUsers />
-                Gestão de Pacientes
-              </DropdownItem>
-              <DropdownItem onClick={() => handleRecursoClick('Funcionarios')}>
-                <FaUserMd />
-                Gestão de Funcionários
-              </DropdownItem>
-              <DropdownItem onClick={() => handleRecursoClick('Procedimentos')}>
-                <FaTools />
-                Cadastro de Procedimentos
-              </DropdownItem>
-              <DropdownItem onClick={() => handleRecursoClick('Convenios')}>
-                <FaHandshake />
-                Gestão de Convênios
-              </DropdownItem>
-              <DropdownItem onClick={() => handleRecursoClick('Anamnese')}>
-                <FaClipboardList />
-                Sistema de Anamnese
-              </DropdownItem>
-              <DropdownItem onClick={() => handleRecursoClick('Relatorios')}>
-                <FaChartLine />
-                Relatórios Avançados
-              </DropdownItem>
-              <DropdownItem onClick={() => handleRecursoClick('Pagamentos')}>
-                <FaCreditCard />
-                Formas de Pagamento
-              </DropdownItem>
-            </DropdownMenu>
-          </DropdownContainer>
-          
-          <NavLink onClick={handleGoToPlanos}>Planos</NavLink>
-          <NavLink onClick={() => scrollToSection('aplicativo')}>App Mobile</NavLink>
-          <NavLink onClick={() => scrollToSection('sobre')}>Sobre Nós</NavLink>
-          <NavLink onClick={() => scrollToSection('contato')}>Contato</NavLink>
+              {menuLabel(6, 'Plano de Precos')}
+            </NavLink>
+          ) : null}
+
+          {screenshotsSection.visivel ? (
+            <NavLink onClick={() => scrollToSection('aplicativo')}>{menuLabel(5, 'Aplicativos Movel')}</NavLink>
+          ) : null}
+
+          {faqSection.visivel ? (
+            <NavLink onClick={() => scrollToSection('faq')}>{menuLabel(7, 'FAQ')}</NavLink>
+          ) : null}
+
+          {landingConfig.mostrarDepoimentos && testemunhosSection.visivel ? (
+            <NavLink onClick={() => scrollToSection('testemunhos')}>{menuLabel(8, 'Testemunhos')}</NavLink>
+          ) : null}
+
+          {entreNosSection.visivel ? (
+            <NavLink onClick={() => scrollToSection('contato')}>{menuLabel(9, 'Contato')}</NavLink>
+          ) : null}
         </NavMenu>
         
         <NavActions>
@@ -606,34 +978,67 @@ const InstitucionalPage: React.FC = () => {
 
       {/* Mobile Menu */}
       <MobileMenu isOpen={mobileMenuOpen}>
-        <MobileNavLink onClick={() => scrollToSection('home')}>Home</MobileNavLink>
-        <MobileNavLink onClick={() => scrollToSection('funcionalidades')}>Funcionalidades</MobileNavLink>
-        <MobileNavLink onClick={handleGoToPlanos}>Planos</MobileNavLink>
-        <MobileNavLink onClick={() => scrollToSection('aplicativo')}>App Mobile</MobileNavLink>
-        <MobileNavLink onClick={() => scrollToSection('sobre')}>Sobre Nós</MobileNavLink>
-        <MobileNavLink onClick={() => scrollToSection('contato')}>Contato</MobileNavLink>
+        {homeSection.visivel ? (
+          <MobileNavLink onClick={() => scrollToSection('home')}>{menuLabel(2, 'Home')}</MobileNavLink>
+        ) : null}
+        {recursosSection.visivel ? (
+          <MobileNavLink onClick={() => scrollToSection('funcionalidades')}>{menuLabel(3, 'Recursos')}</MobileNavLink>
+        ) : null}
+        {landingConfig.mostrarPlanos && landingConfig.secoes.plano_precos.visivel ? (
+          <MobileNavLink
+            onClick={() =>
+              openConfiguredLink(
+                landingConfig.secoes.plano_precos.linkBotao,
+                handleGoToPlanos
+              )
+            }
+          >
+            {menuLabel(6, 'Plano de Precos')}
+          </MobileNavLink>
+        ) : null}
+        {screenshotsSection.visivel ? (
+          <MobileNavLink onClick={() => scrollToSection('aplicativo')}>{menuLabel(5, 'Aplicativos Movel')}</MobileNavLink>
+        ) : null}
+        {faqSection.visivel ? (
+          <MobileNavLink onClick={() => scrollToSection('faq')}>{menuLabel(7, 'FAQ')}</MobileNavLink>
+        ) : null}
+        {landingConfig.mostrarDepoimentos && testemunhosSection.visivel ? (
+          <MobileNavLink onClick={() => scrollToSection('testemunhos')}>{menuLabel(8, 'Testemunhos')}</MobileNavLink>
+        ) : null}
+        {entreNosSection.visivel ? (
+          <MobileNavLink onClick={() => scrollToSection('contato')}>{menuLabel(9, 'Contato')}</MobileNavLink>
+        ) : null}
       </MobileMenu>
 
       <MainContent>
         {/* Hero Section */}
+        {homeSection.visivel ? (
         <HeroSection id="home">
           <HeroContent>
-            <MainTitle>O Sistema Odontológico Mais Completo</MainTitle>
+            <MainTitle>{homeSection.titulo || landingConfig.titulo || "O Sistema Odontologico Mais Completo"}</MainTitle>
             <Subtitle>
-              Revolucione a gestão do seu consultório com nossa plataforma moderna, 
-              intuitiva e repleta de funcionalidades que facilitam seu dia a dia.
+              {homeSection.subtitulo || landingConfig.subtitulo}
             </Subtitle>
-            <CTAButton onClick={handleGoToRegister}>
-              Comece Grátis - Cadastre-se
+            <CTAButton
+              onClick={() =>
+                openConfiguredLink(
+                  homeSection.linkBotao || landingConfig.linkBotaoPrincipal,
+                  handleGoToRegister
+                )
+              }
+            >
+              {homeSection.textoBotao || landingConfig.textoBotaoPrincipal || "Comece Gratis - Cadastre-se"}
             </CTAButton>
           </HeroContent>
         </HeroSection>
+        ) : null}
 
         {/* Features Section */}
+        {recursosSection.visivel ? (
         <FeaturesSection id="funcionalidades">
-          <SectionTitle>Funcionalidades Principais</SectionTitle>
+          <SectionTitle>{recursosSection.titulo || "Funcionalidades Principais"}</SectionTitle>
           <SectionSubtitle>
-            Tudo que você precisa para gerir seu consultório de forma eficiente e moderna
+            {recursosSection.subtitulo || "Tudo que voce precisa para gerir seu consultorio de forma eficiente e moderna"}
           </SectionSubtitle>
           
           <FeaturesGrid>
@@ -726,6 +1131,7 @@ const InstitucionalPage: React.FC = () => {
             </FeatureCard>
           </FeaturesGrid>
         </FeaturesSection>
+        ) : null}
 
         {/* Stats Section */}
         <StatsSection>
@@ -757,10 +1163,11 @@ const InstitucionalPage: React.FC = () => {
         </StatsSection>
 
         {/* App Mobile Section */}
+        {screenshotsSection.visivel ? (
         <FeaturesSection id="aplicativo" style={{ background: '#f8f9fa' }}>
-          <SectionTitle>Aplicativo Mobile</SectionTitle>
+          <SectionTitle>{screenshotsSection.titulo || "Aplicativo Mobile"}</SectionTitle>
           <SectionSubtitle>
-            Gerencie seu consultório de qualquer lugar com nosso aplicativo completo
+            {screenshotsSection.subtitulo || "Gerencie seu consultorio de qualquer lugar com nosso aplicativo completo"}
           </SectionSubtitle>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', maxWidth: '1200px', margin: '0 auto', alignItems: 'center' }}>
@@ -832,12 +1239,14 @@ const InstitucionalPage: React.FC = () => {
             </div>
           </div>
         </FeaturesSection>
+        ) : null}
 
         {/* About Section */}
+        {descobrirSection.visivel ? (
         <FeaturesSection id="sobre">
-          <SectionTitle>Nossos Diferenciais</SectionTitle>
+          <SectionTitle>{descobrirSection.titulo || "Nossos Diferenciais"}</SectionTitle>
           <SectionSubtitle>
-            Um bom software não se resume apenas em funcionalidades
+            {descobrirSection.subtitulo || "Um bom software nao se resume apenas em funcionalidades"}
           </SectionSubtitle>
           
           <FeaturesGrid style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
@@ -886,12 +1295,157 @@ const InstitucionalPage: React.FC = () => {
             </FeatureCard>
           </FeaturesGrid>
         </FeaturesSection>
+        ) : null}
+
+        {landingConfig.mostrarPlanos && landingConfig.secoes.plano_precos.visivel ? (
+          <FeaturesSection id="planos" style={{ background: '#f8f9fa' }}>
+            <SectionTitle>{landingConfig.secoes.plano_precos.titulo || 'Planos e Precos'}</SectionTitle>
+            <SectionSubtitle>
+              {landingConfig.secoes.plano_precos.subtitulo || 'Escolha o plano ideal para o momento da sua clinica'}
+            </SectionSubtitle>
+
+            <FeaturesGrid style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+              {LANDING_PRICING_PLANS.map((plan) => (
+                <FeatureCard
+                  key={plan.name}
+                  style={{
+                    textAlign: 'left',
+                    border: plan.featured ? '2px solid #007bff' : undefined,
+                    position: 'relative',
+                  }}
+                >
+                  {plan.featured ? (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '-12px',
+                        right: '16px',
+                        background: '#007bff',
+                        color: '#fff',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        borderRadius: '999px',
+                        padding: '6px 10px',
+                      }}
+                    >
+                      Mais Popular
+                    </span>
+                  ) : null}
+
+                  <FeatureIcon color={plan.color} style={{ marginBottom: '18px' }}>
+                    {plan.icon}
+                  </FeatureIcon>
+
+                  <FeatureTitle>{plan.name}</FeatureTitle>
+                  <p style={{ marginTop: '-6px', marginBottom: '18px', color: '#007bff', fontWeight: 700 }}>
+                    {plan.price}/mes
+                  </p>
+
+                  <div>
+                    {plan.features.map((feature) => (
+                      <div
+                        key={`${plan.name}-${feature.text}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '8px',
+                          marginBottom: '8px',
+                          color: feature.included ? '#2c3e50' : '#8d96a0',
+                          fontSize: '0.95rem',
+                        }}
+                      >
+                        {feature.included ? (
+                          <FaCheck style={{ color: '#28a745', marginTop: '2px' }} />
+                        ) : (
+                          <FaTimes style={{ color: '#dc3545', marginTop: '2px' }} />
+                        )}
+                        <span>{feature.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <CTAButton
+                    style={{ width: '100%', marginTop: '14px', fontSize: '1rem', padding: '12px 20px' }}
+                    onClick={() => navigate('/pagamento', { state: { plano: plan.name, preco: plan.price } })}
+                  >
+                    Selecionar Plano
+                  </CTAButton>
+                </FeatureCard>
+              ))}
+            </FeaturesGrid>
+          </FeaturesSection>
+        ) : null}
+
+        {faqSection.visivel ? (
+          <FeaturesSection id="faq" style={{ background: '#f8f9fa' }}>
+            <SectionTitle>{faqSection.titulo || "Perguntas Frequentes"}</SectionTitle>
+            <SectionSubtitle>
+              {faqSection.subtitulo || "Respostas rapidas para as duvidas mais comuns"}
+            </SectionSubtitle>
+
+            <FeaturesGrid style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+              <FeatureCard style={{ textAlign: 'left' }}>
+                <FeatureTitle>O sistema funciona no celular?</FeatureTitle>
+                <FeatureDescription>
+                  Sim. Voce pode acessar o sistema no navegador e tambem usar os recursos mobile para acompanhar a rotina.
+                </FeatureDescription>
+              </FeatureCard>
+
+              <FeatureCard style={{ textAlign: 'left' }}>
+                <FeatureTitle>Tem suporte para migracao de dados?</FeatureTitle>
+                <FeatureDescription>
+                  Sim. Nossa equipe auxilia na migracao inicial para facilitar a troca sem impactar seu atendimento.
+                </FeatureDescription>
+              </FeatureCard>
+
+              <FeatureCard style={{ textAlign: 'left' }}>
+                <FeatureTitle>Posso cancelar quando quiser?</FeatureTitle>
+                <FeatureDescription>
+                  Sim. Os planos nao exigem fidelidade obrigatoria e podem ser ajustados conforme o crescimento da clinica.
+                </FeatureDescription>
+              </FeatureCard>
+            </FeaturesGrid>
+          </FeaturesSection>
+        ) : null}
+
+        {landingConfig.mostrarDepoimentos && testemunhosSection.visivel ? (
+          <FeaturesSection id="testemunhos">
+            <SectionTitle>{testemunhosSection.titulo || "Testemunhos"}</SectionTitle>
+            <SectionSubtitle>
+              {testemunhosSection.subtitulo || "O que clientes falam sobre a plataforma"}
+            </SectionSubtitle>
+
+            <FeaturesGrid style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+              <FeatureCard style={{ textAlign: 'left' }}>
+                <FeatureDescription>
+                  "Conseguimos organizar agenda, financeiro e prontuarios em um so lugar. O tempo de atendimento melhorou muito."
+                </FeatureDescription>
+                <FeatureTitle style={{ marginTop: '18px' }}>Dra. Marina S.</FeatureTitle>
+              </FeatureCard>
+
+              <FeatureCard style={{ textAlign: 'left' }}>
+                <FeatureDescription>
+                  "A equipe se adaptou rapido, e hoje temos visao clara dos indicadores da clinica sem planilhas paralelas."
+                </FeatureDescription>
+                <FeatureTitle style={{ marginTop: '18px' }}>Dr. Rafael P.</FeatureTitle>
+              </FeatureCard>
+
+              <FeatureCard style={{ textAlign: 'left' }}>
+                <FeatureDescription>
+                  "O suporte e muito proximo. Sempre que precisamos de ajuda para alguma configuracao, resolvem com agilidade."
+                </FeatureDescription>
+                <FeatureTitle style={{ marginTop: '18px' }}>Clinica Sorriso Vivo</FeatureTitle>
+              </FeatureCard>
+            </FeaturesGrid>
+          </FeaturesSection>
+        ) : null}
 
         {/* Contact Section */}
+        {entreNosSection.visivel ? (
         <ContactSection id="contato">
-          <SectionTitle>Entre em Contato</SectionTitle>
+          <SectionTitle>{entreNosSection.titulo || "Entre em Contato"}</SectionTitle>
           <SectionSubtitle>
-            Nossa equipe está pronta para ajudar você a revolucionar seu consultório
+            {entreNosSection.subtitulo || "Nossa equipe esta pronta para ajudar voce a revolucionar seu consultorio"}
           </SectionSubtitle>
           
           <ContactGrid>
@@ -901,7 +1455,7 @@ const InstitucionalPage: React.FC = () => {
               </ContactIcon>
               <ContactInfo>
                 <h4>WhatsApp</h4>
-                <p>(11) 99999-9999</p>
+                <p>{landingConfig.telefoneWhatsapp || "(11) 99999-9999"}</p>
               </ContactInfo>
             </ContactCard>
             
@@ -926,6 +1480,7 @@ const InstitucionalPage: React.FC = () => {
             </ContactCard>
           </ContactGrid>
         </ContactSection>
+        ) : null}
 
         {/* Footer */}
         <Footer>

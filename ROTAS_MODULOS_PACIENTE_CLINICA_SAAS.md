@@ -119,6 +119,22 @@ Principais grupos de endpoints internos (protegidos por `auth:sanctum` + `api.pe
 
 Fonte: `odonto/routes/api.php`
 
+### Regra padrao - Falha de carregamento do Portal SaaS
+
+Padrao recomendado (benchmark de sistemas SaaS odontologicos):
+- Exibir mensagem clara e acionavel para o usuario quando falhar o carregamento inicial do painel.
+- Aplicar 1 retry automatico para erros transientes (`408`, `429`, `500`, `502`, `503`, `504` e falha sem status).
+- Diferenciar mensagem por contexto:
+   - Sem internet: orientar reconexao de rede.
+   - `401/403`: orientar novo login/permissao.
+   - `5xx`: informar instabilidade temporaria.
+   - Outros casos: usar mensagem padrao `Nao foi possivel carregar os dados do portal SaaS.`
+- Disponibilizar botao `Tentar novamente` no estado de erro.
+
+Implementacao atual no frontend:
+- `src/pages/Admin/AdminPortalPage.tsx`
+- `src/pages/Admin/AdminPortalPage.css`
+
 ---
 
 ## 3) Modulo SaaS (Admin Portal)
