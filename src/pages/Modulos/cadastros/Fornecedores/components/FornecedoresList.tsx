@@ -237,8 +237,8 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
   }
 
   return (
-    <div className="fornecedores-container py-6 px-4 sm:px-6 lg:px-8">
-      <div className="fornecedores-content max-w-7xl mx-auto">
+    <div className="fornecedores-container py-6 px-2 sm:px-4 lg:px-6">
+      <div className="fornecedores-content w-full mx-auto">
         {/* Header da Página */}
         <div className="fornecedores-header bg-white rounded-xl shadow-lg border border-gray-200 mb-4">
           <div className="px-6 py-4 border-b border-gray-200">
@@ -365,35 +365,35 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
         <div className="table-container bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
           {/* Tabela */}
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="w-full table-fixed divide-y divide-gray-200">
               <thead className="table-header">
                 <tr>
-                  <th className="px-4 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-48">
+                  <th className="px-4 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-44">
                     <div className="column-header flex items-center">
                       Fornecedor
                     </div>
                   </th>
-                  <th className="px-4 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-32">
+                  <th className="px-4 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-28">
                     <div className="column-header flex items-center justify-center">
                       CNPJ
                     </div>
                   </th>
-                  <th className="px-4 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-28">
+                  <th className="px-4 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-24">
                     <div className="column-header flex items-center justify-center">
                       Tipo
                     </div>
                   </th>
-                  <th className="px-3 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-40">
+                  <th className="px-3 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider w-36">
                     <div className="column-header flex items-center">
                       Contato
                     </div>
                   </th>
-                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-32">
+                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-24">
                     <div className="column-header flex items-center justify-center">
                       Localização
                     </div>
                   </th>
-                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-28">
+                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-20 hidden xl:table-cell">
                     <div className="column-header flex items-center justify-center">
                       Avaliação
                     </div>
@@ -403,12 +403,12 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
                       Status
                     </div>
                   </th>
-                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-32">
+                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-28 hidden xl:table-cell">
                     <div className="column-header flex items-center justify-center">
                       Cadastrado em
                     </div>
                   </th>
-                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-48">
+                  <th className="px-3 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-36">
                     <div className="column-header flex items-center justify-center">
                       Ações
                     </div>
@@ -458,8 +458,8 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
                       {/* Fornecedor */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div>
-                          <div className="fornecedor-name font-medium text-gray-900">{fornecedor.nome}</div>
-                          <div className="text-sm text-gray-500">{fornecedor.categoria}</div>
+                          <div className="fornecedor-name font-medium text-gray-900 cell-truncate">{fornecedor.nome}</div>
+                          <div className="text-sm text-gray-500 cell-truncate">{fornecedor.categoria}</div>
                         </div>
                       </td>
 
@@ -479,8 +479,8 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
                       {/* Contato */}
                       <td className="px-3 py-3 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{fornecedor.contato}</div>
-                          <div className="text-sm text-gray-500">{formatPhone(fornecedor.telefone)}</div>
+                          <div className="text-sm font-medium text-gray-900 cell-truncate">{fornecedor.contato}</div>
+                          <div className="text-sm text-gray-500 cell-truncate">{formatPhone(fornecedor.telefone)}</div>
                         </div>
                       </td>
 
@@ -493,7 +493,7 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
                       </td>
 
                       {/* Avaliação */}
-                      <td className="px-3 py-3 whitespace-nowrap text-center">
+                      <td className="px-3 py-3 whitespace-nowrap text-center hidden xl:table-cell">
                         <div className="avaliacao-container">
                           <div className="stars">{getAvaliacaoStars(fornecedor.avaliacao)}</div>
                           <div className="text-xs text-gray-600">{fornecedor.avaliacao.toFixed(1)}</div>
@@ -508,7 +508,7 @@ const FornecedoresList: React.FC<FornecedoresListProps> = ({
                       </td>
 
                       {/* Data Cadastro */}
-                      <td className="px-3 py-3 whitespace-nowrap text-center">
+                      <td className="px-3 py-3 whitespace-nowrap text-center hidden xl:table-cell">
                         <div className="date-info">
                           <div className="date-main text-sm text-gray-900">
                             {formatDate(fornecedor.created_at)}

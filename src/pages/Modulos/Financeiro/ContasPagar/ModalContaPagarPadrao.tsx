@@ -20,7 +20,7 @@ interface ContaPagarPadrao {
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (conta: ContaPagarPadrao) => void;
+  onSubmit: (conta: ContaPagarPadrao) => Promise<void> | void;
   conta?: ContaPagarPadrao | null;
 }
 
@@ -49,6 +49,33 @@ const ModalContaPagarPadrao: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit
     }
   );
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    if (conta) {
+      setFormData({
+        ...conta,
+        data_vencimento: conta.data_vencimento?.split('T')[0] || '',
+        data_pagamento: conta.data_pagamento?.split('T')[0] || '',
+      });
+      return;
+    }
+
+    setFormData({
+      descricao: "",
+      fornecedor: "",
+      categoria: "Outros",
+      valor_original: 0,
+      valor_pago: 0,
+      valor_pendente: 0,
+      data_vencimento: "",
+      data_pagamento: "",
+      status: "Pendente",
+      prioridade: "Média",
+      forma_pagamento: "Dinheiro",
+      observacoes: "",
+    });
+  }, [conta, isOpen]);
+
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -56,17 +83,21 @@ const ModalContaPagarPadrao: React.FC<ModalProps> = ({ isOpen, onClose, onSubmit
     setFormData({ ...formData, [name]: name.includes("valor") ? Number(value) : value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    try {
+      await onSubmit(formData);
+      onClose();
+    } catch {
+      // O erro e tratado no componente pai; mantemos o modal aberto.
+    }
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>&times;</button>
-        <h2 className="modal-title">Cadastro de Conta a Pagar</h2>
+        <h2 className="modal-title">{conta?.id ? 'Editar Conta a Pagar' : 'Cadastro de Conta a Pagar'}</h2>
         <form className="modal-form" onSubmit={handleSubmit}>
           <div className="form-row">
             <div className="form-field">

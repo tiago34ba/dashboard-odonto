@@ -114,6 +114,7 @@ const RecursiveMenu: React.FC<{ menu: Menu }> = ({ menu }) => {
     Dashboard: "fa-home",
     Pessoas: "fa-users",
     Pacientes: "fa-user-injured",
+    Dentista: "fa-user-md",
     Funcionários: "fa-user-tie",
     Úsuarios: "fa-user-shield",
     Fornecedores: "fa-truck",
@@ -194,6 +195,7 @@ const Sidebar: React.FC = () => {
       title: "Pessoas",
       submenus: [
         { title: "Pacientes", path: "/dashboard/pessoas/pacientes/PatientsPage", requiredPermissions: ["PATIENTS_VIEW", "PATIENTS_MANAGE"] },
+        { title: "Dentista", path: "/dashboard/pessoas/dentistas" },
         { title: "Funcionários", path: "/dashboard/pessoas/funcionarios", requiredPermissions: ["STAFF_VIEW", "STAFF_MANAGE"] },
         { title: "Úsuarios", path: "/dashboard/pessoas/usuarios", requiredPermissions: ["USERS_MANAGE"] },
         { title: "Fornecedores", path: "/dashboard/cadastros/fornecedores", requiredPermissions: ["SUPPLIERS_VIEW", "SUPPLIERS_MANAGE"] },

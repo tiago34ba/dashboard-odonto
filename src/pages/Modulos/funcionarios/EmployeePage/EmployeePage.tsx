@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
+import api from "../../../../components/api/api";
 
 // Estilos modernizados
 const PageWrapper = styled.div`
@@ -381,66 +382,14 @@ interface Employee {
 }
 
 const EmployeesPage: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: 1,
-      name: "João Silva",
-      phone: "(11) 99999-9999",
-      email: "joao.silva@example.com",
-      role: "Dentista",
-      photo: "photo1.jpg",
-      active: true,
-      registrationDate: "01/01/2023",
-      pixKey: "Telefone: (11) 99999-9999",
-      accessPanel: true,
-      address: {
-        street: "Rua Exemplo",
-        number: "123",
-        complement: "Apto 101",
-        neighborhood: "Centro",
-        city: "São Paulo",
-        state: "SP",
-        zipCode: "01000-000",
-      },
-      interval: "30 Minutos",
-      cro: "123-45",
-      commission: 15,
-    },
-    {
-      id: 2,
-      name: "Maria Oliveira",
-      phone: "(21) 88888-8888",
-      email: "maria.oliveira@example.com",
-      role: "Secretária",
-      photo: "photo2.jpg",
-      active: false,
-      registrationDate: "15/02/2023",
-      pixKey: "Email: maria.oliveira@example.com",
-      accessPanel: false,
-      address: {
-        street: "Rua das Flores",
-        number: "456",
-        complement: "",
-        neighborhood: "Jardim",
-        city: "Rio de Janeiro",
-        state: "RJ",
-        zipCode: "20000-000",
-      },
-      interval: "15 Minutos",
-      cro: "",
-      commission: 0,
-    },
-  ]);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newEmployee, setNewEmployee] = useState<Employee>({
+  const emptyEmployee: Employee = {
     id: 0,
     name: "",
     phone: "",
     email: "",
     role: "",
     photo: "",
-    active: false,
+    active: true,
     registrationDate: "",
     pixKey: "",
     accessPanel: false,
@@ -456,11 +405,106 @@ const EmployeesPage: React.FC = () => {
     interval: "",
     cro: "",
     commission: 0,
-  });
+  };
+
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [editingEmployeeId, setEditingEmployeeId] = useState<number | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newEmployee, setNewEmployee] = useState<Employee>(emptyEmployee);
 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
+  const toViewDate = (value?: string) => {
+    if (!value) return "";
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return value;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString("pt-BR");
+  };
+
+  const toInputDate = (value?: string) => {
+    if (!value) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+      const [d, m, y] = value.split("/");
+      return `${y}-${m}-${d}`;
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toISOString().slice(0, 10);
+  };
+
+  const mapApiToEmployee = useCallback((item: any): Employee => ({
+    id: Number(item.id),
+    name: item.name ?? "",
+    phone: item.telefone ?? item.phone ?? "",
+    email: item.email ?? "",
+    role: item.cargo?.nome ?? "",
+    photo: item.foto ?? "",
+    active: Boolean(item.status),
+    registrationDate: toViewDate(item.data_cadastro),
+    pixKey: item.chave_pix ?? "",
+    accessPanel: false,
+    address: {
+      street: item.rua ?? "",
+      number: item.numero ?? "",
+      complement: item.complemento ?? "",
+      neighborhood: item.bairro ?? "",
+      city: item.cidade ?? "",
+      state: item.estado ?? "",
+      zipCode: item.cep ?? "",
+    },
+    interval: item.intervalo ? String(item.intervalo) : "",
+    cro: item.cro ?? "",
+    commission: Number(item.comissao ?? 0),
+  }), []);
+
+  const mapEmployeeToPayload = useCallback((employee: Employee) => ({
+    name: employee.name,
+    telefone: employee.phone,
+    email: employee.email,
+    data_cadastro: toInputDate(employee.registrationDate),
+    foto: employee.photo || null,
+    cep: employee.address.zipCode || null,
+    rua: employee.address.street || null,
+    numero: employee.address.number || null,
+    complemento: employee.address.complement || null,
+    bairro: employee.address.neighborhood || null,
+    cidade: employee.address.city || null,
+    estado: employee.address.state || null,
+    cro: employee.cro || null,
+    intervalo: employee.interval ? Number(employee.interval) : null,
+    comissao: Number(employee.commission || 0),
+    chave_pix: employee.pixKey || null,
+    status: employee.active,
+  }), []);
+
+  const fetchEmployees = useCallback(async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const response = await api.get('/pessoas/funcionarios', { params: { per_page: 200 } });
+      const rows = Array.isArray(response.data?.data) ? response.data.data : [];
+      setEmployees(rows.map(mapApiToEmployee));
+    } catch (error: any) {
+      setErrorMsg(error?.response?.data?.message ?? 'Erro ao carregar funcionários.');
+      setEmployees([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [mapApiToEmployee]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
+
   const handleOpenModal = () => {
+    setEditingEmployeeId(null);
+    setNewEmployee(emptyEmployee);
     setIsModalOpen(true);
   };
 
@@ -468,33 +512,25 @@ const EmployeesPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleAddEmployee = () => {
-    setEmployees([...employees, { ...newEmployee, id: Date.now() }]);
-    setNewEmployee({
-      id: 0,
-      name: "",
-      phone: "",
-      email: "",
-      role: "",
-      photo: "",
-      active: false,
-      registrationDate: "",
-      pixKey: "",
-      accessPanel: false,
-      address: {
-        street: "",
-        number: "",
-        complement: "",
-        neighborhood: "",
-        city: "",
-        state: "",
-        zipCode: "",
-      },
-      interval: "",
-      cro: "",
-      commission: 0,
-    });
-    handleCloseModal();
+  const handleSaveEmployee = async () => {
+    setSaving(true);
+    setErrorMsg(null);
+    try {
+      const payload = mapEmployeeToPayload(newEmployee);
+      if (editingEmployeeId) {
+        await api.put(`/pessoas/funcionarios/${editingEmployeeId}`, payload);
+      } else {
+        await api.post('/pessoas/funcionarios', payload);
+      }
+      setNewEmployee(emptyEmployee);
+      setEditingEmployeeId(null);
+      setIsModalOpen(false);
+      await fetchEmployees();
+    } catch (error: any) {
+      setErrorMsg(error?.response?.data?.message ?? 'Erro ao salvar funcionário.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -503,11 +539,26 @@ const EmployeesPage: React.FC = () => {
   };
 
   const handleOpenEditModal = (employee: Employee) => {
-    console.log("Editar:", employee);
+    setEditingEmployeeId(employee.id);
+    setNewEmployee({
+      ...employee,
+      registrationDate: toInputDate(employee.registrationDate),
+    });
+    setIsModalOpen(true);
   };
 
-  const handleDeleteEmployee = (id: number) => {
-    console.log("Excluir:", id);
+  const handleDeleteEmployee = async (id: number) => {
+    if (!window.confirm('Tem certeza que deseja excluir este funcionário?')) return;
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      await api.delete(`/pessoas/funcionarios/${id}`);
+      await fetchEmployees();
+    } catch (error: any) {
+      setErrorMsg(error?.response?.data?.message ?? 'Erro ao excluir funcionário.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExportToExcel = () => {
@@ -559,6 +610,11 @@ const EmployeesPage: React.FC = () => {
           </Actions>
         </Header>
         <Table>
+          {errorMsg && (
+            <caption style={{ captionSide: 'top', padding: '8px 0', color: '#b91c1c', fontWeight: 600 }}>
+              {errorMsg}
+            </caption>
+          )}
           <thead>
             <tr>
               <th>Nome</th>
@@ -570,7 +626,16 @@ const EmployeesPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {employees.map((employee) => (
+            {loading ? (
+              <tr>
+                <td colSpan={6}>Carregando funcionários...</td>
+              </tr>
+            ) : employees.length === 0 ? (
+              <tr>
+                <td colSpan={6}>Nenhum funcionário encontrado.</td>
+              </tr>
+            ) : (
+            employees.map((employee) => (
               <tr key={employee.id}>
                 <td>{employee.name}</td>
                 <td>{employee.active ? "Sim" : "Não"}</td>
@@ -617,7 +682,8 @@ const EmployeesPage: React.FC = () => {
                   </ActionButtonsContainer>
                 </td>
               </tr>
-            ))}
+            ))
+            )}
           </tbody>
         </Table>
 
@@ -627,7 +693,7 @@ const EmployeesPage: React.FC = () => {
             <Overlay onClick={handleCloseModal} />
             <Modal>
               <ModalHeader>
-                <h3>Cadastrar Funcionário</h3>
+                <h3>{editingEmployeeId ? 'Editar Funcionário' : 'Cadastrar Funcionário'}</h3>
                 <button onClick={handleCloseModal}>&times;</button>
               </ModalHeader>
               <ModalBody>
@@ -635,7 +701,7 @@ const EmployeesPage: React.FC = () => {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      handleAddEmployee();
+                      handleSaveEmployee();
                     }}
                   >
                     {/* Informações Básicas */}
@@ -917,8 +983,8 @@ const EmployeesPage: React.FC = () => {
                 <button type="button" className="close" onClick={handleCloseModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="save" onClick={handleAddEmployee}>
-                  Salvar Funcionário
+                <button type="submit" className="save" disabled={saving}>
+                  {saving ? 'Salvando...' : 'Salvar Funcionário'}
                 </button>
               </ModalFooter>
             </Modal>

@@ -1,0 +1,40 @@
+import { HelpdeskModuleConfig } from '../types';
+
+export const helpdeskTicketsConfig: HelpdeskModuleConfig = {
+  id: 'helpdesk_chamados',
+  title: 'Chamados e OS',
+  subtitle: 'Abertura, workflow, anexos, copias e confirmacoes de atendimento.',
+  apiPath: '/saas/helpdesk/chamados',
+  exportPath: '/saas/helpdesk/chamados/exportar',
+  searchPlaceholder: 'Buscar por protocolo, titulo, cliente ou responsavel',
+  supportsExport: true,
+  supportsCopy: true,
+  supportsConfirm: true,
+  fields: [
+    { key: 'protocolo', label: 'Protocolo', type: 'text' },
+    { key: 'titulo', label: 'Titulo', type: 'text', required: true },
+    { key: 'cliente_nome', label: 'Cliente', type: 'text', required: true },
+    { key: 'solicitante_nome', label: 'Solicitante', type: 'text' },
+    { key: 'responsavel_nome', label: 'Responsavel', type: 'text' },
+    { key: 'area_id', label: 'ID Area', type: 'number' },
+    { key: 'priority_id', label: 'ID Prioridade', type: 'number' },
+    { key: 'problem_type_id', label: 'ID Tipo Problema', type: 'number' },
+    { key: 'class_id', label: 'ID Classe', type: 'number' },
+    { key: 'status', label: 'Status', type: 'select', required: true, options: [{ value: 'aberto', label: 'Aberto' }, { value: 'em_atendimento', label: 'Em atendimento' }, { value: 'aguardando_cliente', label: 'Aguardando cliente' }, { value: 'resolvido', label: 'Resolvido' }, { value: 'fechado', label: 'Fechado' }], defaultValue: 'aberto' },
+    { key: 'canal_origem', label: 'Canal', type: 'select', options: [{ value: 'portal', label: 'Portal' }, { value: 'email', label: 'E-mail' }, { value: 'telefone', label: 'Telefone' }, { value: 'whatsapp', label: 'WhatsApp' }], defaultValue: 'portal' },
+    { key: 'descricao', label: 'Descricao', type: 'textarea', required: true },
+    { key: 'attachments', label: 'Anexos/Fotos', type: 'list', placeholder: 'Uma URL por linha' },
+  ],
+  columns: [
+    { key: 'protocolo', label: 'Protocolo' },
+    { key: 'titulo', label: 'Titulo' },
+    { key: 'cliente_nome', label: 'Cliente' },
+    { key: 'responsavel_nome', label: 'Responsavel' },
+    { key: 'status', label: 'Status', format: 'status' },
+    { key: 'canal_origem', label: 'Canal' },
+  ],
+  filters: [
+    { key: 'status', label: 'Status', type: 'select', options: [{ value: 'aberto', label: 'Aberto' }, { value: 'em_atendimento', label: 'Em atendimento' }, { value: 'aguardando_cliente', label: 'Aguardando cliente' }, { value: 'resolvido', label: 'Resolvido' }, { value: 'fechado', label: 'Fechado' }] },
+    { key: 'canal_origem', label: 'Canal', type: 'select', options: [{ value: 'portal', label: 'Portal' }, { value: 'email', label: 'E-mail' }, { value: 'telefone', label: 'Telefone' }, { value: 'whatsapp', label: 'WhatsApp' }] },
+  ],
+};

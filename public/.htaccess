@@ -1,0 +1,8 @@
+Options -MultiViews
+RewriteEngine On
+RewriteBase /ssaitodonto/
+
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /ssaitodonto/index.html [L]
