@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import "./Sidebar.css";
 import { useNavigate } from "react-router-dom";
+import { hasAnyAccessGroup, hasAnyPermission, parseStoredUser, StoredUser } from "../../../security/rbac";
 
 // Interfaces para menus e submenus
 interface Menu {
@@ -12,59 +13,6 @@ interface Menu {
   requiredPermissions?: string[];
   requiredAccessGroups?: string[];
 }
-
-interface StoredUser {
-  permissoes?: string[];
-  permissions?: string[];
-  grupo_acesso_nome?: string;
-  grupo_acesso?: {
-    nome?: string;
-  };
-}
-
-const normalize = (value: string): string =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .toLowerCase();
-
-const hasAnyAccessGroup = (user: StoredUser | null, requiredAccessGroups?: string[]): boolean => {
-  if (!requiredAccessGroups || requiredAccessGroups.length === 0) return false;
-
-  const userGroup = user?.grupo_acesso_nome || user?.grupo_acesso?.nome;
-  if (!userGroup) return false;
-
-  const normalizedUserGroup = normalize(userGroup);
-  return requiredAccessGroups.some((group) => normalize(group) === normalizedUserGroup);
-};
-
-const parseUserData = (): StoredUser | null => {
-  try {
-    const raw = sessionStorage.getItem("userData") || localStorage.getItem("userData");
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-};
-
-const hasAnyPermission = (user: StoredUser | null, requiredPermissions?: string[]): boolean => {
-  if (!requiredPermissions || requiredPermissions.length === 0) return true;
-
-  const perms = Array.isArray(user?.permissoes)
-    ? user?.permissoes
-    : Array.isArray(user?.permissions)
-      ? user?.permissions
-      : [];
-
-  // Mantem compatibilidade quando backend ainda nao envia permissoes.
-  if (perms.length === 0) return true;
-
-  if (perms.includes("*")) return true;
-
-  return requiredPermissions.some((permission) => perms.includes(permission));
-};
 
 const filterMenusByPermission = (menus: Menu[], user: StoredUser | null): Menu[] => {
   const filtered = menus
@@ -86,7 +34,7 @@ const filterMenusByPermission = (menus: Menu[], user: StoredUser | null): Menu[]
 
       const hasPermission = hasAnyPermission(user, menu.requiredPermissions);
       const hasAccessGroup = hasAnyAccessGroup(user, menu.requiredAccessGroups);
-      return hasPermission || hasAccessGroup ? menu : null;
+      return hasPermission && hasAccessGroup ? menu : null;
     })
     .filter((menu): menu is Menu => Boolean(menu));
 
@@ -186,7 +134,7 @@ const RecursiveMenu: React.FC<{ menu: Menu }> = ({ menu }) => {
 
 // Componente principal Sidebar
 const Sidebar: React.FC = () => {
-  const user = parseUserData();
+  const user = parseStoredUser();
 
   const menus: Menu[] = [
     { title: "Dashboard", path: "/dashboard/", requiredPermissions: ["DASHBOARD_VIEW"] },
@@ -195,7 +143,7 @@ const Sidebar: React.FC = () => {
       title: "Pessoas",
       submenus: [
         { title: "Pacientes", path: "/dashboard/pessoas/pacientes/PatientsPage", requiredPermissions: ["PATIENTS_VIEW", "PATIENTS_MANAGE"] },
-        { title: "Dentista", path: "/dashboard/pessoas/dentistas" },
+        { title: "Dentista", path: "/dashboard/pessoas/dentistas", requiredPermissions: ["DENTISTS_VIEW", "DENTISTS_MANAGE"] },
         { title: "Funcionários", path: "/dashboard/pessoas/funcionarios", requiredPermissions: ["STAFF_VIEW", "STAFF_MANAGE"] },
         { title: "Úsuarios", path: "/dashboard/pessoas/usuarios", requiredPermissions: ["USERS_MANAGE"] },
         { title: "Fornecedores", path: "/dashboard/cadastros/fornecedores", requiredPermissions: ["SUPPLIERS_VIEW", "SUPPLIERS_MANAGE"] },
@@ -204,7 +152,7 @@ const Sidebar: React.FC = () => {
     {
       title: "Cadastros",
       submenus: [
-        { title: "Procedimentos", path: "/dashboard/cadastros/procedimentos", requiredPermissions: ["PROCEDURES_MANAGE"] },
+        { title: "Procedimentos", path: "/dashboard/cadastros/procedimentos", requiredPermissions: ["PROCEDURES_VIEW", "PROCEDURES_MANAGE"] },
         { title: "Convênios", path: "/dashboard/cadastros/convenios", requiredPermissions: ["AGREEMENTS_VIEW", "AGREEMENTS_MANAGE"] },
         { title: "Itens Anamnese", path: "/dashboard/cadastros/itens-anamnese", requiredPermissions: ["ANAMNESE_ITEMS_VIEW", "ANAMNESE_ITEMS_MANAGE"] },
         { title: "Grupos Anamnese", path: "/dashboard/cadastros/grupos-anamnese", requiredPermissions: ["ANAMNESE_GROUPS_VIEW", "ANAMNESE_GROUPS_MANAGE"] },

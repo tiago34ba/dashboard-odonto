@@ -4,7 +4,7 @@ import styled from "styled-components";
 import {
   FaTooth, FaUserMd, FaCalendarAlt, FaClock,
   FaStethoscope, FaCheckCircle, FaArrowLeft, FaArrowRight,
-  FaTimesCircle,
+  FaTimesCircle, FaUserEdit, FaInfoCircle,
 } from "react-icons/fa";
 import portalApi from "./portalApi";
 
@@ -426,6 +426,68 @@ const LoadText = styled.p`
   padding: 16px 0;
 `;
 
+// --- Profile alert (perfil de paciente incompleto) ---
+const ProfileAlertBox = styled.div`
+  display: flex;
+  gap: 16px;
+  background: #fffbeb;
+  border: 1.5px solid #f59e0b;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+`;
+
+const ProfileAlertIcon = styled.div`
+  font-size: 1.6rem;
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 2px;
+`;
+
+const ProfileAlertTitle = styled.h3`
+  font-size: 1rem;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 6px;
+`;
+
+const ProfileAlertText = styled.p`
+  font-size: 0.9rem;
+  color: #78350f;
+  margin: 0 0 14px;
+  line-height: 1.5;
+`;
+
+const ProfileAlertActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const ProfileAlertLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a6b4a;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  width: fit-content;
+  &:hover { background: #155c3e; }
+`;
+
+const ProfileAlertHelp = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.83rem;
+  color: #92400e;
+`;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -534,9 +596,12 @@ const PortalAgendarPage: React.FC = () => {
   // -------------------------------------------------------------------------
   // Submit
   // -------------------------------------------------------------------------
+  const [missingProfile, setMissingProfile] = useState(false);
+
   const handleSubmit = async () => {
     if (!selectedDentista || !selectedDate || !selectedSlot || !selectedProc) return;
     setError("");
+    setMissingProfile(false);
     setLoading(true);
     try {
       await portalApi.post("/portal/agendar", {
@@ -548,8 +613,17 @@ const PortalAgendarPage: React.FC = () => {
       });
       setSuccess(true);
     } catch (err: any) {
-      setError(err.response?.data?.message ?? "Erro ao agendar. Tente novamente.");
-      setStep(4);
+      const status = err.response?.status;
+      const msg    = err.response?.data?.message ?? "";
+      if (status === 404 && msg.toLowerCase().includes("paciente")) {
+        setMissingProfile(true);
+      } else if (status === 422) {
+        // Erro de negócio (horário ocupado, etc.) — volta para etapa anterior para nova escolha
+        setError(msg || "Horário indisponível. Escolha outro horário.");
+        setStep(4);
+      } else {
+        setError(msg || "Erro ao agendar. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }
@@ -740,6 +814,29 @@ const PortalAgendarPage: React.FC = () => {
         {step === 5 && (
           <>
             <SectionTitle><FaCheckCircle /> Confirmar Agendamento</SectionTitle>
+
+            {/* Perfil de paciente incompleto — tratamento amigável */}
+            {missingProfile && (
+              <ProfileAlertBox>
+                <ProfileAlertIcon><FaUserEdit /></ProfileAlertIcon>
+                <div>
+                  <ProfileAlertTitle>Perfil incompleto</ProfileAlertTitle>
+                  <ProfileAlertText>
+                    Sua conta ainda não possui um perfil de paciente vinculado.
+                    Complete seu cadastro para realizar agendamentos.
+                  </ProfileAlertText>
+                  <ProfileAlertActions>
+                    <ProfileAlertLink to="/portal/registro">
+                      Completar cadastro
+                    </ProfileAlertLink>
+                    <ProfileAlertHelp>
+                      <FaInfoCircle /> Se já tem cadastro, entre em contato com a clínica.
+                    </ProfileAlertHelp>
+                  </ProfileAlertActions>
+                </div>
+              </ProfileAlertBox>
+            )}
+
             {error && (
               <ErrorBanner>
                 <FaTimesCircle /> {error}

@@ -315,7 +315,14 @@ const normalizeOptions = (raw: any): SelectOption[] => {
   return source
     .map((item: any) => ({
       id: Number(item?.id),
-      name: item?.name ?? item?.nome ?? item?.patient_name ?? '',
+      name: item?.name 
+        ?? item?.nome 
+        ?? item?.patient_name 
+        ?? item?.employee_name 
+        ?? item?.professional_name 
+        ?? item?.full_name 
+        ?? item?.title 
+        ?? '',
     }))
     .filter((item: SelectOption) => Number.isFinite(item.id) && item.name.trim().length > 0);
 };
@@ -387,28 +394,53 @@ const AddAgendamentoModal: React.FC<AddAgendamentoModalProps> = ({
         }
       };
 
+      const loadProfissionais = async () => {
+        try {
+          return await api.get('/pessoas/dentistas', {
+            headers: { Accept: 'application/json' },
+            params: { per_page: 200 },
+          });
+        } catch {
+          try {
+            return await api.get('/pessoas/employees', {
+              headers: { Accept: 'application/json' },
+              params: { per_page: 200 },
+            });
+          } catch {
+            return await api.get('/employees', { params: { per_page: 200 } });
+          }
+        }
+      };
+
       const [pacientesRes, profissionaisRes, procedimentosRes] = await Promise.allSettled([
         loadPacientes(),
-        api.get('/employees', { params: { per_page: 100 } }),
+        loadProfissionais(),
         api.get('/procedures', { params: { per_page: 100 } }),
       ]);
 
       if (pacientesRes.status === 'fulfilled') {
-        setPacientes(pacientesRes.value);
+        // Filtrar pacientes: remover aqueles com "Dr" no nome (são profissionais)
+        const allPacientes = pacientesRes.value;
+        const pacientesFilter = allPacientes.filter(p => !p.name.startsWith('Dr.') && !p.name.startsWith('Dr '));
+        
+        setPacientes(pacientesFilter);
       } else {
         console.error('Erro ao carregar pacientes para agendamento:', pacientesRes.reason);
         setPacientes([]);
       }
 
       if (profissionaisRes.status === 'fulfilled') {
-        setProfissionais(normalizeOptions(profissionaisRes.value));
+        const profissionaisData = profissionaisRes.value?.data ?? profissionaisRes.value;
+        const normalized = normalizeOptions(profissionaisData);
+        setProfissionais(normalized);
       } else {
         console.error('Erro ao carregar profissionais para agendamento:', profissionaisRes.reason);
         setProfissionais([]);
       }
 
       if (procedimentosRes.status === 'fulfilled') {
-        setProcedimentos(normalizeOptions(procedimentosRes.value));
+        const procedimentosData = procedimentosRes.value?.data ?? procedimentosRes.value;
+        setProcedimentos(normalizeOptions(procedimentosData));
       } else {
         console.error('Erro ao carregar procedimentos para agendamento:', procedimentosRes.reason);
         setProcedimentos([]);

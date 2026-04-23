@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useState, useCallback } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import api from "../../../../components/api/api";
-import { FaPlus, FaEdit, FaEye, FaTrash, FaCalendarCheck, FaClock } from "react-icons/fa";
+import { FaPlus, FaEdit, FaEye, FaTrash, FaCalendarCheck, FaTimes, FaUser, FaUserMd, FaStethoscope, FaPhone, FaCalendarDay } from "react-icons/fa";
 
 // Interfaces
 interface Agendamento {
@@ -256,13 +256,43 @@ const StatsContainer = styled.div`
   margin-bottom: 20px;
 `;
 
-const StatCard = styled.div`
+const StatCard = styled.div<{ active?: boolean; cardColor?: string }>`
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: ${({ cardColor }) => cardColor ?? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
   border-radius: 10px;
   color: white;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  outline: ${({ active }) => active ? '3px solid rgba(255,255,255,0.9)' : '3px solid transparent'};
+  outline-offset: 2px;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+  }
+  &:active { transform: translateY(0); }
+`;
+
+const StatCardBadge = styled.span`
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 2px 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+`;
+
+const StatCardHint = styled.div`
+  font-size: 11px;
+  margin-top: 6px;
+  opacity: 0.75;
+  font-style: italic;
 `;
 
 const StatNumber = styled.div`
@@ -274,6 +304,334 @@ const StatNumber = styled.div`
 const StatLabel = styled.div`
   font-size: 14px;
   opacity: 0.9;
+`;
+
+// ---------------------------------------------------------------------------
+// Agenda do Dia — Drawer
+// ---------------------------------------------------------------------------
+const slideIn = keyframes`
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+`;
+
+const DrawerOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const DrawerPanel = styled.div`
+  width: 420px;
+  max-width: 95vw;
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.18);
+  animation: ${slideIn} 0.22s ease;
+  overflow: hidden;
+`;
+
+const DrawerHeader = styled.div`
+  background: linear-gradient(135deg, #17a2b8 0%, #0d7a8a 100%);
+  color: #fff;
+  padding: 20px 24px 16px;
+  flex-shrink: 0;
+`;
+
+const DrawerTitle = styled.h2`
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const DrawerDate = styled.div`
+  font-size: 0.9rem;
+  opacity: 0.88;
+`;
+
+const DrawerCloseBtn = styled.button`
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover { background: rgba(255,255,255,0.35); }
+`;
+
+const DrawerSummaryBar = styled.div`
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #e9ecef;
+  flex-shrink: 0;
+`;
+
+const DrawerSummaryItem = styled.div<{ color: string }>`
+  flex: 1;
+  padding: 10px 8px;
+  text-align: center;
+  border-right: 1px solid #e9ecef;
+  &:last-child { border-right: none; }
+  span:first-child {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: ${({ color }) => color};
+  }
+  span:last-child {
+    font-size: 0.72rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+`;
+
+const DrawerBody = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+`;
+
+const DrawerEmpty = styled.div`
+  text-align: center;
+  color: #adb5bd;
+  padding: 48px 16px;
+  font-size: 0.95rem;
+`;
+
+const TimelineItem = styled.button<{ statusColor: string }>`
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.98;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 38px;
+    top: 44px;
+    bottom: -14px;
+    width: 2px;
+    background: #e9ecef;
+  }
+  &:last-child::before { display: none; }
+`;
+
+const TimelineDot = styled.div<{ color: string }>`
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: ${({ color }) => color};
+  margin-top: 14px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px ${({ color }) => color};
+  z-index: 1;
+`;
+
+const TimelineTime = styled.div`
+  flex-shrink: 0;
+  width: 46px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #495057;
+  padding-top: 10px;
+  text-align: right;
+`;
+
+const TimelineCard = styled.div<{ statusColor: string }>`
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: 4px solid ${({ statusColor }) => statusColor};
+  transition: background-color 0.2s ease, transform 0.2s ease;
+`;
+
+const TLPatient = styled.div`
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #212529;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+`;
+
+const TLRow = styled.div`
+  font-size: 0.82rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+`;
+
+const TLBadge = styled.span<{ bg: string; fg: string }>`
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: ${({ bg }) => bg};
+  color: ${({ fg }) => fg};
+  text-transform: uppercase;
+  margin-left: auto;
+`;
+
+// ---------------------------------------------------------------------------
+// Modal de Visualização do Agendamento
+// ---------------------------------------------------------------------------
+const ViewModalBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+`;
+
+const ViewModalBox = styled.div`
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+`;
+
+const ViewModalHeader = styled.div<{ statusColor: string }>`
+  background: ${({ statusColor }) => statusColor};
+  padding: 20px 24px 16px;
+  position: relative;
+  color: #fff;
+`;
+
+const ViewModalTitle = styled.h3`
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const ViewModalSubtitle = styled.div`
+  font-size: 0.88rem;
+  opacity: 0.88;
+`;
+
+const ViewModalClose = styled.button`
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover { background: rgba(255,255,255,0.35); }
+`;
+
+const ViewModalBody = styled.div`
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const VMRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+`;
+
+const VMIcon = styled.div<{ color?: string }>`
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: ${({ color }) => color ?? '#f0f4ff'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: ${({ color }) => color ? '#fff' : '#4a6cf7'};
+`;
+
+const VMInfo = styled.div`
+  flex: 1;
+`;
+
+const VMLabel = styled.div`
+  font-size: 0.72rem;
+  color: #adb5bd;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+`;
+
+const VMValue = styled.div`
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #212529;
+`;
+
+const VMStatusBadge = styled.span<{ bg: string; fg: string }>`
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  background: ${({ bg }) => bg};
+  color: ${({ fg }) => fg};
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+`;
+
+const ViewModalFooter = styled.div`
+  padding: 14px 24px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
 `;
 
 export default function AgendamentosPage() {
@@ -299,7 +657,40 @@ export default function AgendamentosPage() {
     status: '',
     data: '',
   });
+  const [activeCard, setActiveCard] = useState<string>('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showAgendaDia, setShowAgendaDia] = useState(false);
+  const [viewingAgendamento, setViewingAgendamento] = useState<Agendamento | null>(null);
+
+  const handleCardClick = (statusValue: string) => {
+    const next = activeCard === statusValue ? '' : statusValue;
+    setActiveCard(next);
+    setFiltros(f => ({ ...f, status: next }));
+  };
+
+  // Helpers para Agenda do Dia
+  const todayISO = new Date().toISOString().split('T')[0];
+  const todayLabel = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+
+  const agendamentosHoje = agendamentos
+    .filter(a => a.data === todayISO)
+    .sort((a, b) => a.hora.localeCompare(b.hora));
+
+  const statusColorMap: Record<string, { dot: string; bg: string; fg: string; label: string }> = {
+    agendado:       { dot: '#1976d2', bg: '#e3f2fd', fg: '#1565c0', label: 'Agendado' },
+    confirmado:     { dot: '#2e7d32', bg: '#e8f5e9', fg: '#1b5e20', label: 'Confirmado' },
+    em_atendimento: { dot: '#f57c00', bg: '#fff3e0', fg: '#e65100', label: 'Em Atendimento' },
+    concluido:      { dot: '#388e3c', bg: '#e8f5e9', fg: '#1b5e20', label: 'Concluído' },
+    cancelado:      { dot: '#d32f2f', bg: '#ffebee', fg: '#b71c1c', label: 'Cancelado' },
+  };
+
+  const resumoHoje = {
+    total:      agendamentosHoje.length,
+    agendados:  agendamentosHoje.filter(a => a.status === 'agendado').length,
+    confirmados:agendamentosHoje.filter(a => a.status === 'confirmado').length,
+    concluidos: agendamentosHoje.filter(a => a.status === 'concluido').length,
+    atendimento:agendamentosHoje.filter(a => a.status === 'em_atendimento').length,
+  };
 
   const normalizeAgendamento = (item: any): Agendamento => {
     const mapStatus = (s: string) => {
@@ -445,8 +836,17 @@ export default function AgendamentosPage() {
     await openAgendamentoModal(id, 'edit');
   };
 
-  const handleVisualizar = async (id: number) => {
-    await openAgendamentoModal(id, 'view');
+  const handleVisualizar = (id: number) => {
+    const found = agendamentos.find(a => a.id === id);
+    if (found) setViewingAgendamento(found);
+  };
+
+  const viewStatusColors: Record<string, { bg: string; fg: string; label: string; header: string }> = {
+    agendado:       { bg: '#e3f2fd', fg: '#1565c0', label: 'Agendado',       header: '#1976d2' },
+    confirmado:     { bg: '#e8f5e9', fg: '#1b5e20', label: 'Confirmado',     header: '#2e7d32' },
+    em_atendimento: { bg: '#fff3e0', fg: '#e65100', label: 'Em Atendimento', header: '#f57c00' },
+    concluido:      { bg: '#e8f5e9', fg: '#1b5e20', label: 'Concluído',      header: '#388e3c' },
+    cancelado:      { bg: '#ffebee', fg: '#b71c1c', label: 'Cancelado',      header: '#d32f2f' },
   };
 
   return (
@@ -470,8 +870,8 @@ export default function AgendamentosPage() {
               <FaPlus />
               Novo Agendamento
             </StyledButton>
-            <StyledButton variant="info">
-              <FaClock />
+            <StyledButton variant="info" onClick={() => setShowAgendaDia(true)}>
+              <FaCalendarDay />
               Agenda do Dia
             </StyledButton>
           </Actions>
@@ -489,21 +889,52 @@ export default function AgendamentosPage() {
         )}
 
         <StatsContainer>
-          <StatCard>
+          <StatCard
+            active={activeCard === ''}
+            cardColor="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            onClick={() => handleCardClick('')}
+            title="Clique para exibir todos os agendamentos"
+          >
+            {activeCard === '' && <StatCardBadge>Ativo</StatCardBadge>}
             <StatNumber>{stats.total}</StatNumber>
             <StatLabel>Total de Agendamentos</StatLabel>
+            <StatCardHint>Todos os registros</StatCardHint>
           </StatCard>
-          <StatCard>
+
+          <StatCard
+            active={activeCard === 'agendado'}
+            cardColor="linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)"
+            onClick={() => handleCardClick('agendado')}
+            title="Clique para filtrar agendamentos com status Agendado"
+          >
+            {activeCard === 'agendado' && <StatCardBadge>Ativo</StatCardBadge>}
             <StatNumber>{stats.agendados}</StatNumber>
             <StatLabel>Agendados</StatLabel>
+            <StatCardHint>Aguardando confirmação</StatCardHint>
           </StatCard>
-          <StatCard>
+
+          <StatCard
+            active={activeCard === 'confirmado'}
+            cardColor="linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)"
+            onClick={() => handleCardClick('confirmado')}
+            title="Clique para filtrar agendamentos com status Confirmado"
+          >
+            {activeCard === 'confirmado' && <StatCardBadge>Ativo</StatCardBadge>}
             <StatNumber>{stats.confirmados}</StatNumber>
             <StatLabel>Confirmados</StatLabel>
+            <StatCardHint>Presença confirmada</StatCardHint>
           </StatCard>
-          <StatCard>
+
+          <StatCard
+            active={activeCard === 'concluido'}
+            cardColor="linear-gradient(135deg, #388e3c 0%, #a5d6a7 100%)"
+            onClick={() => handleCardClick('concluido')}
+            title="Clique para filtrar agendamentos com status Concluído"
+          >
+            {activeCard === 'concluido' && <StatCardBadge>Ativo</StatCardBadge>}
             <StatNumber>{stats.concluidos}</StatNumber>
             <StatLabel>Concluídos</StatLabel>
+            <StatCardHint>Atendimento realizado</StatCardHint>
           </StatCard>
         </StatsContainer>
 
@@ -522,7 +953,11 @@ export default function AgendamentosPage() {
           />
           <FilterSelect
             value={filtros.status}
-            onChange={(e) => setFiltros({...filtros, status: e.target.value})}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFiltros(f => ({ ...f, status: val }));
+              setActiveCard(val);
+            }}
           >
             <option value="">Todos os Status</option>
             <option value="agendado">Agendado</option>
@@ -654,6 +1089,191 @@ export default function AgendamentosPage() {
             );
           })()}
         </React.Suspense>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Modal de Visualização do Agendamento                                 */}
+      {/* ------------------------------------------------------------------ */}
+      {viewingAgendamento && (
+        <ViewModalBackdrop onClick={() => setViewingAgendamento(null)}>
+          <ViewModalBox onClick={e => e.stopPropagation()}>
+            <ViewModalHeader statusColor={viewStatusColors[viewingAgendamento.status]?.header ?? '#1976d2'}>
+              <ViewModalTitle><FaCalendarCheck /> Detalhes do Agendamento</ViewModalTitle>
+              <ViewModalSubtitle>
+                #{viewingAgendamento.id} &nbsp;·&nbsp;
+                <VMStatusBadge bg="rgba(255,255,255,0.25)" fg="#fff">
+                  {viewStatusColors[viewingAgendamento.status]?.label ?? viewingAgendamento.status}
+                </VMStatusBadge>
+              </ViewModalSubtitle>
+              <ViewModalClose onClick={() => setViewingAgendamento(null)} title="Fechar"><FaTimes /></ViewModalClose>
+            </ViewModalHeader>
+
+            <ViewModalBody>
+              <VMRow>
+                <VMIcon color="#4a6cf7"><FaUser /></VMIcon>
+                <VMInfo>
+                  <VMLabel>Paciente</VMLabel>
+                  <VMValue>{viewingAgendamento.paciente}</VMValue>
+                </VMInfo>
+              </VMRow>
+
+              <VMRow>
+                <VMIcon color="#0d7a8a"><FaUserMd /></VMIcon>
+                <VMInfo>
+                  <VMLabel>Dentista</VMLabel>
+                  <VMValue>{viewingAgendamento.dentista}</VMValue>
+                </VMInfo>
+              </VMRow>
+
+              <VMRow>
+                <VMIcon color="#7c3aed"><FaStethoscope /></VMIcon>
+                <VMInfo>
+                  <VMLabel>Procedimento</VMLabel>
+                  <VMValue>{viewingAgendamento.procedimento}</VMValue>
+                </VMInfo>
+              </VMRow>
+
+              <VMRow>
+                <VMIcon color="#e65100"><FaCalendarDay /></VMIcon>
+                <VMInfo>
+                  <VMLabel>Data e Hora</VMLabel>
+                  <VMValue style={{ textTransform: 'capitalize' }}>
+                    {new Date(viewingAgendamento.data + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })} às {viewingAgendamento.hora}
+                  </VMValue>
+                </VMInfo>
+              </VMRow>
+
+              {viewingAgendamento.telefone && (
+                <VMRow>
+                  <VMIcon color="#2e7d32"><FaPhone /></VMIcon>
+                  <VMInfo>
+                    <VMLabel>Telefone</VMLabel>
+                    <VMValue>{viewingAgendamento.telefone}</VMValue>
+                  </VMInfo>
+                </VMRow>
+              )}
+
+              <VMRow>
+                <VMIcon><FaCalendarCheck /></VMIcon>
+                <VMInfo>
+                  <VMLabel>Status</VMLabel>
+                  <VMStatusBadge
+                    bg={viewStatusColors[viewingAgendamento.status]?.bg ?? '#e3f2fd'}
+                    fg={viewStatusColors[viewingAgendamento.status]?.fg ?? '#1565c0'}
+                  >
+                    {viewStatusColors[viewingAgendamento.status]?.label ?? viewingAgendamento.status}
+                  </VMStatusBadge>
+                </VMInfo>
+              </VMRow>
+
+              {viewingAgendamento.observacoes && (
+                <VMRow>
+                  <VMIcon><FaEdit /></VMIcon>
+                  <VMInfo>
+                    <VMLabel>Observações</VMLabel>
+                    <VMValue style={{ fontWeight: 400, color: '#495057', fontStyle: 'italic' }}>
+                      {viewingAgendamento.observacoes}
+                    </VMValue>
+                  </VMInfo>
+                </VMRow>
+              )}
+            </ViewModalBody>
+
+            <ViewModalFooter>
+              <StyledButton variant="warning" onClick={() => setViewingAgendamento(null)}>Fechar</StyledButton>
+            </ViewModalFooter>
+          </ViewModalBox>
+        </ViewModalBackdrop>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Agenda do Dia — Drawer                                               */}
+      {/* ------------------------------------------------------------------ */}
+      {showAgendaDia && (
+        <DrawerOverlay onClick={() => setShowAgendaDia(false)}>
+          <DrawerPanel onClick={e => e.stopPropagation()} style={{ position: 'relative' }}>
+            <DrawerHeader>
+              <DrawerTitle><FaCalendarDay /> Agenda do Dia</DrawerTitle>
+              <DrawerDate style={{ textTransform: 'capitalize' }}>{todayLabel}</DrawerDate>
+              <DrawerCloseBtn onClick={() => setShowAgendaDia(false)} title="Fechar">
+                <FaTimes />
+              </DrawerCloseBtn>
+            </DrawerHeader>
+
+            <DrawerSummaryBar>
+              <DrawerSummaryItem color="#495057">
+                <span>{resumoHoje.total}</span>
+                <span>Total</span>
+              </DrawerSummaryItem>
+              <DrawerSummaryItem color="#1976d2">
+                <span>{resumoHoje.agendados}</span>
+                <span>Agendados</span>
+              </DrawerSummaryItem>
+              <DrawerSummaryItem color="#2e7d32">
+                <span>{resumoHoje.confirmados}</span>
+                <span>Confirmados</span>
+              </DrawerSummaryItem>
+              <DrawerSummaryItem color="#f57c00">
+                <span>{resumoHoje.atendimento}</span>
+                <span>Em Atend.</span>
+              </DrawerSummaryItem>
+              <DrawerSummaryItem color="#388e3c">
+                <span>{resumoHoje.concluidos}</span>
+                <span>Concluídos</span>
+              </DrawerSummaryItem>
+            </DrawerSummaryBar>
+
+            <DrawerBody>
+              {agendamentosHoje.length === 0 ? (
+                <DrawerEmpty>
+                  <FaCalendarDay style={{ fontSize: '2.5rem', marginBottom: 12, opacity: 0.3 }} />
+                  <div>Nenhum agendamento para hoje.</div>
+                </DrawerEmpty>
+              ) : (
+                agendamentosHoje.map(a => {
+                  const sc = statusColorMap[a.status] ?? statusColorMap['agendado'];
+                  return (
+                    <TimelineItem
+                      key={a.id}
+                      statusColor={sc.dot}
+                      onClick={() => setViewingAgendamento(a)}
+                      title="Clique para visualizar detalhes"
+                    >
+                      <TimelineDot color={sc.dot} />
+                      <TimelineTime>{a.hora}</TimelineTime>
+                      <TimelineCard statusColor={sc.dot}>
+                        <TLPatient>
+                          <FaUser style={{ color: '#adb5bd', fontSize: '0.8rem' }} />
+                          {a.paciente}
+                          <TLBadge bg={sc.bg} fg={sc.fg}>{sc.label}</TLBadge>
+                        </TLPatient>
+                        <TLRow>
+                          <FaUserMd style={{ color: '#adb5bd' }} />
+                          {a.dentista}
+                        </TLRow>
+                        <TLRow>
+                          <FaStethoscope style={{ color: '#adb5bd' }} />
+                          {a.procedimento}
+                        </TLRow>
+                        {a.telefone && (
+                          <TLRow>
+                            <FaPhone style={{ color: '#adb5bd' }} />
+                            {a.telefone}
+                          </TLRow>
+                        )}
+                        {a.observacoes && (
+                          <TLRow style={{ fontStyle: 'italic', color: '#868e96' }}>
+                            "{a.observacoes}"
+                          </TLRow>
+                        )}
+                      </TimelineCard>
+                    </TimelineItem>
+                  );
+                })
+              )}
+            </DrawerBody>
+          </DrawerPanel>
+        </DrawerOverlay>
       )}
     </MainContent>
   </PageWrapper>

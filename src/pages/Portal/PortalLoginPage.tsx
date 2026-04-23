@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import styled from "styled-components";
 import { FaTooth, FaLock, FaEye, FaEyeSlash, FaEnvelope, FaArrowLeft } from "react-icons/fa";
-import api from "../../components/api/api";
+import portalApi from "./portalApi";
 
 // ---------------------------------------------------------------------------
 // Styles
@@ -171,47 +171,33 @@ const PortalLoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const normalizedLogin = login.trim();
+      const normalizedEmail = login.trim();
 
-      if (!normalizedLogin) {
-        setError("Informe usuario ou e-mail.");
+      if (!normalizedEmail) {
+        setError("Informe seu e-mail.");
         return;
       }
 
-      const response = await api.post("/login", {
-        login: normalizedLogin,
+      // Usa /portal/login (PortalPacienteController) — retorna token + paciente_id
+      const response = await portalApi.post("/portal/login", {
+        email: normalizedEmail,
         password,
-        remember: false,
-        device_name: "dashboard-odonto-web",
       });
 
       const token = response?.data?.token;
-      const user = response?.data?.user;
-      const tipoUsuario = (user?.tipo || "").toString().toLowerCase();
-      const grupoAcessoNome = (user?.grupo_acesso_nome || user?.grupoAcesso?.nome || "")
-        .toString()
-        .toLowerCase();
-      const isPaciente = tipoUsuario === "paciente" || grupoAcessoNome.includes("paciente");
+      const user  = response?.data?.user;
 
       if (!token || !user) {
         throw new Error("Resposta de login invalida");
       }
 
+      sessionStorage.setItem("patient_token", token);
+      sessionStorage.setItem("patient_user", JSON.stringify(user));
+      // Mantém auth_token para compatibilidade com interceptors genéricos
       sessionStorage.setItem("auth_token", token);
       localStorage.removeItem("auth_token");
       localStorage.removeItem("userToken");
-      sessionStorage.setItem("userData", JSON.stringify(user));
-      localStorage.setItem("userData", JSON.stringify(user));
 
-      if (!isPaciente) {
-        sessionStorage.removeItem("patient_token");
-        sessionStorage.removeItem("patient_user");
-        setError("Esta conta nao possui acesso ao Portal do Paciente.");
-        return;
-      }
-
-      sessionStorage.setItem("patient_token", token);
-      sessionStorage.setItem("patient_user", JSON.stringify(user));
       navigate("/portal/agendar");
     } catch (err: any) {
       setError(err.response?.data?.message ?? err.message ?? "Erro ao fazer login. Tente novamente.");
@@ -234,16 +220,16 @@ const PortalLoginPage: React.FC = () => {
 
         <Form onSubmit={handleSubmit}>
           <Field>
-            <Label>Usuario ou e-mail</Label>
+            <Label>E-mail</Label>
             <InputWrapper>
               <IconLeft><FaEnvelope /></IconLeft>
               <Input
-                type="text"
+                type="email"
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
-                placeholder="Seu usuario ou e-mail"
+                placeholder="Seu e-mail cadastrado"
                 required
-                autoComplete="username"
+                autoComplete="email"
               />
             </InputWrapper>
           </Field>
