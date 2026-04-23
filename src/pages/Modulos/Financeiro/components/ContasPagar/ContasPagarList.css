@@ -234,7 +234,8 @@ tbody tr:hover {
   gap: 0.5rem;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .action-btn {
@@ -248,6 +249,7 @@ tbody tr:hover {
   text-transform: uppercase;
   letter-spacing: 0.025em;
   min-width: 4rem;
+  white-space: nowrap;
 }
 
 /* === ESTILOS MODERNOS PARA CARDS DE ESTATÍSTICAS === */
@@ -521,6 +523,17 @@ tbody tr:hover {
   box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
 }
 
+.btn-cancelar-card {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+.btn-cancelar-card:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(75, 85, 99, 0.35);
+}
+
 /* Skeleton Loading para Cards */
 .card-skeleton {
   border-radius: 0.75rem;
@@ -563,6 +576,18 @@ tbody tr:hover {
   background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+}
+
+.btn-cancelar {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  box-shadow: 0 2px 4px rgba(75, 85, 99, 0.3);
+}
+
+.btn-cancelar:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(75, 85, 99, 0.4);
 }
 
 /* Loading States */
@@ -751,8 +776,9 @@ tbody tr:hover {
   }
   
   .action-buttons {
-    flex-direction: column;
-    gap: 0.25rem;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
   }
   
   .action-btn {

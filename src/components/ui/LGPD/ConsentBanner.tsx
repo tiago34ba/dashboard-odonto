@@ -4,6 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
+const appBasePath = (process.env.REACT_APP_BASENAME || '').replace(/\/$/, '');
+
 interface ConsentBannerProps {
   onAccept: () => void;
   onReject: () => void;
@@ -181,7 +183,7 @@ export const ConsentBanner: React.FC<ConsentBannerProps> = ({
           Este site utiliza cookies e coleta dados pessoais para melhorar sua experiência. 
           Conforme a Lei Geral de Proteção de Dados (LGPD), precisamos do seu consentimento 
           para processar seus dados pessoais. 
-          <Link href="/privacy-policy" target="_blank"> Saiba mais sobre nossa política de privacidade</Link>.
+          <Link href={`${appBasePath}/privacy-policy`} target="_blank" rel="noreferrer"> Saiba mais sobre nossa política de privacidade</Link>.
         </BannerText>
         
         <CheckboxContainer>

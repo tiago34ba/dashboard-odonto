@@ -29,6 +29,15 @@ const ContasPagarPage: React.FC = () => {
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingConta, setEditingConta] = useState<any | null>(null);
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [paymentConta, setPaymentConta] = useState<any | null>(null);
+  const [paymentForm, setPaymentForm] = useState({
+    valor_pago: 0,
+    forma_pagamento: 'Pix',
+    data_pagamento: new Date().toISOString().slice(0, 10),
+  });
   const [statusFiltro, setStatusFiltro] = useState<string | null>(null);
   const [contaFiltroId, setContaFiltroId] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -75,9 +84,10 @@ const ContasPagarPage: React.FC = () => {
   }, [fetchDashboard]);
 
   const refreshAll = useCallback(async () => {
-    await fetchDashboard();
+    // Atualiza a lista imediatamente para refletir edicoes sem atraso visual.
     setRefreshKey((prev) => prev + 1);
     window.dispatchEvent(new Event('dashboard:cards:refresh'));
+    await fetchDashboard();
   }, [fetchDashboard]);
 
   const formatCurrency = (value: number) => {
@@ -92,25 +102,49 @@ const ContasPagarPage: React.FC = () => {
     setShowModal(false);
   };
 
-  const handleEdit = async (conta: any) => {
-    const descricao = window.prompt('Editar descricao da conta', conta.descricao ?? '');
-    if (descricao === null) return;
+  const handleEdit = (conta: any) => {
+    setEditingConta({
+      id: conta.id,
+      descricao: conta.descricao ?? '',
+      fornecedor: conta.fornecedor ?? conta.supplier?.name ?? '',
+      categoria: conta.categoria ?? 'Outros',
+      valor_original: Number(conta.valor_original ?? 0),
+      valor_pago: Number(conta.valor_pago ?? 0),
+      valor_pendente: Number(conta.valor_pendente ?? 0),
+      data_vencimento: conta.data_vencimento ?? '',
+      data_pagamento: conta.data_pagamento ?? '',
+      status: conta.status ?? 'Pendente',
+      prioridade: conta.prioridade ?? 'Média',
+      forma_pagamento: conta.forma_pagamento ?? 'Pix',
+      observacoes: conta.observacoes ?? '',
+      supplier_id: conta.supplier_id ?? conta.supplier?.id ?? null,
+    });
+    setShowEditModal(true);
+  };
 
+  const handleSubmitEdit = async (conta: any) => {
     try {
       setLoading(true);
       setErrorMsg(null);
       await api.put(`/financeiro/contas-pagar/${conta.id}`, {
-        descricao: descricao.trim() || conta.descricao,
+        descricao: conta.descricao,
         supplier_id: conta.supplier_id ?? null,
         categoria: conta.categoria,
         valor_original: Number(conta.valor_original ?? 0),
+        valor_pago: Number(conta.valor_pago ?? 0),
         data_vencimento: conta.data_vencimento,
+        data_pagamento: conta.data_pagamento || null,
+        status: conta.status,
         prioridade: conta.prioridade,
+        forma_pagamento: conta.forma_pagamento || null,
         observacoes: conta.observacoes ?? null,
       });
+      setShowEditModal(false);
+      setEditingConta(null);
       await refreshAll();
     } catch (err: any) {
       setErrorMsg(err?.response?.data?.message ?? 'Erro ao editar conta a pagar');
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -126,33 +160,58 @@ const ContasPagarPage: React.FC = () => {
       await refreshAll();
     } catch (err: any) {
       setErrorMsg(err?.response?.data?.message ?? 'Erro ao excluir conta a pagar');
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePay = async (conta: any) => {
+  const handlePay = (conta: any) => {
     const maximo = Number(conta.valor_pendente ?? 0);
-    const valorInformado = window.prompt('Valor do pagamento', String(maximo));
-    if (valorInformado === null) return;
+    setPaymentConta(conta);
+    setPaymentForm({
+      valor_pago: maximo,
+      forma_pagamento: conta.forma_pagamento ?? 'Pix',
+      data_pagamento: new Date().toISOString().slice(0, 10),
+    });
+    setShowPayModal(true);
+  };
 
-    const valorPago = Number(valorInformado.replace(',', '.'));
+  const handleCancelPayment = async (conta: any) => {
+    if (!window.confirm('Deseja cancelar o pagamento desta conta?')) return;
+
+    try {
+      setLoading(true);
+      setErrorMsg(null);
+      await api.patch(`/financeiro/contas-pagar/${conta.id}/cancelar-pagamento`);
+      await refreshAll();
+    } catch (err: any) {
+      setErrorMsg(err?.response?.data?.message ?? 'Erro ao cancelar pagamento da conta');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitPayment = async () => {
+    if (!paymentConta) return;
+    const maximo = Number(paymentConta.valor_pendente ?? 0);
+    const valorPago = Number(paymentForm.valor_pago);
     if (!Number.isFinite(valorPago) || valorPago <= 0 || valorPago > maximo) {
       setErrorMsg(`Valor invalido. Informe um valor entre 0,01 e ${formatCurrency(maximo)}.`);
       return;
     }
 
-    const formaPagamento = window.prompt('Forma de pagamento', 'Pix') || 'Pix';
-    const dataPagamento = new Date().toISOString().slice(0, 10);
-
     try {
       setLoading(true);
       setErrorMsg(null);
-      await api.patch(`/financeiro/contas-pagar/${conta.id}/pagar`, {
+      await api.patch(`/financeiro/contas-pagar/${paymentConta.id}/pagar`, {
         valor_pago: valorPago,
-        data_pagamento: dataPagamento,
-        forma_pagamento: formaPagamento,
+        data_pagamento: paymentForm.data_pagamento,
+        forma_pagamento: paymentForm.forma_pagamento,
       });
+      setShowPayModal(false);
+      setPaymentConta(null);
       await refreshAll();
     } catch (err: any) {
       setErrorMsg(err?.response?.data?.message ?? 'Erro ao registrar pagamento');
@@ -295,6 +354,7 @@ const ContasPagarPage: React.FC = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onPay={handlePay}
+          onCancelPayment={handleCancelPayment}
           filterStatus={statusFiltro === 'Pendente' ? 'Pendente' : statusFiltro === 'Vencido' ? 'Vencido' : undefined}
           contaFiltroId={contaFiltroId}
           refreshKey={refreshKey}
@@ -307,6 +367,71 @@ const ContasPagarPage: React.FC = () => {
         onClose={handleCloseModal}
         onSubmit={handleSubmitModal}
       />
+
+      <ModalContaPagarPadrao
+        isOpen={showEditModal}
+        onClose={() => { setShowEditModal(false); setEditingConta(null); }}
+        onSubmit={handleSubmitEdit}
+        conta={editingConta}
+      />
+
+      {showPayModal && paymentConta && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: 520 }}>
+            <button className="modal-close" onClick={() => setShowPayModal(false)}>&times;</button>
+            <h2 className="modal-title">Registrar Pagamento</h2>
+            <div className="modal-form">
+              <div className="form-row">
+                <div className="form-field">
+                  <label>Descrição</label>
+                  <input value={paymentConta.descricao ?? ''} disabled />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label>Valor a Pagar</label>
+                  <input
+                    type="number"
+                    min={0.01}
+                    max={Number(paymentConta.valor_pendente ?? 0)}
+                    step={0.01}
+                    value={paymentForm.valor_pago}
+                    onChange={(e) => setPaymentForm((prev) => ({ ...prev, valor_pago: Number(e.target.value || 0) }))}
+                  />
+                </div>
+                <div className="form-field">
+                  <label>Forma de Pagamento</label>
+                  <select
+                    value={paymentForm.forma_pagamento}
+                    onChange={(e) => setPaymentForm((prev) => ({ ...prev, forma_pagamento: e.target.value }))}
+                  >
+                    <option value="Pix">Pix</option>
+                    <option value="Boleto">Boleto</option>
+                    <option value="Transferência">Transferência</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-field">
+                  <label>Data do Pagamento</label>
+                  <input
+                    type="date"
+                    value={paymentForm.data_pagamento}
+                    onChange={(e) => setPaymentForm((prev) => ({ ...prev, data_pagamento: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="button-container" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button type="button" className="btn-secondary" onClick={() => setShowPayModal(false)}>Cancelar</button>
+                <button type="button" className="btn-primary" onClick={handleSubmitPayment}>Confirmar Pagamento</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

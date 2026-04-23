@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './HorariosPage.css';
+import api from '../../../components/api/api';
 
 interface HorarioFuncionamento {
   id: number;
@@ -11,73 +12,21 @@ interface HorarioFuncionamento {
   ativo: boolean;
 }
 
+const DEFAULT_HORARIOS: HorarioFuncionamento[] = [
+  { id: 1, dia: 'Segunda-Feira', jornadaInicio: '07:00', jornadaFim: '18:00', almocoInicio: '', almocoFim: '', ativo: true },
+  { id: 2, dia: 'Terça-Feira', jornadaInicio: '07:00', jornadaFim: '18:00', almocoInicio: '', almocoFim: '', ativo: true },
+  { id: 3, dia: 'Quarta-Feira', jornadaInicio: '07:00', jornadaFim: '18:00', almocoInicio: '', almocoFim: '', ativo: true },
+  { id: 4, dia: 'Quinta-Feira', jornadaInicio: '07:00', jornadaFim: '18:00', almocoInicio: '', almocoFim: '', ativo: true },
+  { id: 5, dia: 'Sexta-Feira', jornadaInicio: '07:00', jornadaFim: '18:00', almocoInicio: '', almocoFim: '', ativo: true },
+  { id: 6, dia: 'Sábado', jornadaInicio: '07:00', jornadaFim: '18:00', almocoInicio: '', almocoFim: '', ativo: true },
+  { id: 7, dia: 'Domingo', jornadaInicio: '07:00', jornadaFim: '18:00', almocoInicio: '', almocoFim: '', ativo: true },
+];
+
 const HorariosPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const [horarios, setHorarios] = useState<HorarioFuncionamento[]>([
-    {
-      id: 1,
-      dia: 'Segunda-Feira',
-      jornadaInicio: '07:00',
-      jornadaFim: '18:00',
-      almocoInicio: '',
-      almocoFim: '',
-      ativo: true
-    },
-    {
-      id: 2,
-      dia: 'Terça-Feira',
-      jornadaInicio: '07:00',
-      jornadaFim: '18:00',
-      almocoInicio: '',
-      almocoFim: '',
-      ativo: true
-    },
-    {
-      id: 3,
-      dia: 'Quarta-Feira',
-      jornadaInicio: '07:00',
-      jornadaFim: '18:00',
-      almocoInicio: '',
-      almocoFim: '',
-      ativo: true
-    },
-    {
-      id: 4,
-      dia: 'Quinta-Feira',
-      jornadaInicio: '07:00',
-      jornadaFim: '18:00',
-      almocoInicio: '',
-      almocoFim: '',
-      ativo: true
-    },
-    {
-      id: 5,
-      dia: 'Sexta-Feira',
-      jornadaInicio: '07:00',
-      jornadaFim: '18:00',
-      almocoInicio: '',
-      almocoFim: '',
-      ativo: true
-    },
-    {
-      id: 6,
-      dia: 'Sábado',
-      jornadaInicio: '07:00',
-      jornadaFim: '18:00',
-      almocoInicio: '',
-      almocoFim: '',
-      ativo: true
-    },
-    {
-      id: 7,
-      dia: 'Domingo',
-      jornadaInicio: '07:00',
-      jornadaFim: '18:00',
-      almocoInicio: '',
-      almocoFim: '',
-      ativo: true
-    }
-  ]);
+  const [horarios, setHorarios] = useState<HorarioFuncionamento[]>(DEFAULT_HORARIOS);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     dia: 'Selecionar Dia',
@@ -97,6 +46,45 @@ const HorariosPage: React.FC = () => {
     'Sábado',
     'Domingo'
   ];
+
+  const persistLocal = useCallback((items: HorarioFuncionamento[]) => {
+    localStorage.setItem('horarios_funcionamento', JSON.stringify(items));
+  }, []);
+
+  const loadHorarios = useCallback(async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const response = await api.get('/horarios-funcionamento');
+      const rows = Array.isArray(response.data?.data) ? response.data.data : [];
+      if (rows.length === 0) {
+        setHorarios(DEFAULT_HORARIOS);
+        persistLocal(DEFAULT_HORARIOS);
+      } else {
+        setHorarios(rows);
+        persistLocal(rows);
+      }
+    } catch {
+      const cached = localStorage.getItem('horarios_funcionamento');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setHorarios(parsed);
+          setLoading(false);
+          return;
+        }
+      }
+      setHorarios(DEFAULT_HORARIOS);
+      persistLocal(DEFAULT_HORARIOS);
+      setErrorMsg('API de horários indisponível. Exibindo dados locais.');
+    } finally {
+      setLoading(false);
+    }
+  }, [persistLocal]);
+
+  useEffect(() => {
+    loadHorarios();
+  }, [loadHorarios]);
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -121,7 +109,7 @@ const HorariosPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.dia === 'Selecionar Dia') {
@@ -130,7 +118,7 @@ const HorariosPage: React.FC = () => {
     }
 
     const novoHorario: HorarioFuncionamento = {
-      id: horarios.length + 1,
+      id: formData.dia === 'Selecionar Dia' ? 0 : (horarios.find((h) => h.dia === formData.dia)?.id ?? 0),
       dia: formData.dia,
       jornadaInicio: formData.jornadaInicio,
       jornadaFim: formData.jornadaFim,
@@ -139,20 +127,31 @@ const HorariosPage: React.FC = () => {
       ativo: formData.ativo
     };
 
-    // Verificar se já existe horário para este dia
-    const existeHorario = horarios.find(h => h.dia === formData.dia);
-    if (existeHorario) {
-      // Atualizar horário existente
-      setHorarios(prev => prev.map(h => 
-        h.dia === formData.dia ? { ...novoHorario, id: h.id } : h
-      ));
-    } else {
-      // Adicionar novo horário
-      setHorarios(prev => [...prev, novoHorario]);
+    try {
+      setLoading(true);
+      setErrorMsg(null);
+      if (novoHorario.id) {
+        await api.put(`/horarios-funcionamento/${novoHorario.id}`, novoHorario);
+      } else {
+        await api.post('/horarios-funcionamento', novoHorario);
+      }
+      await loadHorarios();
+      setShowModal(false);
+    } catch {
+      const existeHorario = horarios.find((h) => h.dia === formData.dia);
+      let next: HorarioFuncionamento[];
+      if (existeHorario) {
+        next = horarios.map((h) => (h.dia === formData.dia ? { ...novoHorario, id: h.id } : h));
+      } else {
+        next = [...horarios, { ...novoHorario, id: horarios.length + 1 }];
+      }
+      setHorarios(next);
+      persistLocal(next);
+      setShowModal(false);
+      setErrorMsg('API indisponível. Horário salvo localmente.');
+    } finally {
+      setLoading(false);
     }
-
-    setShowModal(false);
-    alert('Horário salvo com sucesso!');
   };
 
   const formatHorario = (inicio: string, fim: string) => {
@@ -177,10 +176,22 @@ const HorariosPage: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     const confirmDelete = window.confirm('Tem certeza que deseja excluir este horário?');
     if (confirmDelete) {
-      setHorarios(prev => prev.filter(h => h.id !== id));
+      try {
+        setLoading(true);
+        setErrorMsg(null);
+        await api.delete(`/horarios-funcionamento/${id}`);
+        await loadHorarios();
+      } catch {
+        const next = horarios.filter((h) => h.id !== id);
+        setHorarios(next);
+        persistLocal(next);
+        setErrorMsg('API indisponível. Exclusão aplicada localmente.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -215,6 +226,11 @@ const HorariosPage: React.FC = () => {
       </div>
 
       <div className="horarios-content">
+        {errorMsg && (
+          <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 8, border: '1px solid #ef4444', background: '#fee2e2', color: '#b91c1c' }}>
+            {errorMsg}
+          </div>
+        )}
         <div className="horarios-table-container">
           <table className="horarios-table">
             <thead>
@@ -226,7 +242,10 @@ const HorariosPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {horarios.map(horario => (
+              {loading ? (
+                <tr><td colSpan={4}>Carregando horários...</td></tr>
+              ) : (
+              horarios.map(horario => (
                 <tr key={horario.id} className={!horario.ativo ? 'inactive' : ''}>
                   <td className="dia-cell">{horario.dia}</td>
                   <td className="jornada-cell">
@@ -252,7 +271,8 @@ const HorariosPage: React.FC = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
           </table>
         </div>

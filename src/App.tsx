@@ -12,6 +12,8 @@ import PagamentoPage from "./pages/Pagamento/PagamentoPage";
 import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
 
+const routerBasename = (process.env.REACT_APP_BASENAME || "").replace(/\/$/, "");
+
 // Lazy loading das páginas principais
 const InstitucionalPage = React.lazy(() => import("./pages/Institucional/InstitucionalPage"));
 const PlanosPage = React.lazy(() => import("./pages/Planos/PlanosPage"));
@@ -21,6 +23,7 @@ const Dashboard = React.lazy(() => import("./pages/Dashboard/DashboardCards"));
 const PatientsPage = React.lazy(() => import("./pages/Modulos/clientes/PatientsPage/PatientsPage"));
 const UsersPage = React.lazy(() => import("./pages/Modulos/Usuarios/UsersPage/UsersPage"));
 const FuncionariosPage = React.lazy(() => import("./pages/Modulos/funcionarios/EmployeePage/EmployeePage"));
+const DentistasPage = React.lazy(() => import("./pages/Modulos/dentistas/DentistasPage/DentistasPage"));
 const AgendamentosPage = React.lazy(() => import("./pages/Modulos/agendamentos/AgendamentosPage/AgendamentosPage"));
 const RelatorioAgendamentos = React.lazy(() => import("./pages/Modulos/agendamentos/RelatorioAgendamentos/RelatorioAgendamentos"));
 const RelatorioProcedimentos = React.lazy(() => import("./pages/Modulos/agendamentos/RelatorioProcedimentos/RelatorioProcedimentos"));
@@ -86,7 +89,7 @@ const App: React.FC = () => {
   const handleConsentCustomize = () => {};
 
   return (
-    <Router>
+    <Router basename={routerBasename || undefined} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <RouteMonitor />
       <div className="app">
         <Suspense fallback={<LoadingSpinner />}>
@@ -130,49 +133,59 @@ const App: React.FC = () => {
                   <Header />
                   <Suspense fallback={<LoadingSpinner />}>
                     <Routes>
-                      <Route path="/" element={<Dashboard title="" value="" />} />
-                      <Route path="/pessoas/pacientes/PatientsPage" element={<PatientsPage />} />
+                      <Route path="/" element={<ProtectedRoute requiredPermission="DASHBOARD_VIEW"><Dashboard title="" value="" /></ProtectedRoute>} />
+
+                      <Route path="/pessoas/pacientes/PatientsPage" element={<ProtectedRoute requiredPermissions={["PATIENTS_VIEW", "PATIENTS_MANAGE"]}><PatientsPage /></ProtectedRoute>} />
                       <Route path="/pessoas/usuarios" element={<ProtectedRoute requiredPermission="USERS_MANAGE"><UsersPage /></ProtectedRoute>} />
-                      <Route path="/pessoas/funcionarios" element={<FuncionariosPage />} />
-                      <Route path="/agendamentos" element={<AgendamentosPage />} />
-                      <Route path="/agendamentos/relatorio-agendamentos" element={<RelatorioAgendamentos />} />
-                      <Route path="/agendamentos/relatorio-procedimentos" element={<RelatorioProcedimentos />} />
-                      <Route path="/cadastros/procedimentos" element={<ProcedimentosPage />} />
-                      <Route path="/cadastros/convenios" element={<ConveniosPage />} />
-                      <Route path="/cadastros/itens-anamnese" element={<ItensAnamnesePage />} />
-                      <Route path="/cadastros/grupos-anamnese" element={<GruposAnamnesePage />} />
-                      <Route path="/cadastros/formas-pgto" element={<FormasPagamentoPage />} />
-                      <Route path="/cadastros/frequencias" element={<FrequenciasPage />} />
-                      <Route path="/cadastros/cargos" element={<CargosPage />} />
-                      <Route path="/fornecedores" element={<FornecedoresPage />} />
-                      <Route path="cadastros/fornecedores" element={<FornecedoresPage />} />
-                      <Route path="/financeiro" element={<FinanceiroDashboard />} />
-                      <Route path="/financeiro/contas-pagar" element={<ContasPagarPage />} />
-                      <Route path="/financeiro/contas-receber" element={<ContasReceberPage />} />
-                      <Route path="/financeiro/recebimentos-convenio" element={<RecebimentosConvenioPage />} />
-                      <Route path="/financeiro/comissoes" element={<ComissoesPage />} />
-                      <Route path="/consultas" element={<ConsultaPage />} />
-                      <Route path="/financeiro/consulta" element={<ConsultaPage />} />
-                      <Route path="/horarios" element={<HorariosPage />} />
-                      <Route path="/minhas-comissoes" element={<MinhasComissoesPage />} />
-                      <Route path="/odontogramas" element={<OdontogramasPage />} />
-                      <Route path="/tratamentos" element={<TratamentosPage />} />
-                      <Route path="/orcamentos" element={<OrcamentosPage />} />
-                      <Route path="/caixa" element={<CaixaPage />} />
-                      <Route path="/caixas-aberto" element={<CaixaPage />} />
-                      <Route path="/tarefas" element={<TarefasPage />} />
-                      <Route path="/tarefas-agenda" element={<TarefasPage />} />
-                      <Route path="/anotacoes" element={<AnotacoesPage />} />
-                      <Route path="/relatorios/financeiro" element={<RelatorioFinanceiroPage />} />
-                      <Route path="/relatorios/relatorio-financeiro" element={<RelatorioFinanceiroPage />} />
-                      <Route path="/relatorios/sintetico-despesas" element={<RelatorioSinteticoDespesasPage />} />
-                      <Route path="/relatorios/relatorio-sintetico-despesas" element={<RelatorioSinteticoDespesasPage />} />
-                      <Route path="/relatorios/sintetico-recebimentos" element={<RelatorioSinteticoRecebimentosPage />} />
-                      <Route path="/relatorios/relatorio-sintetico-receber" element={<RelatorioSinteticoRecebimentosPage />} />
-                      <Route path="/relatorios/balanco-anual" element={<RelatorioBalancoAnualPage />} />
-                      <Route path="/relatorios/relatorio-balanco-anual" element={<RelatorioBalancoAnualPage />} />
-                      <Route path="/relatorios/inadimplentes" element={<RelatorioInadimplentesPage />} />
-                        <Route path="/relatorios/relatorio-inadimplementes" element={<RelatorioInadimplentesPage />} />
+                      <Route path="/pessoas/funcionarios" element={<ProtectedRoute requiredPermissions={["STAFF_VIEW", "STAFF_MANAGE"]}><FuncionariosPage /></ProtectedRoute>} />
+                      <Route path="/pessoas/dentistas" element={<ProtectedRoute requiredPermissions={["DENTISTS_VIEW", "DENTISTS_MANAGE"]}><DentistasPage /></ProtectedRoute>} />
+
+                      <Route path="/agendamentos" element={<ProtectedRoute requiredPermissions={["SCHEDULINGS_VIEW", "SCHEDULINGS_MANAGE"]}><AgendamentosPage /></ProtectedRoute>} />
+                      <Route path="/agendamentos/relatorio-agendamentos" element={<ProtectedRoute requiredPermissions={["SCHEDULINGS_VIEW", "SCHEDULINGS_MANAGE"]}><RelatorioAgendamentos /></ProtectedRoute>} />
+                      <Route path="/agendamentos/relatorio-procedimentos" element={<ProtectedRoute requiredPermissions={["SCHEDULINGS_VIEW", "SCHEDULINGS_MANAGE"]}><RelatorioProcedimentos /></ProtectedRoute>} />
+
+                      <Route path="/cadastros/procedimentos" element={<ProtectedRoute requiredPermissions={["PROCEDURES_VIEW", "PROCEDURES_MANAGE"]}><ProcedimentosPage /></ProtectedRoute>} />
+                      <Route path="/cadastros/convenios" element={<ProtectedRoute requiredPermissions={["AGREEMENTS_VIEW", "AGREEMENTS_MANAGE"]}><ConveniosPage /></ProtectedRoute>} />
+                      <Route path="/cadastros/itens-anamnese" element={<ProtectedRoute requiredPermissions={["ANAMNESE_ITEMS_VIEW", "ANAMNESE_ITEMS_MANAGE"]}><ItensAnamnesePage /></ProtectedRoute>} />
+                      <Route path="/cadastros/grupos-anamnese" element={<ProtectedRoute requiredPermissions={["ANAMNESE_GROUPS_VIEW", "ANAMNESE_GROUPS_MANAGE"]}><GruposAnamnesePage /></ProtectedRoute>} />
+                      <Route path="/cadastros/formas-pgto" element={<ProtectedRoute requiredPermissions={["PAYMENT_METHODS_VIEW", "PAYMENT_METHODS_MANAGE"]}><FormasPagamentoPage /></ProtectedRoute>} />
+                      <Route path="/cadastros/frequencias" element={<ProtectedRoute requiredPermissions={["FREQUENCIES_VIEW", "FREQUENCIES_MANAGE"]}><FrequenciasPage /></ProtectedRoute>} />
+                      <Route path="/cadastros/cargos" element={<ProtectedRoute requiredPermissions={["CARGOS_VIEW", "CARGOS_MANAGE"]}><CargosPage /></ProtectedRoute>} />
+
+                      <Route path="/fornecedores" element={<ProtectedRoute requiredPermissions={["SUPPLIERS_VIEW", "SUPPLIERS_MANAGE"]}><FornecedoresPage /></ProtectedRoute>} />
+                      <Route path="cadastros/fornecedores" element={<ProtectedRoute requiredPermissions={["SUPPLIERS_VIEW", "SUPPLIERS_MANAGE"]}><FornecedoresPage /></ProtectedRoute>} />
+
+                      <Route path="/financeiro" element={<ProtectedRoute requiredPermission="FINANCE_DASHBOARD_VIEW"><FinanceiroDashboard /></ProtectedRoute>} />
+                      <Route path="/financeiro/contas-pagar" element={<ProtectedRoute requiredPermissions={["FINANCE_PAYABLE_VIEW", "FINANCE_PAYABLE_MANAGE"]}><ContasPagarPage /></ProtectedRoute>} />
+                      <Route path="/financeiro/contas-receber" element={<ProtectedRoute requiredPermissions={["FINANCE_RECEIVABLE_VIEW", "FINANCE_RECEIVABLE_MANAGE"]}><ContasReceberPage /></ProtectedRoute>} />
+                      <Route path="/financeiro/recebimentos-convenio" element={<ProtectedRoute requiredPermissions={["FINANCE_RECEIVABLE_VIEW", "FINANCE_RECEIVABLE_MANAGE"]}><RecebimentosConvenioPage /></ProtectedRoute>} />
+                      <Route path="/financeiro/comissoes" element={<ProtectedRoute requiredPermissions={["FINANCE_DASHBOARD_VIEW", "FINANCE_REPORTS_VIEW"]}><ComissoesPage /></ProtectedRoute>} />
+
+                      <Route path="/consultas" element={<ProtectedRoute requiredPermission="CONSULTAS_VIEW"><ConsultaPage /></ProtectedRoute>} />
+                      <Route path="/financeiro/consulta" element={<ProtectedRoute requiredPermission="CONSULTAS_VIEW"><ConsultaPage /></ProtectedRoute>} />
+                      <Route path="/horarios" element={<ProtectedRoute requiredPermission="HORARIOS_VIEW"><HorariosPage /></ProtectedRoute>} />
+                      <Route path="/minhas-comissoes" element={<ProtectedRoute requiredPermission="COMISSOES_SELF_VIEW"><MinhasComissoesPage /></ProtectedRoute>} />
+
+                      <Route path="/odontogramas" element={<ProtectedRoute requiredPermissions={["ODONTOGRAM_VIEW", "ODONTOGRAM_MANAGE"]}><OdontogramasPage /></ProtectedRoute>} />
+                      <Route path="/tratamentos" element={<ProtectedRoute requiredPermissions={["TREATMENTS_MANAGE", "TREATMENTS_ASSIST"]}><TratamentosPage /></ProtectedRoute>} />
+                      <Route path="/orcamentos" element={<ProtectedRoute requiredPermissions={["ORCAMENTOS_VIEW", "ORCAMENTOS_MANAGE"]}><OrcamentosPage /></ProtectedRoute>} />
+
+                      <Route path="/caixa" element={<ProtectedRoute requiredPermission="FINANCE_CASHFLOW_VIEW"><CaixaPage /></ProtectedRoute>} />
+                      <Route path="/caixas-aberto" element={<ProtectedRoute requiredPermission="FINANCE_CASHFLOW_VIEW"><CaixaPage /></ProtectedRoute>} />
+                      <Route path="/tarefas" element={<ProtectedRoute requiredPermission="TASKS_VIEW"><TarefasPage /></ProtectedRoute>} />
+                      <Route path="/tarefas-agenda" element={<ProtectedRoute requiredPermission="TASKS_VIEW"><TarefasPage /></ProtectedRoute>} />
+                      <Route path="/anotacoes" element={<ProtectedRoute requiredPermission="NOTES_VIEW"><AnotacoesPage /></ProtectedRoute>} />
+
+                      <Route path="/relatorios/financeiro" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioFinanceiroPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/relatorio-financeiro" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioFinanceiroPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/sintetico-despesas" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioSinteticoDespesasPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/relatorio-sintetico-despesas" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioSinteticoDespesasPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/sintetico-recebimentos" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioSinteticoRecebimentosPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/relatorio-sintetico-receber" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioSinteticoRecebimentosPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/balanco-anual" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioBalancoAnualPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/relatorio-balanco-anual" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioBalancoAnualPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/inadimplentes" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioInadimplentesPage /></ProtectedRoute>} />
+                      <Route path="/relatorios/relatorio-inadimplementes" element={<ProtectedRoute requiredPermission="FINANCE_REPORTS_VIEW"><RelatorioInadimplentesPage /></ProtectedRoute>} />
                     </Routes>
                   </Suspense>
                 </div>

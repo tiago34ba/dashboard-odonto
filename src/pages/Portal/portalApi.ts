@@ -2,6 +2,7 @@ import axios from "axios";
 import { getApiConfig } from "../../config/security";
 
 const apiConfig = getApiConfig();
+const appBasePath = (process.env.REACT_APP_BASENAME || "").replace(/\/$/, "");
 
 const portalApi = axios.create({
   baseURL: apiConfig.baseURL,
@@ -29,7 +30,7 @@ portalApi.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       sessionStorage.removeItem("patient_token");
       sessionStorage.removeItem("patient_user");
-      window.location.href = "/portal/login";
+      window.location.href = `${appBasePath}/portal/login`;
     }
     return Promise.reject(error);
   }

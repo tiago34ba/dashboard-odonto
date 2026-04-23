@@ -1,16 +1,29 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  FiActivity,
   FiBarChart2,
   FiCheckCircle,
   FiChevronDown,
   FiChevronRight,
+  FiCreditCard,
   FiDollarSign,
   FiEdit2,
   FiEye,
   FiEyeOff,
   FiFileText,
+  FiFlag,
+  FiGlobe,
   FiGrid,
+  FiHeadphones,
   FiLayers,
+  FiMapPin,
+  FiMessageSquare,
+  FiShield,
+  FiSliders,
+  FiTag,
+  FiTool,
+  FiTrendingUp,
+  FiUserCheck,
   FiUsers,
   FiXCircle,
 } from "react-icons/fi";
@@ -24,6 +37,34 @@ import {
   YAxis,
 } from "recharts";
 import api from "../../components/api/api";
+import SaasCrudModuleSection from "./components/SaasCrudModuleSection";
+import HelpdeskCrudSection from "./components/helpdesk/HelpdeskCrudSection";
+import { billingModuleConfig } from "../../modules/saas/billing/config";
+import { tenantsModuleConfig } from "../../modules/saas/tenants/config";
+import { securityModuleConfig } from "../../modules/saas/security/config";
+import { supportModuleConfig } from "../../modules/saas/support/config";
+import { biModuleConfig } from "../../modules/saas/bi/config";
+import { helpdeskTicketsConfig } from "../../modules/helpdesk/chamados/config";
+import { helpdeskAttendancesConfig } from "../../modules/helpdesk/atendimentos/config";
+import { helpdeskReportsConfig } from "../../modules/helpdesk/relatorios/config";
+import { helpdeskPreRegistrationsConfig } from "../../modules/helpdesk/pre-cadastro/config";
+import { helpdeskUsersConfig } from "../../modules/helpdesk/usuarios/config";
+import { helpdeskAreasConfig } from "../../modules/helpdesk/areas/config";
+import { helpdeskPrioritiesConfig } from "../../modules/helpdesk/prioridades/config";
+import { helpdeskProblemTypesConfig } from "../../modules/helpdesk/tipos-problema/config";
+import { helpdeskProblemsConfig } from "../../modules/helpdesk/problemas/config";
+import { helpdeskSolutionsConfig } from "../../modules/helpdesk/solucoes/config";
+import { helpdeskClassesConfig } from "../../modules/helpdesk/classes/config";
+import { helpdeskAuditTrailConfig } from "../../modules/helpdesk/audittrail/config";
+import { chamadosTodosConfig } from "../../modules/chamados/todos/config";
+import { chamadosMeusConfig } from "../../modules/chamados/meus/config";
+import { chamadosAtribuidosConfig } from "../../modules/chamados/atribuidos/config";
+import { chamadosArquivadosConfig } from "../../modules/chamados/arquivados/config";
+import { chamadosCategoriasConfig } from "../../modules/chamados/categorias/config";
+import { chamadosCamposConfig } from "../../modules/chamados/campos/config";
+import { chamadosRespostasConfig } from "../../modules/chamados/respostas/config";
+import { chamadosStatusConfig } from "../../modules/chamados/status/config";
+import { chamadosVisualizacoesConfig } from "../../modules/chamados/visualizacoes/config";
 import "./AdminPortalPage.css";
 
 type MenuItem = {
@@ -69,11 +110,14 @@ type InadimplenciaRow = {
   clinica: string;
   planoId: string;
   planoLabel: string;
+  valorMensal: number;
   proximoVencimento: string;
+  status: "atrasada" | "inadimplente";
   diasEmAtraso: number;
   nivelRisco: InadimplenciaRisk;
   valorEmAberto: number;
-  status: MensalidadeStatus;
+  totalUsuarios?: number;
+  usuariosAtivos?: number;
 };
 
 type ClinicRow = {
@@ -165,6 +209,25 @@ type LandingPageConfigState = {
 };
 
 type LandingAutosaveStatus = "idle" | "saving" | "saved" | "error";
+
+type ModuleStats = {
+  billing: number;
+  tenants: number;
+  security: number;
+  support: number;
+  bi: number;
+  hdTickets: number;
+  hdUsers: number;
+  hdAreas: number;
+  hdPriorities: number;
+  hdSolutions: number;
+  hdAuditTrail: number;
+  camCategorias: number;
+  camCampos: number;
+  camRespostas: number;
+  camStatus: number;
+  camVisualizacoes: number;
+};
 
 const currency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -531,7 +594,57 @@ const menuItems: MenuItem[] = [
       { id: "solicitacoes", label: "Solicitacoes" },
     ],
   },
-  { id: "configuracoes", label: "Configuracoes" },
+  {
+    id: "configuracoes",
+    label: "Configuracoes",
+    children: [
+      { id: "configuracoes", label: "Configuracoes gerais" },
+    ],
+  },
+  {
+    id: "gestao",
+    label: "Gestao",
+    children: [
+      { id: "saas_billing", label: "Billing e Cobranca" },
+      { id: "saas_tenants", label: "Gestao de Clientes" },
+      { id: "saas_security", label: "Seguranca e Acesso" },
+      { id: "saas_support", label: "Operacao e Suporte" },
+      { id: "saas_bi", label: "BI e Inteligencia" },
+    ],
+  },
+  {
+    id: "helpdesk",
+    label: "Helpdesk",
+    children: [
+      { id: "helpdesk_chamados", label: "Chamados e OS" },
+      { id: "helpdesk_atendimentos", label: "Itens de atendimento" },
+      { id: "helpdesk_relatorios", label: "Relatorios" },
+      { id: "helpdesk_pre_cadastro", label: "Pre-cadastro" },
+      { id: "helpdesk_usuarios", label: "Usuarios" },
+      { id: "helpdesk_areas", label: "Areas" },
+      { id: "helpdesk_prioridades", label: "Prioridades" },
+      { id: "helpdesk_tipos_problema", label: "Tipos de problema" },
+      { id: "helpdesk_problemas", label: "Problemas" },
+      { id: "helpdesk_solucoes", label: "Solucoes" },
+      { id: "helpdesk_classes", label: "Classes" },
+      { id: "helpdesk_audittrail", label: "Audit trail" },
+    ],
+  },
+  {
+    id: "chamados_menu",
+    label: "Chamados",
+    children: [
+      { id: "chamados_todos", label: "Todos os Chamados" },
+      { id: "chamados_meus", label: "Seus Chamados" },
+      { id: "chamados_atribuidos", label: "Chamados atribuidos" },
+      { id: "chamados_arquivados", label: "Arquivado" },
+      { id: "chamados_categorias", label: "Categorias" },
+      { id: "chamados_campos", label: "Campos personalizados" },
+      { id: "chamados_respostas", label: "Respostas predefinidas" },
+      { id: "chamados_status", label: "Status Personalizado" },
+      { id: "chamados_visualizacoes", label: "Visualizacoes personalizadas" },
+    ],
+  },
 ];
 
 const AdminPortalPage: React.FC = () => {
@@ -647,6 +760,52 @@ const AdminPortalPage: React.FC = () => {
   const isSolicitacoesView = activeItem === "solicitacoes";
   const isLandingPageView = activeItem === "pagina_entrada";
   const isConfiguracoesView = activeItem === "configuracoes";
+  const isSaasBillingView = activeItem === "saas_billing";
+  const isSaasTenantsView = activeItem === "saas_tenants";
+  const isSaasSecurityView = activeItem === "saas_security";
+  const isSaasSupportView = activeItem === "saas_support";
+  const isSaasBiView = activeItem === "saas_bi";
+  const isHelpdeskTicketsView = activeItem === "helpdesk_chamados";
+  const isHelpdeskAttendancesView = activeItem === "helpdesk_atendimentos";
+  const isHelpdeskReportsView = activeItem === "helpdesk_relatorios";
+  const isHelpdeskPreCadastroView = activeItem === "helpdesk_pre_cadastro";
+  const isHelpdeskUsersView = activeItem === "helpdesk_usuarios";
+  const isHelpdeskAreasView = activeItem === "helpdesk_areas";
+  const isHelpdeskPrioritiesView = activeItem === "helpdesk_prioridades";
+  const isHelpdeskProblemTypesView = activeItem === "helpdesk_tipos_problema";
+  const isHelpdeskProblemsView = activeItem === "helpdesk_problemas";
+  const isHelpdeskSolutionsView = activeItem === "helpdesk_solucoes";
+  const isHelpdeskClassesView = activeItem === "helpdesk_classes";
+  const isHelpdeskAuditTrailView = activeItem === "helpdesk_audittrail";
+  const isChamadosTodosView = activeItem === "chamados_todos";
+  const isChamadosMeusView = activeItem === "chamados_meus";
+  const isChamadosAtribuidosView = activeItem === "chamados_atribuidos";
+  const isChamadosArquivadosView = activeItem === "chamados_arquivados";
+  const isChamadosCategoriasView = activeItem === "chamados_categorias";
+  const isChamadosCamposView = activeItem === "chamados_campos";
+  const isChamadosRespostasView = activeItem === "chamados_respostas";
+  const isChamadosStatusView = activeItem === "chamados_status";
+  const isChamadosVisualizacoesView = activeItem === "chamados_visualizacoes";
+
+  const [moduleStats, setModuleStats] = useState<ModuleStats>({
+    billing: 0, tenants: 0, security: 0, support: 0, bi: 0,
+    hdTickets: 0, hdUsers: 0, hdAreas: 0, hdPriorities: 0, hdSolutions: 0, hdAuditTrail: 0,
+    camCategorias: 0, camCampos: 0, camRespostas: 0, camStatus: 0, camVisualizacoes: 0,
+  });
+  const [moduleStatsLoading, setModuleStatsLoading] = useState(false);
+  const [collapsedCardGroups, setCollapsedCardGroups] = useState<Record<string, boolean>>({
+    operacional: false,
+    gestao: true,
+    helpdesk: true,
+    chamados: true,
+  });
+
+  const toggleCardGroup = useCallback((groupId: string) => {
+    setCollapsedCardGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  }, []);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -759,6 +918,47 @@ const AdminPortalPage: React.FC = () => {
 
     fetchDashboardData();
   }, [fetchDashboardData, isPainelView]);
+
+    const loadModuleStats = useCallback(async () => {
+      setModuleStatsLoading(true);
+      try {
+        const endpoints: [keyof ModuleStats, string][] = [
+          ["billing", "/saas/modulos/billing"],
+          ["tenants", "/saas/modulos/tenants"],
+          ["security", "/saas/modulos/security"],
+          ["support", "/saas/modulos/support"],
+          ["bi", "/saas/modulos/bi"],
+          ["hdTickets", "/saas/helpdesk/chamados"],
+          ["hdUsers", "/saas/helpdesk/usuarios"],
+          ["hdAreas", "/saas/helpdesk/areas"],
+          ["hdPriorities", "/saas/helpdesk/prioridades"],
+          ["hdSolutions", "/saas/helpdesk/solucoes"],
+          ["hdAuditTrail", "/saas/helpdesk/audittrail"],
+          ["camCategorias", "/saas/chamados/categorias"],
+          ["camCampos", "/saas/chamados/campos-personalizados"],
+          ["camRespostas", "/saas/chamados/respostas-predefinidas"],
+          ["camStatus", "/saas/chamados/status-personalizado"],
+          ["camVisualizacoes", "/saas/chamados/visualizacoes"],
+        ];
+        const results = await Promise.allSettled(
+          endpoints.map(([, path]) => api.get(path, { params: { per_page: 1 } }))
+        );
+        const next: Partial<ModuleStats> = {};
+        results.forEach((result, i) => {
+          const [key] = endpoints[i];
+          next[key] = result.status === "fulfilled"
+            ? Number(result.value?.data?.pagination?.total ?? result.value?.data?.data?.length ?? 0)
+            : 0;
+        });
+        setModuleStats((prev) => ({ ...prev, ...next }));
+      } finally {
+        setModuleStatsLoading(false);
+      }
+    }, []);
+
+    useEffect(() => {
+      loadModuleStats();
+    }, [loadModuleStats]);
 
   const fetchMensalidades = useCallback(
     async (page = 1) => {
@@ -1242,6 +1442,58 @@ const AdminPortalPage: React.FC = () => {
                 ? "Planos disponiveis"
                 : isLandingPageView
                   ? "Configuracao da Pagina de entrada"
+                  : isSaasBillingView
+                    ? "Billing e Cobranca"
+                    : isSaasTenantsView
+                      ? "Gestao de Clientes (Tenants)"
+                      : isSaasSecurityView
+                        ? "Seguranca e Acesso"
+                        : isSaasSupportView
+                          ? "Operacao e Suporte"
+                          : isSaasBiView
+                            ? "BI e Inteligencia SaaS"
+                            : isHelpdeskTicketsView
+                              ? "Helpdesk - Chamados e OS"
+                              : isHelpdeskAttendancesView
+                                ? "Helpdesk - Itens de atendimento"
+                                : isHelpdeskReportsView
+                                  ? "Helpdesk - Relatorios"
+                                  : isHelpdeskPreCadastroView
+                                    ? "Helpdesk - Pre-cadastro"
+                                    : isHelpdeskUsersView
+                                      ? "Helpdesk - Usuarios"
+                                      : isHelpdeskAreasView
+                                        ? "Helpdesk - Areas"
+                                        : isHelpdeskPrioritiesView
+                                          ? "Helpdesk - Prioridades"
+                                          : isHelpdeskProblemTypesView
+                                            ? "Helpdesk - Tipos de problema"
+                                            : isHelpdeskProblemsView
+                                              ? "Helpdesk - Problemas"
+                                              : isHelpdeskSolutionsView
+                                                ? "Helpdesk - Solucoes"
+                                                : isHelpdeskClassesView
+                                                  ? "Helpdesk - Classes"
+                                                  : isHelpdeskAuditTrailView
+                                                    ? "Helpdesk - Audit trail"
+                                                    : isChamadosTodosView
+                                                      ? "Todos os Chamados"
+                                                      : isChamadosMeusView
+                                                        ? "Seus Chamados"
+                                                        : isChamadosAtribuidosView
+                                                          ? "Chamados atribuidos"
+                                                          : isChamadosArquivadosView
+                                                            ? "Arquivado"
+                                                            : isChamadosCategoriasView
+                                                              ? "Categorias"
+                                                              : isChamadosCamposView
+                                                                ? "Campos personalizados"
+                                                                : isChamadosRespostasView
+                                                                  ? "Respostas predefinidas"
+                                                                  : isChamadosStatusView
+                                                                    ? "Status Personalizado"
+                                                                    : isChamadosVisualizacoesView
+                                                                      ? "Visualizacoes personalizadas"
                   : isConfiguracoesView
                     ? "Configuracoes do Portal SaaS"
                 : isMensalidadesView
@@ -1677,6 +1929,58 @@ const AdminPortalPage: React.FC = () => {
               </div>
             </form>
           </section>
+        ) : isSaasBillingView ? (
+          <SaasCrudModuleSection config={billingModuleConfig} isActive={isSaasBillingView} />
+        ) : isSaasTenantsView ? (
+          <SaasCrudModuleSection config={tenantsModuleConfig} isActive={isSaasTenantsView} />
+        ) : isSaasSecurityView ? (
+          <SaasCrudModuleSection config={securityModuleConfig} isActive={isSaasSecurityView} />
+        ) : isSaasSupportView ? (
+          <SaasCrudModuleSection config={supportModuleConfig} isActive={isSaasSupportView} />
+        ) : isSaasBiView ? (
+          <SaasCrudModuleSection config={biModuleConfig} isActive={isSaasBiView} />
+        ) : isHelpdeskTicketsView ? (
+          <HelpdeskCrudSection config={helpdeskTicketsConfig} isActive={isHelpdeskTicketsView} />
+        ) : isHelpdeskAttendancesView ? (
+          <HelpdeskCrudSection config={helpdeskAttendancesConfig} isActive={isHelpdeskAttendancesView} />
+        ) : isHelpdeskReportsView ? (
+          <HelpdeskCrudSection config={helpdeskReportsConfig} isActive={isHelpdeskReportsView} />
+        ) : isHelpdeskPreCadastroView ? (
+          <HelpdeskCrudSection config={helpdeskPreRegistrationsConfig} isActive={isHelpdeskPreCadastroView} />
+        ) : isHelpdeskUsersView ? (
+          <HelpdeskCrudSection config={helpdeskUsersConfig} isActive={isHelpdeskUsersView} />
+        ) : isHelpdeskAreasView ? (
+          <HelpdeskCrudSection config={helpdeskAreasConfig} isActive={isHelpdeskAreasView} />
+        ) : isHelpdeskPrioritiesView ? (
+          <HelpdeskCrudSection config={helpdeskPrioritiesConfig} isActive={isHelpdeskPrioritiesView} />
+        ) : isHelpdeskProblemTypesView ? (
+          <HelpdeskCrudSection config={helpdeskProblemTypesConfig} isActive={isHelpdeskProblemTypesView} />
+        ) : isHelpdeskProblemsView ? (
+          <HelpdeskCrudSection config={helpdeskProblemsConfig} isActive={isHelpdeskProblemsView} />
+        ) : isHelpdeskSolutionsView ? (
+          <HelpdeskCrudSection config={helpdeskSolutionsConfig} isActive={isHelpdeskSolutionsView} />
+        ) : isHelpdeskClassesView ? (
+          <HelpdeskCrudSection config={helpdeskClassesConfig} isActive={isHelpdeskClassesView} />
+        ) : isHelpdeskAuditTrailView ? (
+          <HelpdeskCrudSection config={helpdeskAuditTrailConfig} isActive={isHelpdeskAuditTrailView} />
+        ) : isChamadosTodosView ? (
+          <HelpdeskCrudSection config={chamadosTodosConfig} isActive={isChamadosTodosView} />
+        ) : isChamadosMeusView ? (
+          <HelpdeskCrudSection config={chamadosMeusConfig} isActive={isChamadosMeusView} />
+        ) : isChamadosAtribuidosView ? (
+          <HelpdeskCrudSection config={chamadosAtribuidosConfig} isActive={isChamadosAtribuidosView} />
+        ) : isChamadosArquivadosView ? (
+          <HelpdeskCrudSection config={chamadosArquivadosConfig} isActive={isChamadosArquivadosView} />
+        ) : isChamadosCategoriasView ? (
+          <HelpdeskCrudSection config={chamadosCategoriasConfig} isActive={isChamadosCategoriasView} />
+        ) : isChamadosCamposView ? (
+          <HelpdeskCrudSection config={chamadosCamposConfig} isActive={isChamadosCamposView} />
+        ) : isChamadosRespostasView ? (
+          <HelpdeskCrudSection config={chamadosRespostasConfig} isActive={isChamadosRespostasView} />
+        ) : isChamadosStatusView ? (
+          <HelpdeskCrudSection config={chamadosStatusConfig} isActive={isChamadosStatusView} />
+        ) : isChamadosVisualizacoesView ? (
+          <HelpdeskCrudSection config={chamadosVisualizacoesConfig} isActive={isChamadosVisualizacoesView} />
         ) : isConfiguracoesView ? (
           <section className="saas-settings-wrap">
             <div className="saas-mensalidades-head">
@@ -2323,41 +2627,119 @@ const AdminPortalPage: React.FC = () => {
           </section>
         ) : (
           <>
-            <section className="saas-admin-cards">
-              {[{
-                id: "clients",
-                title: "Clientes Ativos",
-                value: String(metrics.patientsTotal),
-                icon: <FiUsers />,
-                tone: "violet",
-              }, {
-                id: "revenue",
-                title: "Receita Mensal",
-                value: currency(metrics.receitaMensal),
-                icon: <FiBarChart2 />,
-                tone: "amber",
-              }, {
-                id: "balance",
-                title: "Saldo",
-                value: currency(financeiroResumo.saldoAtual || metrics.saldoMes),
-                icon: <FiDollarSign />,
-                tone: "green",
-              }, {
-                id: "receivable",
-                title: "Mensalidades a Receber",
-                value: currency(financeiroResumo.totalAReceber),
-                icon: <FiFileText />,
-                tone: "pink",
-              }].map((card) => (
-                <article key={card.id} className={`saas-card ${card.tone}`}>
-                  <div className="saas-card-icon">{card.icon}</div>
-                  <div className="saas-card-body">
-                    <h3>{card.title}</h3>
-                    <strong>{loading ? "..." : card.value}</strong>
-                  </div>
-                </article>
-              ))}
-            </section>
+            <div className="saas-dashboard-cards-area">
+              <p className="saas-cards-group-label">Operacional</p>
+              <section className="saas-admin-cards">
+                {[{
+                  id: "clients", title: "Clientes Ativos",
+                  value: String(metrics.patientsTotal), icon: <FiUsers />, tone: "violet",
+                }, {
+                  id: "revenue", title: "Receita Mensal",
+                  value: currency(metrics.receitaMensal), icon: <FiBarChart2 />, tone: "amber",
+                }, {
+                  id: "balance", title: "Saldo",
+                  value: currency(financeiroResumo.saldoAtual || metrics.saldoMes), icon: <FiDollarSign />, tone: "green",
+                }, {
+                  id: "receivable", title: "Mensalidades a Receber",
+                  value: currency(financeiroResumo.totalAReceber), icon: <FiFileText />, tone: "pink",
+                }].map((card) => (
+                  <article key={card.id} className={`saas-card ${card.tone}`}>
+                    <div className="saas-card-icon">{card.icon}</div>
+                    <div className="saas-card-body">
+                      <h3>{card.title}</h3>
+                      <strong>{loading ? "..." : card.value}</strong>
+                    </div>
+                  </article>
+                ))}
+              </section>
+
+              <p className="saas-cards-group-label">Gestao SaaS</p>
+              <section className="saas-admin-cards">
+                {[{
+                  id: "billing", title: "Billing e Cobranca",
+                  value: String(moduleStats.billing), icon: <FiCreditCard />, tone: "blue",
+                }, {
+                  id: "tenants", title: "Gestao de Clientes",
+                  value: String(moduleStats.tenants), icon: <FiGlobe />, tone: "teal",
+                }, {
+                  id: "security", title: "Seguranca e Acesso",
+                  value: String(moduleStats.security), icon: <FiShield />, tone: "indigo",
+                }, {
+                  id: "support", title: "Operacao e Suporte",
+                  value: String(moduleStats.support), icon: <FiTool />, tone: "cyan",
+                }, {
+                  id: "bi", title: "BI e Inteligencia",
+                  value: String(moduleStats.bi), icon: <FiTrendingUp />, tone: "rose",
+                }].map((card) => (
+                  <article key={card.id} className={`saas-card ${card.tone}`}>
+                    <div className="saas-card-icon">{card.icon}</div>
+                    <div className="saas-card-body">
+                      <h3>{card.title}</h3>
+                      <strong>{moduleStatsLoading ? "..." : card.value}</strong>
+                    </div>
+                  </article>
+                ))}
+              </section>
+
+              <p className="saas-cards-group-label">Helpdesk</p>
+              <section className="saas-admin-cards">
+                {[{
+                  id: "hd_tickets", title: "Chamados e OS",
+                  value: String(moduleStats.hdTickets), icon: <FiHeadphones />, tone: "orange",
+                }, {
+                  id: "hd_areas", title: "Areas de Atendimento",
+                  value: String(moduleStats.hdAreas), icon: <FiMapPin />, tone: "slate",
+                }, {
+                  id: "hd_users", title: "Usuarios Helpdesk",
+                  value: String(moduleStats.hdUsers), icon: <FiUserCheck />, tone: "violet",
+                }, {
+                  id: "hd_priorities", title: "Prioridades",
+                  value: String(moduleStats.hdPriorities), icon: <FiFlag />, tone: "amber",
+                }, {
+                  id: "hd_solutions", title: "Solucoes KB",
+                  value: String(moduleStats.hdSolutions), icon: <FiActivity />, tone: "green",
+                }, {
+                  id: "hd_audit", title: "Audit Trail",
+                  value: String(moduleStats.hdAuditTrail), icon: <FiSliders />, tone: "pink",
+                }].map((card) => (
+                  <article key={card.id} className={`saas-card ${card.tone}`}>
+                    <div className="saas-card-icon">{card.icon}</div>
+                    <div className="saas-card-body">
+                      <h3>{card.title}</h3>
+                      <strong>{moduleStatsLoading ? "..." : card.value}</strong>
+                    </div>
+                  </article>
+                ))}
+              </section>
+
+              <p className="saas-cards-group-label">Chamados</p>
+              <section className="saas-admin-cards">
+                {[{
+                  id: "cam_categorias", title: "Categorias",
+                  value: String(moduleStats.camCategorias), icon: <FiTag />, tone: "blue",
+                }, {
+                  id: "cam_campos", title: "Campos Personalizados",
+                  value: String(moduleStats.camCampos), icon: <FiSliders />, tone: "teal",
+                }, {
+                  id: "cam_respostas", title: "Respostas Predefinidas",
+                  value: String(moduleStats.camRespostas), icon: <FiMessageSquare />, tone: "indigo",
+                }, {
+                  id: "cam_status", title: "Status Personalizado",
+                  value: String(moduleStats.camStatus), icon: <FiLayers />, tone: "cyan",
+                }, {
+                  id: "cam_views", title: "Visualizacoes",
+                  value: String(moduleStats.camVisualizacoes), icon: <FiGrid />, tone: "orange",
+                }].map((card) => (
+                  <article key={card.id} className={`saas-card ${card.tone}`}>
+                    <div className="saas-card-icon">{card.icon}</div>
+                    <div className="saas-card-body">
+                      <h3>{card.title}</h3>
+                      <strong>{moduleStatsLoading ? "..." : card.value}</strong>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            </div>
 
             <section className="saas-admin-chart-panel">
               <div className="saas-admin-panel-head">

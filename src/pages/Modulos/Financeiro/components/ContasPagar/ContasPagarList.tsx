@@ -33,14 +33,15 @@ interface ContaPagar {
 interface ContasPagarListProps {
   onCreate?: () => void;
   onEdit?: (conta: ContaPagar) => void;
-  onDelete?: (id: number) => void;
+  onDelete?: (id: number) => Promise<void> | void;
   onPay?: (conta: ContaPagar) => void;
+  onCancelPayment?: (conta: ContaPagar) => Promise<void> | void;
   filterStatus?: string;
   contaFiltroId?: number | null;
   refreshKey?: number;
 }
 
-const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onPay, filterStatus, contaFiltroId, refreshKey = 0 }) => {
+const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onPay, onCancelPayment, filterStatus, contaFiltroId, refreshKey = 0 }) => {
   const [contas, setContas] = useState<ContaPagar[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +55,7 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onP
   // Filter state
   const [search] = useState('');
   const [filterCategoria] = useState<string>('');
-  const [viewMode] = useState<'cards' | 'table'>('cards');
+  const [viewMode] = useState<'cards' | 'table'>('table');
 
   const fetchContasPagar = useCallback(async () => {
     setLoading(true);
@@ -118,6 +119,40 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onP
     setCurrentPage(page);
   };
 
+  const handleDeleteLocal = async (id: number) => {
+    if (!onDelete) return;
+
+    try {
+      await onDelete(id);
+      setContas((prev) => prev.filter((conta) => conta.id !== id));
+      setTotal((prev) => Math.max(0, prev - 1));
+    } catch {
+      // Erro já tratado no componente pai (ex.: 422 de regra de negocio).
+    }
+  };
+
+  const handleCancelPaymentLocal = async (conta: ContaPagar) => {
+    if (!onCancelPayment) return;
+
+    try {
+      await onCancelPayment(conta);
+      setContas((prev) => prev.map((item) => (
+        item.id === conta.id
+          ? {
+              ...item,
+              valor_pago: 0,
+              valor_pendente: Number(item.valor_original ?? 0),
+              data_pagamento: undefined,
+              forma_pagamento: undefined,
+              status: 'Pendente',
+            }
+          : item
+      )));
+    } catch {
+      // Erro ja tratado no componente pai.
+    }
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,6 +207,8 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onP
     }
   };
 
+  const canDeleteConta = (conta: ContaPagar) => Number(conta.valor_pago ?? 0) <= 0;
+
   // Otimização: usar useMemo para calcular totais apenas quando contas mudam
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { totalOriginal, totalPago, totalPendente } = useMemo(() => {
@@ -206,7 +243,7 @@ const ContasPagarList: React.FC<ContasPagarListProps> = ({ onEdit, onDelete, onP
 
 return (
   <div className="contas-pagar-container py-4 px-2 sm:px-4 lg:px-6">
-    <div className="contas-pagar-content max-w-4xl mx-auto">
+    <div className="contas-pagar-content w-full">
       {/* Área limpa - apenas os cards do header são exibidos */}
       {viewMode === 'cards' ? (
               <div className="p-4">
@@ -304,28 +341,49 @@ return (
                           </div>
 
                           {/* Seção de Ações */}
-                          <div className="flex-none w-40 pl-6 border-l border-gray-200">
-                            <div className="flex flex-col gap-2">
+                          <div className="flex-none w-56 pl-6 border-l border-gray-200">
+                            <div className="flex gap-2 items-center justify-start whitespace-nowrap">
                               {conta.status !== 'Pago' && (
                                 <button
                                   onClick={() => onPay && onPay(conta)}
-                                  className="btn-card btn-pagar-card w-full text-xs py-2"
+                                  className="btn-card btn-pagar-card text-xs py-2 px-2"
                                 >
                                   💳 Pagar
                                 </button>
                               )}
                               <button
                                 onClick={() => onEdit && onEdit(conta)}
-                                className="btn-card btn-editar-card w-full text-xs py-2"
+                                className="btn-card btn-editar-card text-xs py-2 px-2"
                               >
                                 ✏️ Editar
                               </button>
-                              <button
-                                onClick={() => onDelete && onDelete(conta.id)}
-                                className="btn-card btn-excluir-card w-full text-xs py-2"
-                              >
-                                🗑️ Excluir
-                              </button>
+                              {!canDeleteConta(conta) && (
+                                <button
+                                  type="button"
+                                  onClick={() => void handleCancelPaymentLocal(conta)}
+                                  className="btn-card btn-cancelar-card text-xs py-2 px-2"
+                                  title="Cancelar pagamento desta conta"
+                                >
+                                  ↩ Cancelar Pgto
+                                </button>
+                              )}
+                              {canDeleteConta(conta) ? (
+                                <button
+                                  onClick={() => void handleDeleteLocal(conta.id)}
+                                  className="btn-card btn-excluir-card text-xs py-2 px-2"
+                                >
+                                  🗑️ Excluir
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn-card btn-excluir-card text-xs py-2 px-2 opacity-60 cursor-not-allowed"
+                                  title="Nao e possivel excluir conta com pagamentos ja realizados"
+                                  disabled
+                                >
+                                  🔒 Nao pode excluir
+                                </button>
+                              )}
                             </div>
 
                             {conta.observacoes && (
@@ -502,13 +560,34 @@ return (
                               >
                                 Editar
                               </button>
-                              <button
-                                onClick={() => onDelete && onDelete(conta.id)}
-                                className="action-btn btn-excluir"
-                                title="Excluir Conta"
-                              >
-                                Excluir
-                              </button>
+                              {!canDeleteConta(conta) && (
+                                <button
+                                  type="button"
+                                  onClick={() => void handleCancelPaymentLocal(conta)}
+                                  className="action-btn btn-cancelar"
+                                  title="Cancelar Pagamento"
+                                >
+                                  Cancelar Pgto
+                                </button>
+                              )}
+                              {canDeleteConta(conta) ? (
+                                <button
+                                  onClick={() => void handleDeleteLocal(conta.id)}
+                                  className="action-btn btn-excluir"
+                                  title="Excluir Conta"
+                                >
+                                  Excluir
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="action-btn btn-excluir opacity-60 cursor-not-allowed"
+                                  title="Nao e possivel excluir conta com pagamentos ja realizados"
+                                  disabled
+                                >
+                                  Nao pode excluir
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>

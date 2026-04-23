@@ -19,7 +19,7 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "%PUBLIC_URL%/",
   "display": "standalone",
   "theme_color": "#007bff",
   "background_color": "#ffffff",
@@ -30,21 +30,21 @@
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "Acessar dashboard principal",
-      "url": "/dashboard",
+      "url": "%PUBLIC_URL%/dashboard",
       "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
     },
     {
       "name": "Pacientes",
       "short_name": "Pacientes",
       "description": "Gerenciar pacientes",
-      "url": "/dashboard/pessoas/pacientes/PatientsPage",
+      "url": "%PUBLIC_URL%/dashboard/pessoas/pacientes/PatientsPage",
       "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
     },
     {
       "name": "Agendamentos",
       "short_name": "Agendamentos",
       "description": "Gerenciar agendamentos",
-      "url": "/dashboard/agendamentos",
+      "url": "%PUBLIC_URL%/dashboard/agendamentos",
       "icons": [{ "src": "favicon.ico", "sizes": "192x192" }]
     }
   ]

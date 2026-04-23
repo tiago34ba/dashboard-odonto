@@ -14,6 +14,8 @@ import {
   FaUserMd
 } from "react-icons/fa";
 
+const appBasePath = (process.env.REACT_APP_BASENAME || "").replace(/\/$/, "");
+
 const PageWrapper = styled.div`
   background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   min-height: 100vh;
@@ -640,7 +642,7 @@ const RegisterPage: React.FC = () => {
                 required
               />
               <span>
-                Eu aceito os <a href="/termos" target="_blank">Termos de Uso</a> do SSait Odonto
+                Eu aceito os <a href={`${appBasePath}/termos`} target="_blank" rel="noreferrer">Termos de Uso</a> do SSait Odonto
               </span>
             </CheckboxLabel>
 
@@ -653,7 +655,7 @@ const RegisterPage: React.FC = () => {
                 required
               />
               <span>
-                Eu aceito a <a href="/privacidade" target="_blank">Política de Privacidade</a> e autorizo o uso dos meus dados
+                Eu aceito a <a href={`${appBasePath}/privacidade`} target="_blank" rel="noreferrer">Política de Privacidade</a> e autorizo o uso dos meus dados
               </span>
             </CheckboxLabel>
           </CheckboxGroup>

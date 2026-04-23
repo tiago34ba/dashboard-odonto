@@ -5,7 +5,10 @@ import ProtectedRoute from "./ProtectedRoute";
 
 const renderProtectedRoute = (initialPath: string, requiredPermission?: string) =>
   render(
-    <MemoryRouter initialEntries={[initialPath]}>
+    <MemoryRouter
+      initialEntries={[initialPath]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <Routes>
         <Route path="/login" element={<div>Login page</div>} />
         <Route path="/dashboard" element={<div>Dashboard page</div>} />
